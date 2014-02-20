@@ -13,6 +13,7 @@ LDSCRIPT="gcc.ld"
 if hostp
   CC="gcc"
   GDB="gdb"
+  LDFLAGS << "-Wl,-Map=#{MAP}"
 else
   LDFLAGS << " -Wl,-Map=#{MAP} --specs=nano.specs -lc -lnosys -flto -fwhole-program -ffunction-sections -fdata-sections -Wl,--gc-sections -Wl,--cref -nostartfiles -mcpu=cortex-m3 -mthumb"
   LDFLAGS << " -v" if ENV['VERBOSE']
