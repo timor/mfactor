@@ -12,3 +12,15 @@
   byte instruction or a memory address, little endian machines define
   their code "backwards" in memory physically
 
+# stacks #
+
+## data stack ##
+
+## catch stack ##
+- exception handling records
+## retain stack ##
+- equivalent of 'return stack'
+- used for controlling nested sequence acquisition during entry
+- note that this means that input mode can be determined by looking at
+  how many items are on the retain stack during input
+
