@@ -128,7 +128,7 @@ void interpreter()
       case drop:
         x = pop(psp);
         if (x.type != cell_fixnum)
-          for (int i = 0; i < x.value; i++)
+          for (int j = 0; j < x.value; j++)
             (void) pop(psp);
         break;
       case zero: push(psp,FIXNUM(0)); break;
