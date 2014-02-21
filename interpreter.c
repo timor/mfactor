@@ -110,7 +110,6 @@ void interpreter()
   cell* csp = &cstack[0];
   
 
-#define next goto **(--pc)
 #define UNOP(op) { x = pop(psp); x.value=(op x.value); push(psp,x);} break
 #define BINOP(op) { x = pop(psp); x.value=(pop(psp).value op x.value); push(psp,x);} break
 #define TBEGIN(word) (intptr_t)&word[sizeof(word)/sizeof(inst)-1]
@@ -166,9 +165,10 @@ void interpreter()
         return;
       }
     } else {                    /* memory, call thread  */
-      inst * address = *(inst *)pc; /* TODO fix warning */
-      push(rsp,((union wide_cell) pc));
-      pc=address;
+      inst * skipped = (inst *)pc-(sizeof(void *)-1); /* adjust skip over memory address */
+      inst * next_word = *(inst **)(skipped+1); /* TODO platform-dependent */
+      push(rsp,((union wide_cell) skipped));
+      pc=next_word;
     }
   }
 }
