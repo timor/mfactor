@@ -124,7 +124,7 @@ void interpreter()
 
   while(1) {
     inst i = (*pc--);
-    if (i && INSTBASE) {          /* valid bytecode instruction */
+    if (i & INSTBASE) {          /* valid bytecode instruction */
       switch (i) {
       case drop:
         x = pop(psp);
