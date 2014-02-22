@@ -55,18 +55,18 @@ typedef intptr_t cell;
 void interpreter(inst *);
 
 #define TBEGIN(word) (intptr_t)&word[sizeof(word)/sizeof(inst)-1]
-#define CALL64(word) (word>>0)&0xff,(word>>8)&0xff,(word>>16)&0xff,(word>>24)&0xff,(word>>32)&0xff,(word>>40)&0xff,(word>>48)&0xff,(word>>56)&0xff
-#define CALL32(word) (word>>0)&0xff,(word>>8)&0xff,(word>>16)&0xff,(word>>24)&0xff
+#define CELL64(word) (word>>0)&0xff,(word>>8)&0xff,(word>>16)&0xff,(word>>24)&0xff,(word>>32)&0xff,(word>>40)&0xff,(word>>48)&0xff,(word>>56)&0xff
+#define CELL32(word) (word>>0)&0xff,(word>>8)&0xff,(word>>16)&0xff,(word>>24)&0xff
 #if (__SIZEOF_POINTER__ == 4)
-#define CALL(thread) CALL32(TBEGIN(thread))
+#define CELL(word) CELL32(word)
 #elif (__SIZEOF_POINTER__ == 8)
-#define CALL(thread) CALL64(TBEGIN(thread))
+#define CELL(word) CELL64(word)
 #else
 #error "size of pointer unkown"
 #endif
 
-/* on 32 bit cell size architecture: */
+#define CALL(thread) CELL(TBEGIN(thread))
 /* breaks down scalar value for insertion into byte code stream */
-#define FIXNUM(x) CALL32(x)
+#define FIXNUM(x) CELL(x)
 
 #endif
