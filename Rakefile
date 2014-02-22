@@ -1,5 +1,6 @@
 # -*- mode:ruby -*-
 require 'rake/clean'
+require 'tempfile'
 
 hostp=ENV['ONHOST']
 
@@ -74,11 +75,25 @@ end
 CLEAN.include PROG.ext('lst')
 
 task :debug => PROG do
+  script=Tempfile.new("gdbscript");
+  script << <<GDBEND
+define reset
+  monitor reset
+  load
+end
+define connect
+  target remote :1234
+end
+connect
+reset
+GDBEND
+  script.close
   args = ""
   if ENV['INSIDE_EMACS']
     args += " -i=mi"
   else
     args += " --tui"
   end
+  args += " -x #{script.path}"
   sh "#{GDB} #{args} #{PROG}"
 end
