@@ -7,15 +7,23 @@
 
 typedef unsigned char inst;     /* it's byte code after all */
 
-#ifndef VM_DICT
-#define VM_DICT 8192
+/* data memory (affects non-transient data)*/
+#ifndef VM_MEM
+#define VM_MEM 8192
 #endif
+/* dictionary size (affects number of named items)*/
+#ifndef VM_DICT
+#define VM_DICT 1024
+#endif
+/* parameter stack size (affects transient data)*/
 #ifndef VM_PSTACK
 #define VM_PSTACK 256
 #endif
+/* retain stack size (affects nesting of functions)*/
 #ifndef VM_RSTACK
 #define VM_RSTACK 64
 #endif
+/* catch stack size (affects nesting of exception handlers)*/
 #ifndef VM_CSTACK
 #define VM_CSTACK 64
 #endif
