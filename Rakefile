@@ -16,8 +16,9 @@ if hostp
   GDB="gdb"
   LDFLAGS << "-Wl,-Map=#{MAP}"
 else
-  LDFLAGS << " -Wl,-Map=#{MAP} --specs=nano.specs -lc -lnosys -flto -fwhole-program -ffunction-sections -fdata-sections -Wl,--gc-sections -Wl,--cref -nostartfiles -mcpu=cortex-m3 -mthumb"
+  LDFLAGS << " -Wl,-Map=#{MAP} --specs=nano.specs -lc -lnosys -flto -Wl,--gc-sections -Wl,--cref -nostartfiles -mcpu=cortex-m3 -mthumb"
   LDFLAGS << " -v" if ENV['VERBOSE']
+  CFLAGS << " -ffunction-sections -fdata-sections"
   CFLAGS << " -mcpu=cortex-m3 -D__START=main -mthumb"
   CFLAGS << " -v" if ENV['VERBOSE']
   CFLAGS << " -DCPU_LPC4337"
