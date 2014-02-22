@@ -42,21 +42,7 @@ enum inst_set {
 };
 
 
-typedef union cell
-{
-  struct {
-    unsigned int length:31;
-    bool sequencep:1;
-  };
-  struct {
-    int value:31;
-    bool ____dummy1oneone:1;
-  };
-} cell;
-
-/* somehow the following doesnt count as constant value for static initializer purposes */
-#define SCALAR(c) ((cell) {.sequencep=false,.value=c})
-
+typedef intptr_t cell;
 
 void interpreter(inst *);
 
@@ -72,6 +58,7 @@ void interpreter(inst *);
 #endif
 
 /* on 32 bit cell size architecture: */
-#define FIXNUM(x) CALL32(SCALAR(x).value)
+/* breaks down scalar value for insertion into byte code stream */
+#define FIXNUM(x) CALL32(x)
 
 #endif

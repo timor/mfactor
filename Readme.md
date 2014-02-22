@@ -3,6 +3,10 @@
 - the tradeoff wether to create a new word rather than using a macro
   starts at 4 primitive instructions on 32-bit machines, and 8 primitive instructions on 64 bit machines, respectively
 
+## definitions ##
+- cell: datatype used on parameter stack, must be able to hold a pointer
+- inst: byte code instruction used in program flow
+
 # code layout #
 - byte code, intermixed with memory addresses
 - memory addresses point to threads

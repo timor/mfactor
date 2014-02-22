@@ -20,35 +20,23 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+/* for storing the length of a stack item, note that this is ONLY for the stack, not for in-memory data */
+typedef unsigned char length;
+
+/* entry in name dictionary */
+/* TODO: ensure correct scanning direction so that skipping over entries stays trivial */
 typedef struct dict_entry
 {
   void * address;               /* pointer into memory */
-  cell name;						  /* a cell_string */
+  length name_length;
+  unsigned char name[];
 } dict_entry;
 
 /* empty ascending stack */
-#define push(sp,val) (*(sp++)=val)
-#define pop(sp) (*(--sp))
+#define push(sp,val) (*sp=val,sp++)
+#define pop(sp) (sp--,*sp)
 #define peek(sp) (*(sp-1))
 #define drop_n(sp,num) (sp-=num)
-
-static void push_mem(cell *from, cell *to, cell *sp)
-{
-  ptrdiff_t diff = (to-from)*sizeof(cell);
-  if (diff>0)
-    memcpy(sp,from,diff);
-  else
-    memcpy(sp-diff,to,-diff);
-}
-
-typedef union wide_cell 
-{
-  inst * address;
-  cell cell;
-} wide_cell;
-
-#define UNOP(op) { x = pop(psp); x.value=(op x.value); push(psp,x);} break
-#define BINOP(op) { x = pop(psp); x.value=(pop(psp).value op x.value); push(psp,x);} break
 
 inst square[]={endsub,mul,dup};
 
@@ -58,8 +46,8 @@ void interpreter(inst * user_program)
   static cell pstack[VM_PSTACK]={0};
   static cell* psp = &pstack[0];
   /* retain / compile control stack */
-  static wide_cell rstack[VM_RSTACK]={0};
-  static wide_cell* rsp = &rstack[0];
+  static cell rstack[VM_RSTACK]={0};
+  static cell* rsp = &rstack[0];
   /* catch stack */
   static cell cstack[VM_CSTACK]={0};
   static cell* csp = &cstack[0];
@@ -73,52 +61,40 @@ void interpreter(inst * user_program)
     if (i >= INSTBASE) {          /* valid bytecode instruction */
     dispatch:
       switch (i) {
-      case drop:
-        x = pop(psp);
-        if (x.sequencep)
-          drop_n(psp,x.length);
-        break;
-      case zero: push(psp,SCALAR(0)); break;
-      case one: push(psp,SCALAR(1)); break;
-      case two: push(psp,SCALAR(2)); break;
+#define UNOP(op) { push(psp,(op (pop(psp))));} break
+#define BINOP(op) { x = pop(psp); push(psp,(pop(psp) op x));} break
+      case drop: drop_n(psp,1); break;
+      case zero: push(psp,0); break;
+      case one: push(psp,1); break;
+      case two: push(psp,2); break;
       case add: BINOP(+);
       case mul: BINOP(*);
       case sub: BINOP(-);
       case neg: UNOP(-);
-      case dup:
-        x = peek(psp);
-        if (!x.sequencep)
-          push(psp, x);
-        else
-          push_mem(psp-(x.length+1),psp,psp);
-        break;
+      case dup: 
+        push(psp, peek(psp)); break;
       case lit: {
         cell y=*((cell*)(pc-(sizeof(cell)-sizeof(inst))));
         push(psp,y);
         pc-=sizeof(cell);
       } break;
       case emit:
-        putchar(pop(psp).value);
-        fflush(stdout);
+        putchar(pop(psp));
+        fflush(stdout);         /* TODO remove eventually */
         break;
       case receive:
-        push(psp,SCALAR(getchar())); break;
-      /* case type: */
-      /*   push(psp,TYPECELL(pop(psp).type)); */
+        push(psp,getchar()); break;
       case name:
       case quit:
         printf("bye!\n");
         return;
       case endsub:
-        pc=pop(rsp).address; break;
-      case eql:
-        x=pop(psp);
-        x.value=(x.value==pop(psp).value);
-        push(psp,(x)); break;
+        pc=(inst*) pop(rsp); break;
+      case eql: BINOP(==);
       case to_r:
-        push(rsp,(wide_cell)pop(psp));break;
+        push(rsp,pop(psp));break;
       case r_from:
-        push(psp,pop(rsp).cell);break;
+        push(psp,pop(rsp));break;
       default:
         printf("undefined instruction %d\n",*pc);
         return;
@@ -126,7 +102,7 @@ void interpreter(inst * user_program)
     } else {                    /* memory, call thread  */
       inst * skipped = (inst *)pc-(sizeof(void *)-1); /* adjust skip over memory address */
       inst * next_word = *(inst **)(skipped+1); /* TODO platform-dependent */
-      push(rsp,((wide_cell) skipped));
+      push(rsp,(cell)skipped);
       pc=next_word;
     }
   }
