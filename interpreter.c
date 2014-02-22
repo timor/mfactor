@@ -31,12 +31,19 @@ typedef struct dict_entry
   length name_length;
   unsigned char name[];
 } dict_entry;
+/* TODO: doc quirk that primitive names must be counted one less when comparing!!! */
 
 /* empty ascending stack */
 #define push(sp,val) (*sp=val,sp++)
 #define pop(sp) (sp--,*sp)
 #define peek(sp) (*(sp-1))
 #define drop_n(sp,num) (sp-=num)
+
+#define DICT(wname)   {.address=(void *)wname,.name=#wname,.name_length=sizeof(#wname)}
+dict_entry dict[VM_DICT]={
+  DICT(dup),
+  DICT(drop)
+};
 
 inst square[]={endsub,mul,dup};
 
