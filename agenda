@@ -1,0 +1,6 @@
+- name table
+- name lookup
+- basic repl
+- add primitives for allocating stuff in data mem
+- stopworld mark-sweep gc (should only be triggered during user input, so not time critical)
+
