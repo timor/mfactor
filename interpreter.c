@@ -39,19 +39,18 @@ typedef struct dict_entry
 #define peek_n(sp,nth) (*(sp-nth))
 #define drop_n(sp,num) (sp-=num)
 
+inst square[]={retsub,mul,dup};
+
 #define DICT(wname,addr)   {.address=(void *)addr,.name=wname,.name_length=sizeof(wname)}
 dict_entry dict[VM_DICT]={
   DICT("dup",dup),
   DICT("drop",drop),
   DICT("+",add),
   DICT("*",mul),
-  DICT("}",endsub),
   DICT("{",quotation),
   DICT("neg",neg),
   DICT("-",sub)
 };
-
-inst square[]={endsub,mul,dup};
 
 void interpreter(inst * user_program)
 {
@@ -101,7 +100,7 @@ void interpreter(inst * user_program)
       case quit:
         printf("bye!\n");
         return;
-      case endsub:
+      case retsub:
         pc=(inst*) pop(rsp); break;
       case eql: BINOP(==);
       case to_r:
