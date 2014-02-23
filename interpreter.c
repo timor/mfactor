@@ -36,7 +36,7 @@ typedef struct dict_entry
 /* empty ascending stack */
 #define push(sp,val) (*sp=val,sp++)
 #define pop(sp) (sp--,*sp)
-#define peek(sp) (*(sp-1))
+#define peek_n(sp,nth) (*(sp-nth))
 #define drop_n(sp,num) (sp-=num)
 
 #define DICT(wname,addr)   {.address=(void *)addr,.name=wname,.name_length=sizeof(wname)}
@@ -85,7 +85,7 @@ void interpreter(inst * user_program)
       case sub: BINOP(-);
       case neg: UNOP(-);
       case dup: 
-        push(psp, peek(psp)); break;
+        push(psp, peek_n(psp,1)); break;
       case lit: {
         cell y=*((cell*)(pc-(sizeof(cell)-sizeof(inst))));
         push(psp,y);
