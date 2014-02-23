@@ -28,9 +28,10 @@ else
   SIZE="arm-none-eabi-size"
 end
   
-cfiles=FileList['*.[cCsS]'].each do |c|
-  file c.ext('o') => c
-end
+hfiles = FileList['*.h']
+
+cfiles=FileList['*.[cCsS]']
+
 unless hostp
   cfiles += FileList["target/*.[cCsS]"]
 end
@@ -45,7 +46,7 @@ rule '.o' => '.S' do |t|
   sh "#{CC} #{CFLAGS} #{t.source} -c -o #{t.name}"
 end
 
-ofiles.each{|o| file o => "Rakefile"}
+ofiles.each{|o| file o => ["Rakefile"]+hfiles}
 
 unless hostp
   file PROG => [LDSCRIPT]
