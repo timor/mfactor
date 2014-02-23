@@ -47,9 +47,15 @@ dict_entry dict[VM_DICT]={
   DICT("drop",drop),
   DICT("+",add),
   DICT("*",mul),
-  DICT("{",quotation),
+  DICT("}",lend),
+  DICT("{",lstart),
+  DICT("[",qstart),
+  DICT("]",qend),
   DICT("neg",neg),
-  DICT("-",sub)
+  DICT("-",sub),
+  DICT("?",truefalse),
+  DICT("if",_if),
+  DICT("square",TBEGIN(square)),
 };
 
 void interpreter(inst * user_program)
@@ -107,6 +113,14 @@ void interpreter(inst * user_program)
         push(rsp,pop(psp));break;
       case r_from:
         push(psp,pop(rsp));break;
+      case truefalse:           /* this one assumes the most about the stack right now */
+      {
+        cell false_cons = pop(psp);
+        cell true_cons = pop(psp);
+        cell cond = pop(psp);
+        push(psp,cond ? true_cons : false_cons);
+      } break;
+      case call:
       default:
         printf("undefined instruction %d\n",*pc);
         return;
