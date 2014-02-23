@@ -39,10 +39,16 @@ typedef struct dict_entry
 #define peek(sp) (*(sp-1))
 #define drop_n(sp,num) (sp-=num)
 
-#define DICT(wname)   {.address=(void *)wname,.name=#wname,.name_length=sizeof(#wname)}
+#define DICT(wname,addr)   {.address=(void *)addr,.name=wname,.name_length=sizeof(wname)}
 dict_entry dict[VM_DICT]={
-  DICT(dup),
-  DICT(drop)
+  DICT("dup",dup),
+  DICT("drop",drop),
+  DICT("+",add),
+  DICT("*",mul),
+  DICT("}",endsub),
+  DICT("{",quotation),
+  DICT("neg",neg),
+  DICT("-",sub)
 };
 
 inst square[]={endsub,mul,dup};
