@@ -52,6 +52,7 @@ dict_entry dict[VM_DICT]={
   DICT("neg",neg),
   DICT("-",sub),
   DICT("?",truefalse),
+  DICT("allot",allot),
   DICT("if",TBEGIN(ifquot)),
   DICT("square",TBEGIN(square)),
 };
@@ -124,6 +125,12 @@ void interpreter(inst * user_program)
       case retsub:
         pc=(inst*) pop(rsp); break;
       case eql: BINOP(==);
+      case swap: {
+        x=pop(psp);
+        cell y = pop(psp);
+        push(psp,x);
+        push(psp,y);
+      } break;
       case to_r:
         push(rsp,pop(psp));break;
       case r_from:

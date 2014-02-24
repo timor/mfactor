@@ -45,7 +45,7 @@ enum inst_set {
   dup=INSTBASE,                     /* starting value architecture dependent!!! */
   eql,
   rot, drop, zero, one, two, add, mul, neg, sub, emit, receive, to_r, r_from, lit,
-  name, qstart, qend, lstart, lend, retsub, truefalse, call, ref,
+  name, qstart, qend, lstart, lend, retsub, truefalse, call, ref, swap, allot,
   quit
 };
 
