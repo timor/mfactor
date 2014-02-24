@@ -39,8 +39,6 @@ typedef struct dict_entry
 #define peek_n(sp,nth) (*(sp-nth))
 #define drop_n(sp,num) (sp-=num)
 
-inst square[]={retsub,mul,dup};
-
 #define DICT(wname,addr)   {.address=(void *)addr,.name=wname,.name_length=sizeof(wname)}
 dict_entry dict[VM_DICT]={
   DICT("dup",dup),
@@ -54,9 +52,13 @@ dict_entry dict[VM_DICT]={
   DICT("neg",neg),
   DICT("-",sub),
   DICT("?",truefalse),
-  DICT("if",_if),
+  DICT("if",TBEGIN(ifquot)),
   DICT("square",TBEGIN(square)),
 };
+
+const inst const square[]={retsub,mul,dup};
+const inst const ifquot[]={retsub,call,truefalse};
+
 
 void interpreter(inst * user_program)
 {
@@ -75,9 +77,10 @@ void interpreter(inst * user_program)
   inst *pc = user_program ? : &program[sizeof(program)/sizeof(inst)-1];
 
   while(1) {
-    inst i = (*pc--);
+    inst i;
+  next:
+    i= (*pc--);
     if (i >= INSTBASE) {          /* valid bytecode instruction */
-    dispatch:
       switch (i) {
 #define UNOP(op) { push(psp,(op (pop(psp))));} break
 #define BINOP(op) { x = pop(psp); push(psp,(pop(psp) op x));} break
@@ -91,6 +94,7 @@ void interpreter(inst * user_program)
       case neg: UNOP(-);
       case dup: 
         push(psp, peek_n(psp,1)); break;
+      case ref:                 /* only gc knows a difference */
       case lit: {
         cell y=*((cell*)(pc-(sizeof(cell)-sizeof(inst))));
         push(psp,y);
@@ -121,6 +125,9 @@ void interpreter(inst * user_program)
         push(psp,cond ? true_cons : false_cons);
       } break;
       case call:
+        push(rsp,(cell)pc);
+        pc=(inst*)pop(psp);
+        goto next; break;
       default:
         printf("undefined instruction %d\n",*pc);
         return;
