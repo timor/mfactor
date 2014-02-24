@@ -59,6 +59,17 @@ dict_entry dict[VM_DICT]={
 const inst const square[]={retsub,mul,dup};
 const inst const ifquot[]={retsub,call,truefalse};
 
+static bool whitespacep(char c) {
+  return 
+    c == ' ' ||
+    c == '	' ||
+    c == 10 ||
+    c == 13;
+ }
+
+#ifndef MAX_TOKEN_SIZE
+#define MAX_TOKEN_SIZE 64
+#endif
 
 void interpreter(inst * user_program)
 {
