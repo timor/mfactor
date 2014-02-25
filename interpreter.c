@@ -31,7 +31,7 @@ typedef struct dict_entry
   length name_length;
   unsigned char name[];
 } dict_entry;
-/* TODO: doc quirk that primitive names must be counted one less when comparing!!! */
+/* TODO: doc quirk that primitive names are null-terminated */
 
 /* empty ascending stack */
 #define push(sp,val) (*sp=val,sp++)
