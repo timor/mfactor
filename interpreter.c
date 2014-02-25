@@ -96,7 +96,7 @@ void interpreter(inst * user_program)
   static cell* csp = &cstack[0];
   /* TODO: name stack */
   cell x;                       /* temporary value for operations */
-  inst program[]={quit,emit,CALL(square),add,dup,mul,dup,two};
+  inst program[]={retsub, CALL(ifquot), CALL(unknown_token), lit, find, token };
   inst *pc = user_program ? : &program[sizeof(program)/sizeof(inst)-1];
 
   while(1) {

@@ -19,7 +19,9 @@ int main(void)
   interpreter((inst*)TBEGIN(p3));
   interpreter((inst*)TBEGIN(p4));
   interpreter(&p1[sizeof(p1)/sizeof(inst)-1]);
-  interpreter(NULL);
+  do {
+    interpreter(NULL);
+  } while(1);
 }
 
 
