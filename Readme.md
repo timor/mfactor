@@ -2,6 +2,7 @@
 - not designed as a portable byte code interpreter, code will not be position independent
 - the tradeoff wether to create a new word rather than using a macro
   starts at 4 primitive instructions on 32-bit machines, and 8 primitive instructions on 64 bit machines, respectively
+- strings are null-terminated
 
 ## definitions ##
 - cell: datatype used on parameter stack, must be able to hold a pointer
