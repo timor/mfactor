@@ -62,6 +62,26 @@ dict_entry dict[VM_DICT]={
 
 const inst const square[]={retsub,mul,dup};
 const inst const ifquot[]={retsub,call,truefalse};
+const inst const unknown_token[]={retsub,emit,FIXNUM('X'),lit,emit,FIXNUM('_'),lit,emit,FIXNUM('X'),lit};
+  
+static inst* find_by_name(char *name)
+{
+  for(dict_entry* ptr=dict;ptr < dict+sizeof(dict);ptr+=ptr->name_length+2*sizeof(void*)){
+    if (strcmp(name,ptr->name)==0)
+      return ptr->address;
+  }
+  return NULL;
+}
+
+enum nesting_type {
+  nesting_quot,
+  nesting_list
+};
+
+static void error() 
+{
+  printf("error\n");
+}
 
 void interpreter(inst * user_program)
 {
@@ -133,6 +153,20 @@ void interpreter(inst * user_program)
         cell cond = pop(psp);
         push(psp,cond ? true_cons : false_cons);
       } break;
+      case token: {
+        char *token = read_token();
+        if (token) {
+          push(psp,(cell)token);
+        } else {
+          error();
+          return;
+        }} break;
+      case find: {
+        inst * addr=find_by_name((char*)pop(psp));
+        push(psp,addr==NULL ? false : true);
+        push(psp,(cell)addr);
+      }        
+        break;
       case call:
         push(rsp,(cell)pc);
         pc=(inst*)pop(psp);

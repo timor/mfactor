@@ -46,6 +46,7 @@ enum inst_set {
   eql,
   rot, drop, zero, one, two, add, mul, neg, sub, emit, receive, to_r, r_from, lit,
   name, qstart, qend, lstart, lend, retsub, truefalse, call, ref, swap, allot,
+  strstart, find, token, store_code,
   quit
 };
 
