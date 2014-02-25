@@ -29,14 +29,15 @@ char read_char()
 		return getchar();
 	}
 }
-int unread_char(char c)
+
+bool unread_char(char c)
 {
 	if (temp_char_p)
-		return -1;
+		return false;
 	else {
 		temp_char_p=true;
 		temp_char=c;
-		return 0;
+		return true;
 	}
 }
 
@@ -58,16 +59,23 @@ static unsigned int skip_whitespace(void)
 	return skipped;
 }
 
+/* exception for " */
 char * read_token()
 {
 	char c;
 	char *tokptr=token;
 	skip_whitespace();
-	while (!whitespacep(c=read_char())) {
-		*tokptr++=c;
-	}
+    bool nosep_token_found=false;
+    while (!whitespacep(c=read_char())) {
+      *tokptr++=c;
+      if (c == '"') {
+        nosep_token_found = true;
+        break;
+      }
+    }
 	*tokptr++=0;
-	if (unread_char(c) != 0)
-		return NULL;
-	else return token;
+    if (!nosep_token_found)
+      if (!unread_char(c))
+        return NULL;
+    return token;
 }

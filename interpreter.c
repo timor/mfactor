@@ -15,6 +15,7 @@
 #ifdef __GNUC__
 
 #include "interpreter.h"
+#include "reader.h"
 #include <string.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -39,6 +40,7 @@ typedef struct dict_entry
 #define peek_n(sp,nth) (*(sp-nth))
 #define drop_n(sp,num) (sp-=num)
 
+/* dictionary grows up*/
 #define DICT(wname,addr)   {.address=(void *)addr,.name=wname,.name_length=sizeof(wname)}
 dict_entry dict[VM_DICT]={
   DICT("dup",dup),
@@ -53,6 +55,7 @@ dict_entry dict[VM_DICT]={
   DICT("-",sub),
   DICT("?",truefalse),
   DICT("allot",allot),
+  DICT("\"",strstart),
   DICT("if",TBEGIN(ifquot)),
   DICT("square",TBEGIN(square)),
 };

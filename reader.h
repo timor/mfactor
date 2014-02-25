@@ -22,10 +22,10 @@
 #define MAX_TOKEN_SIZE 64
 #endif
 
-
+#include <stdbool.h>
 
 char read_char(void);
-int unread_char(char);
+bool unread_char(char);
 char *read_token(void);
 
 
