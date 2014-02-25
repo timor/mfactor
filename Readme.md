@@ -23,6 +23,7 @@
 
 ## catch stack ##
 - exception handling records
+
 ## retain stack ##
 - equivalent of 'return stack'
 - used for controlling nested sequence acquisition during entry
