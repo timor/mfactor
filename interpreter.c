@@ -36,7 +36,7 @@ typedef struct dict_entry
 {
 	void * address;               /* pointer into memory */
 	length name_length;
-	unsigned char name[];
+	char name[];
 } dict_entry;
 /* TODO: doc quirk that primitive names are null-terminated */
 
