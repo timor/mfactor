@@ -21,6 +21,12 @@
 	#include <stdio.h>
 	#include <stdbool.h>
 
+	#if TRACE_INTERPRETER
+		#define IFTRACE(expr) expr
+	#else
+		#define IFTRACE(expr)
+	#endif
+
 /* for storing the length of a stack item, note that this is ONLY for the stack, not for in-memory data */
 typedef unsigned char length;
 
@@ -66,11 +72,20 @@ const inst const unknown_token[]={retsub,emit,FIXNUM('X'),lit,emit,FIXNUM('_'),l
 
 static inst* find_by_name(char *name)
 {
+IFTRACE(printf("looking for '%s' ", fname));
 	for(dict_entry* ptr=dict;ptr < dict+sizeof(dict);ptr+=ptr->name_length+2*sizeof(void*)){
 		if (strcmp(name,ptr->name)==0)
 			return ptr->address;
 	}
 	return NULL;
+static void printstack(cell * sp, cell * stack)
+{
+	printf("stack:");
+	for(cell* ptr = sp-1;ptr >= stack;ptr--)
+		{
+			printf(" %#x",*ptr);
+		}
+	printf("\n");
 }
 
 enum nesting_type {
@@ -102,8 +117,11 @@ void interpreter(inst * user_program)
 	while(1) {
 		inst i;
 	next:
+		IFTRACE(printstack(psp,pstack));
+		IFTRACE(printstack(rsp,rstack));
 		i= (*pc--);
 		if (i >= INSTBASE) {          /* valid bytecode instruction */
+			IFTRACE(printf("i:%#x\n",i));
 			switch (i) {
 	#define UNOP(op) { push(psp,(op (pop(psp))));} break
 	#define BINOP(op) { x = pop(psp); push(psp,(pop(psp) op x));} break
@@ -178,6 +196,7 @@ void interpreter(inst * user_program)
 		} else {                    /* memory, call thread  */
 			inst * skipped = (inst *)pc-(sizeof(void *)-1); /* adjust skip over memory address */
 			inst * next_word = *(inst **)(skipped+1); /* TODO platform-dependent */
+			IFTRACE(printf("w:%#x\n",(cell)next_word));
 			push(rsp,(cell)skipped);
 			pc=next_word;
 		}
