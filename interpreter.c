@@ -194,7 +194,7 @@ void interpreter(inst * user_program)
 				pc=(inst*)pop(psp);
 				goto next; break;
 			default:
-				printf("undefined instruction %d\n",*pc);
+				printf("undefined instruction %x\n",*pc);
 				return;
 			}
 		} else {                    /* memory, call thread  */
