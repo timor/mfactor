@@ -36,13 +36,15 @@ typedef unsigned char inst;     /* it's byte code after all */
 /* extern int getchar(int); */
 #ifndef INSTBASE
 #if (__linux && __LP64__)
-#define INSTBASE 0x80
+#define INSTBASE 0x80U
 #elif (CPU_LPC4337)             /* all cortexes, actually */
-#define INSTBASE 0xA0
+#define INSTBASE 0xA0U
 #else
 #error "don't know instruction code base for architecure!"
 #endif
 #endif
+#define INSTBASE_CELL (INSTBASE<<(8*(sizeof(inst *)-sizeof(inst))))
+
 
 /* primitive instruction set */
 enum inst_set {
