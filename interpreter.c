@@ -70,14 +70,18 @@ const inst const square[]={retsub,mul,dup};
 const inst const ifquot[]={retsub,call,truefalse};
 const inst const unknown_token[]={retsub,emit,FIXNUM('X'),lit,emit,FIXNUM('_'),lit,emit,FIXNUM('X'),lit};
 
-static inst* find_by_name(char *name)
+static inst* find_by_name(char *fname)
 {
 IFTRACE(printf("looking for '%s' ", fname));
 	for(dict_entry* ptr=dict;ptr < dict+sizeof(dict);ptr+=ptr->name_length+2*sizeof(void*)){
-		if (strcmp(name,ptr->name)==0)
-			return ptr->address;
-	}
-	return NULL;
+	if (strcmp(fname,ptr->name)==0) {
+	IFTRACE(printf("found at: %#x\n",(cell)ptr->address));
+	return ptr->address;
+	} }
+IFTRACE(printf("not found\n"));
+return NULL;
+}
+
 static void printstack(cell * sp, cell * stack)
 {
 	printf("stack:");
