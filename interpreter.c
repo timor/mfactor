@@ -48,8 +48,9 @@ typedef struct dict_entry
 
 /* dictionary grows up*/
 	#define DICT(wname,addr)   {.address=(void *)addr,.name=wname,.name_length=sizeof(wname)}
+	#define PDICT(wname,addr) DICT(wname, ((intptr_t)addr << (8*(sizeof(inst*)-sizeof(inst)))))
 dict_entry dict[VM_DICT]={
-	DICT("dup",dup),
+	PDICT("dup",dup),
 	DICT("drop",drop),
 	DICT("+",add),
 	DICT("*",mul),
@@ -92,6 +93,7 @@ static void printstack(cell * sp, cell * stack)
 	printf("\n");
 }
 
+
 enum nesting_type {
 	nesting_quot,
 	nesting_list
@@ -125,6 +127,7 @@ void interpreter(inst * user_program)
 		IFTRACE(printstack(rsp,rstack));
 		i= (*pc--);
 		if (i >= INSTBASE) {          /* valid bytecode instruction */
+			dispatch:
 			IFTRACE(printf("i:%#x\n",i));
 			switch (i) {
 	#define UNOP(op) { push(psp,(op (pop(psp))));} break
@@ -189,10 +192,20 @@ void interpreter(inst * user_program)
 				push(psp,(cell)addr);
 			}
 				break;
-			case call:
-				push(rsp,(cell)pc);
-				pc=(inst*)pop(psp);
-				goto next; break;
+			case call: {
+				/* check if call is primitive, if yes, substitute execution, since call only
+					applies to quotations */
+				cell quot = pop(psp);
+				if (quot >= INSTBASE_CELL) {
+					IFTRACE(printf("calling prim\n"));
+					i=(quot>>(8*(sizeof(inst*)-sizeof(inst))));
+					goto dispatch;
+				} else {
+					IFTRACE(printf("calling inmem word\n"));
+					push(rsp,(cell)pc);
+					pc=(inst *)quot;
+					goto next;
+				}} break;
 			default:
 				printf("undefined instruction %x\n",*pc);
 				return;
