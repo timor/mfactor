@@ -42,7 +42,7 @@ typedef struct dict_entry
 
 /* empty ascending stack */
 	#define push(sp,val) (*sp=val,sp++)
-	#define pop(sp) (sp--,*sp)
+	#define pop(sp) ({sp--;*sp;})
 	#define peek_n(sp,nth) (*(sp-nth))
 	#define drop_n(sp,num) (sp-=num)
 
