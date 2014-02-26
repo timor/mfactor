@@ -28,6 +28,10 @@ typedef unsigned char inst;     /* it's byte code after all */
 #define VM_CSTACK 64
 #endif
 
+#ifndef TRACE_INTERPRETER
+#define TRACE_INTERPRETER 1
+#endif
+
 /* extern int putchar(int); */
 /* extern int getchar(int); */
 #ifndef INSTBASE
