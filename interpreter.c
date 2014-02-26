@@ -172,9 +172,9 @@ void interpreter(inst * user_program)
 					push(psp,cond ? true_cons : false_cons);
 				} break;
 			case token: {
-				char *token = read_token();
-				if (token) {
-					push(psp,(cell)token);
+				char *tok = read_token();
+				if (tok) {
+					push(psp,(cell)tok);
 				} else {
 					error();
 					return;
