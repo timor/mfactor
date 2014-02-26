@@ -2,8 +2,10 @@
 
 
 #include "interpreter.h"
+void SystemInit(void);
 
-void SystemInit() 
+#pragma weak SystemInit
+void SystemInit(void)
 {}
 
 int main(void)
@@ -20,7 +22,7 @@ int main(void)
   interpreter((inst*)TBEGIN(p4));
   interpreter(&p1[sizeof(p1)/sizeof(inst)-1]);
   do {
-    interpreter(NULL);
+	  interpreter(NULL);
   } while(1);
 }
 
