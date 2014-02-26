@@ -97,7 +97,7 @@ enum nesting_type {
 	nesting_list
 };
 
-static void error()
+static void error(void)
 {
 	printf("error\n");
 }
