@@ -111,8 +111,8 @@ void interpreter(inst * user_program)
 	static cell rstack[VM_RSTACK]={0};
 	static cell* rsp = &rstack[0];
 	/* catch stack */
-	static cell cstack[VM_CSTACK]={0};
-	static cell* csp = &cstack[0];
+	/* static cell cstack[VM_CSTACK]={0}; */
+	/* static cell* csp = &cstack[0]; */
 	/* TODO: name stack */
 	cell x;                       /* temporary value for operations */
 	inst program[]={retsub, CALL(ifquot), CALL(unknown_token), lit, find, token };
