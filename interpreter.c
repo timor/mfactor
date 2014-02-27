@@ -21,11 +21,16 @@
 	#include <stdio.h>
 	#include <stdbool.h>
 
-	#if TRACE_INTERPRETER
-		#define IFTRACE(expr) expr
+	#if TRACE_INTERPRETER >= 1
+		#define IFTRACE1(expr) expr
 	#else
-		#define IFTRACE(expr)
+		#define IFTRACE1(expr)
 	#endif
+#if TRACE_INTERPRETER >= 2
+#define IFTRACE2(expr) expr
+#else
+#define IFTRACE2(expr)
+#endif
 
 /* for storing the length of a stack item, note that this is ONLY for the stack, not for in-memory data */
 typedef unsigned char length;
@@ -73,14 +78,19 @@ const inst const unknown_token[]={retsub,emit,FIXNUM('X'),lit,emit,FIXNUM('_'),l
 
 static inst* find_by_name(char *fname)
 {
-IFTRACE(printf("looking for '%s' ", fname));
-	for(dict_entry* ptr=dict;ptr < dict+sizeof(dict);ptr+=ptr->name_length+2*sizeof(void*)){
-	if (strcmp(fname,ptr->name)==0) {
-	IFTRACE(printf("found at: %#x\n",(cell)ptr->address));
-	return ptr->address;
-	} }
-IFTRACE(printf("not found\n"));
-return NULL;
+  IFTRACE1(printf("looking for '%s' ", fname));
+  for(char * ptr=(char*)dict;
+      ptr < ((char*)dict+sizeof(dict));
+      ptr += (((dict_entry*)ptr)->name_length + sizeof(length) + sizeof(void*))) {
+    dict_entry *dptr = (dict_entry*)ptr;
+    IFTRACE1(printf("comparing to (%#x)%s",dptr->name,dptr->name));
+    if (strcmp(fname,dptr->name)==0) {
+      IFTRACE1(printf("found at: %#x\n",(cell)dptr->address));
+      return dptr->address;
+    } 
+  }
+  IFTRACE1(printf("not found\n"));
+  return NULL;
 }
 
 static void printstack(cell * sp, cell * stack)
@@ -123,12 +133,12 @@ void interpreter(inst * user_program)
 	while(1) {
 		inst i;
 	next:
-		IFTRACE(printstack(psp,pstack));
-		IFTRACE(printstack(rsp,rstack));
+		IFTRACE2(printstack(psp,pstack));
+		IFTRACE2(printstack(rsp,rstack));
 		i= (*pc--);
 		if (i >= INSTBASE) {          /* valid bytecode instruction */
 			dispatch:
-			IFTRACE(printf("i:%#x\n",i));
+			IFTRACE2(printf("i:%#x\n",i));
 			switch (i) {
 	#define UNOP(op) { push(psp,(op (pop(psp))));} break
 	#define BINOP(op) { x = pop(psp); push(psp,(pop(psp) op x));} break
@@ -197,11 +207,11 @@ void interpreter(inst * user_program)
 					applies to quotations */
 				cell quot = pop(psp);
 				if (quot >= INSTBASE_CELL) {
-					IFTRACE(printf("calling prim\n"));
+					IFTRACE2(printf("calling prim\n"));
 					i=(quot>>(8*(sizeof(inst*)-sizeof(inst))));
 					goto dispatch;
 				} else {
-					IFTRACE(printf("calling inmem word\n"));
+					IFTRACE2(printf("calling inmem word\n"));
 					push(rsp,(cell)pc);
 					pc=(inst *)quot;
 					goto next;
@@ -213,7 +223,7 @@ void interpreter(inst * user_program)
 		} else {                    /* memory, call thread  */
 			inst * skipped = (inst *)pc-(sizeof(void *)-1); /* adjust skip over memory address */
 			inst * next_word = *(inst **)(skipped+1); /* TODO platform-dependent */
-			IFTRACE(printf("w:%#x\n",(cell)next_word));
+			IFTRACE2(printf("w:%#x\n",(cell)next_word));
 			push(rsp,(cell)skipped);
 			pc=next_word;
 		}
