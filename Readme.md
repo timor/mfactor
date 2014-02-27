@@ -25,8 +25,9 @@
 - exception handling records
 
 ## retain stack ##
-- equivalent of 'return stack'
 - used for controlling nested sequence acquisition during entry
 - note that this means that input mode can be determined by looking at
   how many items are on the retain stack during input
 
+## return stack ##
+- saves return information as well as beginning of word information for tail recursion in interpreter mode

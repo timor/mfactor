@@ -7,9 +7,9 @@
 
 typedef unsigned char inst;     /* it's byte code after all */
 
-/* data memory (affects non-transient data)*/
+/* data memory (affects non-transient data) in cells*/
 #ifndef VM_MEM
-#define VM_MEM 8192
+#define VM_MEM 2048
 #endif
 /* dictionary size (affects number of named items)*/
 #ifndef VM_DICT
@@ -19,9 +19,13 @@ typedef unsigned char inst;     /* it's byte code after all */
 #ifndef VM_PSTACK
 #define VM_PSTACK 256
 #endif
-/* retain stack size (affects nesting of functions)*/
-#ifndef VM_RSTACK
-#define VM_RSTACK 64
+/* return stack size (affects nesting of functions)*/
+#ifndef VM_RETURNSTACK
+#define VM_RETURNSTACK 64
+#endif
+/* retain stack size (affects maximum amount of postponing data use) */
+#ifndef VM_RETAINSTACK
+#define VM_RETAINSTACK 16
 #endif
 /* catch stack size (affects nesting of exception handlers)*/
 #ifndef VM_CSTACK
@@ -51,7 +55,8 @@ enum inst_set {
   dup=INSTBASE,                     /* starting value architecture dependent!!! */
   eql, rot, drop, zero, one, two, add, mul, neg, sub, emit, receive, to_r, r_from, lit,
   name, qstart, qend, lstart, lend, retsub, truefalse, call, ref, swap, allot,
-  strstart, find, token, store_code, quit, stack_show
+  input_str, find, token, store_code, quit, stack_show, asl, div, mod, parsenum, nop, set, get,
+  input_list, input_quot, code_ptr, litbyte, bitand, bitor, bitxor, bitnot, recurse, pprint
 };
 
 const inst const square[3];
@@ -73,6 +78,7 @@ void interpreter(inst *);
 #endif
 
 #define CALL(thread) CELL(TBEGIN(thread))
+	#define PCALL(prim) CELL((((intptr_t)prim)<<(8*(sizeof(inst*)-sizeof(inst)))))
 /* breaks down scalar value for insertion into byte code stream */
 #define FIXNUM(x) CELL(x)
 

@@ -65,17 +65,17 @@ char * read_token()
 	char c;
 	char *tokptr=token;
 	skip_whitespace();
-    bool nosep_token_found=false;
-    while (!whitespacep(c=read_char())) {
-      *tokptr++=c;
-      if (c == '"') {
-        nosep_token_found = true;
-        break;
-      }
-    }
+	bool nosep_token_found=false;
+	while (!whitespacep(c=read_char())) {
+		*tokptr++=c;
+		if (c == '"') {
+			nosep_token_found = true;
+			break;
+		}
+	}
 	*tokptr++=0;
-    if (!nosep_token_found)
-      if (!unread_char(c))
-        return NULL;
-    return token;
+	if (!nosep_token_found)
+		if (!unread_char(c))
+			return NULL;
+	return token;
 }

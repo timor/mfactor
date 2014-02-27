@@ -39,58 +39,93 @@ typedef unsigned char length;
 /* TODO: ensure correct scanning direction so that skipping over entries stays trivial */
 typedef struct dict_entry
 {
-	void * address;               /* pointer into memory */
+	void * address;					/* pointer into memory */
 	length name_length;
 	char name[];
-}  __attribute__((packed)) dict_entry;
+}	__attribute__((packed)) dict_entry;
 /* TODO: doc quirk that primitive names are null-terminated */
 
+typedef struct return_entry {
+	inst * return_address;
+	inst * current_call;
+} return_entry;
+
 /* dictionary grows up*/
-	#define DICT(wname,addr)   {.address=(void *)addr,.name=wname,.name_length=sizeof(wname)}
+	#define DICT(wname,addr)	{.address=(void *)addr,.name=wname,.name_length=sizeof(wname)}
 	#define PDICT(wname,addr) DICT(wname, ((intptr_t)addr << (8*(sizeof(inst*)-sizeof(inst)))))
 #define TDICT(wname,word) DICT(wname,TBEGIN(word))
 dict_entry dict[VM_DICT] __attribute__((aligned(1))) = {
 	PDICT("dup",dup),
 	PDICT("drop",drop),
+	PDICT(".",pprint),
 	PDICT("+",add),
 	PDICT("*",mul),
-    PDICT("0",zero),
-    PDICT("1",one),
-    PDICT("2",two),
-	PDICT("}",lend),
-	PDICT("{",lstart),
-	PDICT("[",qstart),
-	PDICT("]",qend),
+	PDICT("0",zero),
+	PDICT("1",one),
+	PDICT("2",two),
+	/* PDICT("}",lend), */
+	PDICT("{",input_list),
+	PDICT("[",input_quot),
+	/* PDICT("]",qend), */
 	PDICT("neg",neg),
 	PDICT("-",sub),
 	PDICT("?",truefalse),
 	PDICT("allot",allot),
-	PDICT("\"",strstart),
-    PDICT("st",stack_show),
+	PDICT("recurse",recurse),
+	PDICT("\"",input_str),
+	PDICT("st",stack_show),
+	PDICT("shift",asl),
+	PDICT("/",div),
+	PDICT("mod",mod),
+	PDICT("swap",swap),
+	PDICT("set",set),
+	PDICT("get",get),
+	PDICT("bitand",bitand),
+	PDICT("bitor",bitor),
+	PDICT("bitxor",bitxor),
+	PDICT("bitnot",bitnot),
 	TDICT("if",ifquot),
 	TDICT("square",square),
 };
 
 const inst const square[]={retsub,mul,dup};
+/* (cond [true ...] [false ...] -- ... ) */
 const inst const ifquot[]={retsub,call,truefalse};
-const inst const unknown_token[]={retsub,emit,FIXNUM('X'),lit,emit,FIXNUM('_'),lit,emit,FIXNUM('X'),lit};
+/* ( trash -- )  */
+const inst const display_notfound[]={retsub,emit,'\n', litbyte, emit,'X',litbyte,emit,'_',litbyte,emit,'X',litbyte, drop};
+/* ( addr -- bool )  */
 
+/* returns same address again if not found*/
 static inst* find_by_name(char *fname)
 {
   IFTRACE1(printf("looking for '%s' ", fname));
   for(char * ptr=(char*)dict;
-      ptr < ((char*)dict+sizeof(dict));
-      ptr += (((dict_entry*)ptr)->name_length + sizeof(length) + sizeof(void*))) {
-    dict_entry *dptr = (dict_entry*)ptr;
-    IFTRACE1(printf("comparing to (%#x)%s",dptr->name,dptr->name));
-    if (strcmp(fname,dptr->name)==0) {
-      IFTRACE1(printf("found at: %#x\n",(cell)dptr->address));
-      return dptr->address;
-    } 
+		(ptr < ((char*)dict+sizeof(dict)))&&(((dict_entry*)ptr)->name_length > 0);
+		ptr += (((dict_entry*)ptr)->name_length + sizeof(length) + sizeof(void*))) {
+	 dict_entry *dptr = (dict_entry*)ptr;
+	 IFTRACE1(printf("comparing to (%#x)%s",(intptr_t)dptr->name,dptr->name));
+	 if (strcmp(fname,dptr->name)==0) {
+		IFTRACE1(printf("found at: %#x\n",(cell)dptr->address));
+		return dptr->address;
+	 }
   }
   IFTRACE1(printf("not found\n"));
-  return NULL;
+  return (inst *) NULL;
 }
+
+	static bool parse_number(char *str, cell * number){
+		int num;
+		IFTRACE1(printf("trying to read '%s' as number...",str));
+		unsigned int read = sscanf(str,"%i",&num);
+		if (read == 1) {
+			IFTRACE1(printf("got %d\n",num));
+			*number=(cell)num;
+			return true;
+		} else {
+			IFTRACE1(printf("failed\n"));
+			return false;
+		}
+	}
 
 static void printstack(cell * sp, cell * stack)
 {
@@ -101,12 +136,34 @@ static void printstack(cell * sp, cell * stack)
 		}
 	printf("\n");
 }
+static void print_return_stack(return_entry * sp, return_entry * stack)
+{
+	printf("stack:");
+	for(return_entry* ptr = sp-1;ptr >= stack;ptr--)
+		{
+			printf(" {%#x->%#x}",(intptr_t)ptr->current_call,(intptr_t)ptr->return_address);
+		}
+	printf("\n");
+}
 
 
 enum nesting_type {
 	nesting_quot,
 	nesting_list
 };
+
+/* skip over instruction stream until a certain one */
+/* TODO: support nesting, since this is akin to quoting */
+static inst * skip_instruction(inst* pc,inst until){
+	inst *ptr=pc;
+	for(inst i= *ptr; i != until; i=*(--ptr)) {
+		IFTRACE2(printf("skipping over %#x, ",i));
+		if (i < INSTBASE)
+			ptr-=(sizeof(inst*)-1);
+	}
+	IFTRACE2(printf("skipped until %#x\n",(intptr_t)ptr));
+	return ptr;
+}
 
 static void error(void)
 {
@@ -119,34 +176,44 @@ static void error(void)
 	#define peek_n(sp,nth) (*(sp-nth))
 	#define drop_n(sp,num) (sp-=num)
 
+static cell memory[VM_MEM];
+
 void interpreter(inst * user_program)
 {
 	/* parameter stack */
 	static cell pstack[VM_PSTACK]={0};
 	static cell* psp = &pstack[0];
-	/* retain / compile control stack */
-	static cell rstack[VM_RSTACK]={0};
-	static cell* rsp = &rstack[0];
+	/* return stack, not preserved across calls */
+	return_entry returnstack[VM_RETURNSTACK]={{0}};
+	return_entry* returnsp = &returnstack[0];
+	/* retain stack */
+	static cell retainstack[VM_RETAINSTACK]={0};
+	static cell* retainsp =&retainstack[0];
 	/* catch stack */
 	/* static cell cstack[VM_CSTACK]={0}; */
 	/* static cell* csp = &cstack[0]; */
 	/* TODO: name stack */
-	cell x;                       /* temporary value for operations */
-	inst program[]={quit, CALL(ifquot), CALL(unknown_token), lit, find, token };
+	static cell* CP=memory;
+	cell x;								/* temporary value for operations */
+	inst unknown_token[]={retsub, CALL(ifquot), CALL(display_notfound), lit, PCALL(nop), lit, parsenum};
+	inst program[]={quit, CALL(ifquot), CALL(unknown_token), lit, PCALL(call), lit, find, token };
 	inst *pc = user_program ? : &program[sizeof(program)/sizeof(inst)-1];
+	return_entry start_entry = {.return_address=NULL,.current_call = pc};
+	push(returnsp,start_entry);
 
 	while(1) {
 		inst i;
 	next:
 		IFTRACE2(printstack(psp,pstack));
-		IFTRACE2(printstack(rsp,rstack));
+		IFTRACE2(printstack(retainsp,retainstack));
+		IFTRACE2(print_return_stack(returnsp,returnstack));
 		i= (*pc--);
-		if (i >= INSTBASE) {          /* valid bytecode instruction */
+		if (i >= INSTBASE) {				/* valid bytecode instruction */
 			dispatch:
 			IFTRACE2(printf("i:%#x\n",i));
 			switch (i) {
 #define UNOP(op) { x=(op (pop(psp))); push(psp,x);} break
-#define BINOP(op) { x = pop(psp); cell y = pop(psp); push(psp, x op y);} break
+#define BINOP(op) { x = pop(psp); cell y = pop(psp); push(psp, y op x);} break
 			case drop: drop_n(psp,1); break;
 			case zero: push(psp,0); break;
 			case one: push(psp,1); break;
@@ -155,17 +222,34 @@ void interpreter(inst * user_program)
 			case mul: BINOP(*);
 			case sub: BINOP(-);
 			case neg: UNOP(-);
+			case asl: BINOP(<<);
+			case div: BINOP(/);
+			case mod: BINOP(%);
+			case bitand: BINOP(&);
+			case bitor: BINOP(|);
+			case bitxor: BINOP(^);
+			case bitnot: UNOP(~);
 			case dup:
 				push(psp, peek_n(psp,1)); break;
-			case ref:                 /* only gc knows a difference */
+			case code_ptr:
+				push(psp,(cell)&CP);
+				break;
+			case ref:					  /* only gc knows a difference */
 			case lit: {
 				cell y=*((cell*)(pc-(sizeof(cell)-sizeof(inst))));
 				push(psp,y);
 				pc-=sizeof(cell);
 			} break;
+			case litbyte:
+				x=(cell)(*(pc--));
+				push(psp, x);
+				break;
+			case pprint:
+printf("%#x",pop(psp));
+break;
 			case emit:
 				putchar(pop(psp));
-				fflush(stdout);         /* TODO remove eventually */
+				fflush(stdout);			/* TODO remove eventually */
 				break;
 			case receive:
 				push(psp,getchar()); break;
@@ -173,8 +257,11 @@ void interpreter(inst * user_program)
 			case quit:
 				printf("bye!\n");
 				return;
-			case retsub:
-				pc=(inst*) pop(rsp); break;
+ case qend:
+ case retsub: {
+	 return_entry e = pop(returnsp);
+	 pc=e.return_address;
+ } break;
 			case eql: BINOP(==);
 			case swap: {
 				x=pop(psp);
@@ -183,10 +270,11 @@ void interpreter(inst * user_program)
 				push(psp,y);
 			} break;
 			case to_r:
-				push(rsp,pop(psp));break;
+				push(retainsp,pop(psp));break;
 			case r_from:
-				push(psp,pop(rsp));break;
-			case truefalse:           /* this one assumes the most about the stack right now */
+				push(psp,pop(retainsp));break;
+			/* ( cond true false -- true/false ) */
+			case truefalse:			  /* this one assumes the most about the stack right now */
 				{
 					cell false_cons = pop(psp);
 					cell true_cons = pop(psp);
@@ -201,10 +289,12 @@ void interpreter(inst * user_program)
 					error();
 					return;
 				}} break;
+				/* (str -- foundp addr) */
 			case find: {
-				inst * addr=find_by_name((char*)pop(psp));
+				cell orig=pop(psp);
+				inst * addr=find_by_name((char*)orig);
+				push(psp,addr==NULL ? orig : (cell)addr);
 				push(psp,addr==NULL ? false : true);
-				push(psp,(cell)addr);
 			}
 				break;
 			case call: {
@@ -217,25 +307,66 @@ void interpreter(inst * user_program)
 					goto dispatch;
 				} else {
 					IFTRACE2(printf("calling inmem word\n"));
-					push(rsp,(cell)pc);
+					return_entry e = {.return_address = pc, .current_call=(inst*) quot};
+					push(returnsp,e);
 					pc=(inst *)quot;
 					goto next;
 				}} break;
-            case stack_show:
-              printf("\np");
-              printstack(psp,pstack);
-              printf("r");
-              printstack(rsp,rstack);
-              break;
+				case stack_show:
+				  printf("\np");
+				  printstack(psp,pstack);
+				  printf("retain");
+				  printstack(retainsp,retainstack);
+				  printf("return");
+				  print_return_stack(returnsp,returnstack);
+				  break;
+				/* case tuck: { */
+			/* 	x= pop(psp); */
+			/* 	cell y= pop(psp); */
+			/* 	push(psp,x); */
+			/* 	push(psp,y); */
+			/* 	push(psp,x); */
+			/* } */
+
+			/* (str -- num/str bool) */
+			case parsenum: {
+				char *str = (char *)pop(psp);
+				cell num = 0xa5a5a5a5;
+				bool success=parse_number(str,&num);
+				push(psp,success ? num : (cell) str);
+				push(psp,(cell)success);
+			} break;
+			case nop:
+			break;
+/* ( value address -- ) */
+			case set:
+				x=pop(psp);
+				*((cell*)x)=(pop(psp));
+				break;
+			 case get:
+				x = *((cell *)(pop(psp)));
+				push(psp,x);
+				break;
+				/* skip over to end of quotation , leave starting address on parameter stack*/
+			case qstart:
+				IFTRACE2(printf("qstart saving #%x\n",(intptr_t)pc));
+				push(psp,(cell)pc);
+				pc=skip_instruction(pc,qend);
+				pc-=1;
+				break;
+ case recurse:
+			pc=(returnsp-1)->current_call;
+break;
 			default:
-				printf("unimplemented instruction %#x\n",*pc);
+				printf("unimplemented instruction %#x\n",i);
 				return;
 			}
-		} else {                    /* memory, call thread  */
+		} else {							 /* memory, call thread	 */
 			inst * skipped = (inst *)pc-(sizeof(void *)-1); /* adjust skip over memory address */
 			inst * next_word = *(inst **)(skipped+1); /* TODO platform-dependent */
 			IFTRACE2(printf("w:%#x\n",(cell)next_word));
-			push(rsp,(cell)skipped);
+			return_entry e = {.return_address = skipped, .current_call=next_word};
+			push(returnsp,e);
 			pc=next_word;
 		}
 	}
