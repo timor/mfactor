@@ -29,7 +29,7 @@ typedef unsigned char inst;     /* it's byte code after all */
 #endif
 
 #ifndef TRACE_INTERPRETER
-#define TRACE_INTERPRETER 1
+#define TRACE_INTERPRETER 0
 #endif
 
 /* extern int putchar(int); */
