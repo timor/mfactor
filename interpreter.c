@@ -42,29 +42,33 @@ typedef struct dict_entry
 	void * address;               /* pointer into memory */
 	length name_length;
 	char name[];
-} dict_entry;
+}  __attribute__((packed)) dict_entry;
 /* TODO: doc quirk that primitive names are null-terminated */
 
 /* dictionary grows up*/
 	#define DICT(wname,addr)   {.address=(void *)addr,.name=wname,.name_length=sizeof(wname)}
 	#define PDICT(wname,addr) DICT(wname, ((intptr_t)addr << (8*(sizeof(inst*)-sizeof(inst)))))
-dict_entry dict[VM_DICT]={
+#define TDICT(wname,word) DICT(wname,TBEGIN(word))
+dict_entry dict[VM_DICT] __attribute__((aligned(1))) = {
 	PDICT("dup",dup),
-	DICT("drop",drop),
-	DICT("+",add),
-	DICT("*",mul),
-	DICT("}",lend),
-	DICT("{",lstart),
-	DICT("[",qstart),
-	DICT("]",qend),
-	DICT("neg",neg),
-	DICT("-",sub),
-	DICT("?",truefalse),
-	DICT("allot",allot),
-	DICT("\"",strstart),
-	DICT("if",TBEGIN(ifquot)),
-	DICT("square",TBEGIN(square)),
+	PDICT("drop",drop),
+	PDICT("+",add),
+	PDICT("*",mul),
+    PDICT("0",zero),
+    PDICT("1",one),
+    PDICT("2",two),
+	PDICT("}",lend),
+	PDICT("{",lstart),
+	PDICT("[",qstart),
+	PDICT("]",qend),
+	PDICT("neg",neg),
+	PDICT("-",sub),
+	PDICT("?",truefalse),
+	PDICT("allot",allot),
+	PDICT("\"",strstart),
     PDICT("st",stack_show),
+	TDICT("if",ifquot),
+	TDICT("square",square),
 };
 
 const inst const square[]={retsub,mul,dup};
