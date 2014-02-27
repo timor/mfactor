@@ -49,11 +49,9 @@ typedef unsigned char inst;     /* it's byte code after all */
 /* primitive instruction set */
 enum inst_set {
   dup=INSTBASE,                     /* starting value architecture dependent!!! */
-  eql,
-  rot, drop, zero, one, two, add, mul, neg, sub, emit, receive, to_r, r_from, lit,
+  eql, rot, drop, zero, one, two, add, mul, neg, sub, emit, receive, to_r, r_from, lit,
   name, qstart, qend, lstart, lend, retsub, truefalse, call, ref, swap, allot,
-  strstart, find, token, store_code,
-  quit
+  strstart, find, token, store_code, quit, stack_show
 };
 
 const inst const square[3];

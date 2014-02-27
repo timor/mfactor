@@ -70,6 +70,7 @@ dict_entry dict[VM_DICT]={
 	DICT("\"",strstart),
 	DICT("if",TBEGIN(ifquot)),
 	DICT("square",TBEGIN(square)),
+    PDICT("st",stack_show),
 };
 
 const inst const square[]={retsub,mul,dup};
@@ -216,6 +217,12 @@ void interpreter(inst * user_program)
 					pc=(inst *)quot;
 					goto next;
 				}} break;
+            case stack_show:
+              printf("\np");
+              printstack(psp,pstack);
+              printf("r");
+              printstack(rsp,rstack);
+              break;
 			default:
 				printf("unimplemented instruction %#x\n",*pc);
 				return;
