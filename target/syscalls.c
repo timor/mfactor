@@ -29,9 +29,13 @@ int _lseek(int file, int ptr, int dir) {
 int _open(const char *name, int flags, int mode) {
 return -1;
 }
- 
+
+int _write(int,char *, int);
+
+
 int _read(int file, char *ptr, int len) {
   int todo;
+  char *orig=ptr;
   if(len == 0)
     return 0;
   while(UART_FR(UART0_ADDR) & UART_FR_RXFE);
@@ -40,6 +44,8 @@ int _read(int file, char *ptr, int len) {
     if(UART_FR(UART0_ADDR) & UART_FR_RXFE) { break; }
     *ptr++ = UART_DR(UART0_ADDR);
   }
+  /* serial echo */
+  _write(0,orig,len);
   return todo;
 }
  
