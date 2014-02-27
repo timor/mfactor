@@ -217,7 +217,7 @@ void interpreter(inst * user_program)
 					goto next;
 				}} break;
 			default:
-				printf("undefined instruction %x\n",*pc);
+				printf("unimplemented instruction %#x\n",*pc);
 				return;
 			}
 		} else {                    /* memory, call thread  */
