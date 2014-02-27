@@ -45,12 +45,6 @@ typedef struct dict_entry
 } dict_entry;
 /* TODO: doc quirk that primitive names are null-terminated */
 
-/* empty ascending stack */
-	#define push(sp,val) (*sp=val,sp++)
-	#define pop(sp) ({sp--;*sp;})
-	#define peek_n(sp,nth) (*(sp-nth))
-	#define drop_n(sp,num) (sp-=num)
-
 /* dictionary grows up*/
 	#define DICT(wname,addr)   {.address=(void *)addr,.name=wname,.name_length=sizeof(wname)}
 	#define PDICT(wname,addr) DICT(wname, ((intptr_t)addr << (8*(sizeof(inst*)-sizeof(inst)))))
@@ -115,6 +109,12 @@ static void error(void)
 	printf("error\n");
 }
 
+/* empty ascending stack */
+	#define push(sp,val) ({*sp=val;sp++;})
+	#define pop(sp) ({--sp;*sp;})
+	#define peek_n(sp,nth) (*(sp-nth))
+	#define drop_n(sp,num) (sp-=num)
+
 void interpreter(inst * user_program)
 {
 	/* parameter stack */
@@ -141,8 +141,8 @@ void interpreter(inst * user_program)
 			dispatch:
 			IFTRACE2(printf("i:%#x\n",i));
 			switch (i) {
-	#define UNOP(op) { push(psp,(op (pop(psp))));} break
-	#define BINOP(op) { x = pop(psp); push(psp,(pop(psp) op x));} break
+#define UNOP(op) { x=(op (pop(psp))); push(psp,x);} break
+#define BINOP(op) { x = pop(psp); cell y = pop(psp); push(psp, x op y);} break
 			case drop: drop_n(psp,1); break;
 			case zero: push(psp,0); break;
 			case one: push(psp,1); break;
