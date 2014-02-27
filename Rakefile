@@ -22,6 +22,7 @@ else
   CFLAGS << " -mcpu=cortex-m3 -D__START=main -mthumb"
   CFLAGS << " -v" if ENV['VERBOSE']
   CFLAGS << " -DCPU_LPC4337"
+  CFLAGS << " -DTRACE_INTERPRETER=0"
   CC="arm-none-eabi-gcc"
   GDB="arm-none-eabi-gdb"
   OBJDUMP="arm-none-eabi-objdump"
