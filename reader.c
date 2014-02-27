@@ -59,7 +59,7 @@ static unsigned int skip_whitespace(void)
 	return skipped;
 }
 
-/* exception for " */
+/* exception for double-quote */
 char * read_token()
 {
 	char c;
