@@ -30,11 +30,12 @@ else
 end
   
 hfiles = FileList['*.h']
-cfiles=FileList['*.[cCsS]'].each do |c|
-  file c.ext('o') => c
-end
+cfiles=FileList['*.[cCsS]']
 unless hostp
   cfiles += FileList["target/*.[cCsS]"]
+end
+cfiles.each do |c|
+  file c.ext('o') => c
 end
 ofiles=cfiles.ext('.o')
 CLEAN.include ofiles
