@@ -73,7 +73,7 @@ if hostp
 end
 
 task :sim => PROG do 
-  sh "qemu-system-arm -cpu cortex-m3 -kernel #{PROG} -gdb tcp::1234 -M lm3s6965evb -serial stdio -nographic -monitor null"
+  sh "qemu-system-arm -cpu cortex-m3 -kernel #{PROG} -gdb tcp::1234 -M lm3s6965evb -serial pty -nographic"
 end
 
 CLEAN.include PROG.ext('lst')
