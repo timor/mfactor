@@ -1,0 +1,49 @@
+dup:
+eql: "="
+drop:
+zero: "0"
+one: "1"
+two: "2"
+add: "+"
+mul: "*"
+neg:
+sub: "-"
+emit:
+receive:
+to_r: ">r"
+r_from: "r>"
+lit: :private
+name:
+qstart: :private
+qend: :private
+lstart: :private
+lend: :private
+retsub: :private
+truefalse: "?"
+call:
+ref: :private
+swap:
+allot:
+input_str: '"'
+find:
+token:
+store_tos: ","
+store_ptr: :private
+quit:
+stack_show: "st"
+asl: "shift"
+div: "/"
+mod:
+parsenum: :private
+nop:
+set:
+get:
+input_list: "{"
+input_quot: "["
+litbyte: :private
+bitand:
+bitor:
+bitxor:
+bitnot:
+recurse:
+pprint: "."

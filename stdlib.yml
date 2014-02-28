@@ -1,0 +1,10 @@
+square: [dup, mul]
+ifquot: [truefalse, call]
+bad_input: [drop, blit, '\n', blit, 'X', dup, blit, '_', swap, emit, emit, emit, emit]
+# ( x y -- y )
+nip: [ swap, drop ]
+# ( x quot -- x)
+dip: [ swap, to_r, call, r_from ]
+# ( pred:( ..a -- ..b ?) body:( ..b -- ..a) -- ..b)
+while: [ 
+colon: [ ]

@@ -101,3 +101,8 @@ GDBEND
   args += " -x #{script.path}"
   sh "#{GDB} #{args} #{PROG}"
 end
+
+task :inst do
+  require 'yaml'
+  iset=YAML.load_file("instruction-set.yml")
+end
