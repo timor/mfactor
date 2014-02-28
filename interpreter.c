@@ -92,7 +92,7 @@ const inst const square[]={retsub,mul,dup};
 /* (cond [true ...] [false ...] -- ... ) */
 const inst const ifquot[]={retsub,call,truefalse};
 /* ( trash -- )  */
-const inst const display_notfound[]={retsub,emit,'\n', litbyte, emit,'X',litbyte,emit,'_',litbyte,emit,'X',litbyte, drop};
+const inst const display_notfound[]={retsub,emit,'\n', blit, emit,'X',blit,emit,'_',blit,emit,'X',blit, drop};
 /* ( addr -- bool )  */
 
 /* returns same address again if not found*/
@@ -243,7 +243,7 @@ void interpreter(inst * user_program)
 			case bitnot: UNOP(~);
 			case dup:
 				ppush(peek_n(psp,1)); break;
-			case code_ptr:
+			case store_ptr:
 				ppush((cell)&CP);
 				break;
 			case ref:					  /* only gc knows a difference */
@@ -252,7 +252,7 @@ void interpreter(inst * user_program)
 				ppush(y);
 				pc-=sizeof(cell);
 			} break;
-			case litbyte:
+			case blit:
 				x=(cell)(*(pc--));
 				ppush(x);
 				break;

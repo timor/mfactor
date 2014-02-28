@@ -55,8 +55,9 @@ enum inst_set {
   dup=INSTBASE,                     /* starting value architecture dependent!!! */
   eql, rot, drop, zero, one, two, add, mul, neg, sub, emit, receive, to_r, r_from, lit,
   name, qstart, qend, lstart, lend, retsub, truefalse, call, ref, swap, allot,
-  input_str, find, token, store_code, quit, stack_show, asl, div, mod, parsenum, nop, set, get,
-  input_list, input_quot, code_ptr, litbyte, bitand, bitor, bitxor, bitnot, recurse, pprint
+  input_str, find, token, store_tos, store_ptr,quit, stack_show, asl, div, mod,
+  parsenum, nop, set, get, input_list, input_quot, blit,
+  bitand, bitor, bitxor, bitnot, recurse, pprint
 };
 
 const inst const square[3];
