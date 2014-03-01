@@ -40,7 +40,12 @@ end
 ofiles=cfiles.ext('.o')
 CLEAN.include ofiles
 
+BUILD="build"
+directory BUILD
+
 rule '.o' => '.c' do |t|
+  tname = t.source.pathmap("#{BUILD}/%n.i")
+  sh "#{CC} #{CFLAGS} #{t.source} -E -o #{tname}"
   sh "#{CC} #{CFLAGS} #{t.source} -c -o #{t.name}"
 end
 
@@ -48,7 +53,7 @@ rule '.o' => '.S' do |t|
   sh "#{CC} #{CFLAGS} #{t.source} -c -o #{t.name}"
 end
 
-ofiles.each{|o| file o => ["Rakefile"]+hfiles}
+ofiles.each{|o| file o => ["Rakefile",BUILD]+hfiles}
 
 unless hostp
   file PROG => [LDSCRIPT]
