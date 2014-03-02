@@ -6,5 +6,5 @@ nip: [ swap, drop ]
 # ( x quot -- x)
 dip: [ swap, to_r, call, r_from ]
 # ( pred:( ..a -- ..b ?) body:( ..b -- ..a) -- ..b)
-while: [ 
+while: [ ]
 colon: [ ]

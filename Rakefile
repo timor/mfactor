@@ -12,10 +12,12 @@ CFLAGS= "-O#{OPT} -std=gnu99 -g "
 LDFLAGS= "-O#{OPT} -std=gnu99 -g "
 LDSCRIPT="gcc.ld"
 if hostp
+  INSTBASE=0x80
   CC="gcc"
   GDB="gdb"
   LDFLAGS << "-Wl,-Map=#{MAP}"
 else
+  INSTBASE=0xa0
   LDFLAGS << " -Wl,-Map=#{MAP} --specs=nano.specs -lc -lnosys -flto -Wl,--gc-sections -Wl,--cref -nostartfiles -mcpu=cortex-m3 -mthumb"
   LDFLAGS << " -v" if ENV['VERBOSE']
   CFLAGS << " -ffunction-sections -fdata-sections"
@@ -109,5 +111,21 @@ end
 
 task :inst do
   require 'yaml'
-  iset=YAML.load_file("instruction-set.yml")
+  @iset=YAML.load_file("instruction-set.yml")
+  def inum(n)
+    i=@iset.keys.index(n)
+    puts "unkown instruction: #{n}->#{i}" unless i
+    INSTBASE+i
+  end
+  require 'yaml'
+  lib=YAML.load_file("stdlib.yml")
+  File.open("stdlib.c","w") do |f|
+    lib.each do |name, thread|
+      f.write <<END
+inst #{name}[] {
+END
+      f.write(thread.reverse.push("retsub").map{|word| inum(word)}.join(","))
+      f.write("};\n")
+    end
+  end
 end
