@@ -109,23 +109,52 @@ GDBEND
   sh "#{GDB} #{args} #{PROG}"
 end
 
-task :inst do
+task :iset => "instructionset.yml" do
   require 'yaml'
-  @iset=YAML.load_file("instruction-set.yml")
-  def inum(n)
-    i=@iset.keys.index(n)
-    puts "unkown instruction: #{n}->#{i}" unless i
-    INSTBASE+i
-  end
-  require 'yaml'
-  lib=YAML.load_file("stdlib.yml")
-  File.open("stdlib.c","w") do |f|
-    lib.each do |name, thread|
-      f.write <<END
-inst #{name}[] {
+  YAML::ENGINE.yamler = 'syck'
+  @iset=YAML.load_file("instructionset.yml")
+  File.open("inst_enum.h","w") do |f|
+    f.puts "enum inst_set {\n"
+    i=INSTBASE
+    @iset.each do |mnem,name| 
+      name ||= mnem
+      f.puts <<END
+/* #{name} */
+#{mnem} = 0x#{i.to_s(16)},
+
 END
-      f.write(thread.reverse.push("retsub").map{|word| inum(word)}.join(","))
-      f.write("};\n")
+      i+=1
+    end
+    f.puts "};"
+  end
+end
+
+def ymlforth(infile)
+  Rake::Task["iset"].invoke
+  def getinst(n)
+    case n
+    when Symbol
+      i=@iset.keys.index(n.to_s)
+      # i ? (INSTBASE+i) : "CALL(#{n.to_s})"
+      i ? n : "CALL(#{n.to_s})"
+    when String
+      n.inspect
+    else
+      puts "unknown word or literal: #{n}"
     end
   end
+  require 'yaml'
+  lib=YAML.load_file(infile.ext("yml"))
+  puts lib
+  File.open((File.basename(infile,".*")+"_code").ext("c"),"w") do |f|
+    lib.each do |name, thread|
+      f.write "inst #{name}[] {"
+      f.write(thread.reverse.push(:retsub).map{|word| getinst(word)}.join(", "))
+      f.write("};\n\n")
+    end
+  end
+end
+
+task :inst do
+  ymlforth("stdlib")
 end
