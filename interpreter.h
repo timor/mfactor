@@ -51,14 +51,15 @@ typedef unsigned char inst;     /* it's byte code after all */
 
 
 /* primitive instruction set */
-enum inst_set {
-  dup=INSTBASE,                     /* starting value architecture dependent!!! */
-  eql, rot, drop, zero, one, two, add, mul, neg, sub, emit, receive, to_r, r_from, lit,
-  name, qstart, qend, lstart, lend, retsub, truefalse, call, ref, swap, allot,
-  input_str, find, token, store_tos, store_ptr,quit, stack_show, asl, div, mod,
-  parsenum, nop, set, get, input_list, input_quot, blit,
-  bitand, bitor, bitxor, bitnot, recurse, pprint
-};
+/* enum inst_set { */
+/*   dup=INSTBASE,                     /\* starting value architecture dependent!!! *\/ */
+/*   eql, rot, drop, zero, one, two, add, mul, neg, sub, emit, receive, to_r, r_from, lit, */
+/*   name, qstart, qend, lstart, lend, retsub, truefalse, call, ref, swap, allot, */
+/*   input_str, find, token, store_tos, store_ptr,quit, stack_show, asl, div, mod, */
+/*   parsenum, nop, set, get, input_list, input_quot, blit, */
+/*   bitand, bitor, bitxor, bitnot, recurse, pprint */
+/* }; */
+#include "inst_enum.h"
 
 const inst const square[3];
 const inst const ifquot[3];
