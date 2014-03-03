@@ -86,7 +86,7 @@ dict_entry dict[VM_DICT] __attribute__((aligned(1))) = {
 	PDICT("bitnot",bitnot),
 	TDICT("if",ifquot),
 	TDICT("square",square),
-    /* #include "stdlib.dict.h" */
+    /* #include "generated/stdlib.dict.h" */
 };
 
 const inst const square[]={retsub,mul,dup};

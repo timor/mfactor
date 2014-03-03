@@ -59,7 +59,7 @@ typedef unsigned char inst;     /* it's byte code after all */
 /*   parsenum, nop, set, get, input_list, input_quot, blit, */
 /*   bitand, bitor, bitxor, bitnot, recurse, pprint */
 /* }; */
-#include "inst_enum.h"
+#include "generated/inst_enum.h"
 
 const inst const square[3];
 const inst const ifquot[3];

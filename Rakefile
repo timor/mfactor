@@ -109,11 +109,12 @@ GDBEND
   sh "#{GDB} #{args} #{PROG}"
 end
 
-task :iset => "instructionset.yml" do
+directory "generated"
+task :iset => ["instructionset.yml","generated"] do
   require 'yaml'
   YAML::ENGINE.yamler = 'syck'
   @iset=YAML.load_file("instructionset.yml")
-  File.open("inst_enum.h","w") do |f|
+  File.open("generated/inst_enum.h","w") do |f|
     f.puts "enum inst_set {\n"
     i=INSTBASE
     @iset.each do |mnem,name| 
@@ -145,14 +146,14 @@ def ymlforth(infile)
   end
   require 'yaml'
   lib=YAML.load_file(infile.ext("yml"))
-  File.open((File.basename(infile,".*")+".code.x").ext("h"),"w") do |f|
+  File.open(("generated/"+File.basename(infile,".*")+".code.x").ext("h"),"w") do |f|
     lib.each do |name, thread|
       f.write "inst #{name}[] {"
       f.write(thread.reverse.push(:retsub).map{|word| getinst(word)}.join(", "))
       f.write("};\n\n")
     end
   end
-  File.open((File.basename(infile,".*")+".dict.x").ext("h"),"w") do |f|
+  File.open(("generated/"+File.basename(infile,".*")+".dict.x").ext("h"),"w") do |f|
     lib.each do |name, thread|
       f.puts("TDICT(#{name.inspect},#{name}),\n")
     end
