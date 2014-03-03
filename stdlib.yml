@@ -9,5 +9,5 @@ nip: [ :swap, :drop ]
 dip: [ :swap, :to_r, :call, :r_from ]
 
 # ( pred:( ..a -- ..b ?) body:( ..b -- ..a) -- ..b)
-while: [ ]
+whilequot: [ ]
 colon: [ ]

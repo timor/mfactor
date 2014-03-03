@@ -145,16 +145,23 @@ def ymlforth(infile)
   end
   require 'yaml'
   lib=YAML.load_file(infile.ext("yml"))
-  puts lib
-  File.open((File.basename(infile,".*")+"_code").ext("c"),"w") do |f|
+  File.open((File.basename(infile,".*")+".code.x").ext("h"),"w") do |f|
     lib.each do |name, thread|
       f.write "inst #{name}[] {"
       f.write(thread.reverse.push(:retsub).map{|word| getinst(word)}.join(", "))
       f.write("};\n\n")
     end
   end
+  File.open((File.basename(infile,".*")+".dict.x").ext("h"),"w") do |f|
+    lib.each do |name, thread|
+      f.puts("TDICT(#{name.inspect},#{name}),\n")
+    end
+  end
 end
 
 task :inst do
-  ymlforth("stdlib")
+  ymlforth("stdlib.yml")
 end
+
+
+file "interpreter.o" => :inst

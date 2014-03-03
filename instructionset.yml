@@ -40,7 +40,7 @@ set:
 get:
 input_list: "{"
 input_quot: "["
-litbyte: :private
+blit: :private
 bitand:
 bitor:
 bitxor:
