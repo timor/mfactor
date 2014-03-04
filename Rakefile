@@ -8,7 +8,8 @@ PROG=hostp ? "mfactor" : "mfactor.elf"
 MAP=PROG.ext('.map')
 CLEAN.include MAP
 OPT="0"
-CFLAGS= "-O#{OPT} -std=gnu99 -g "
+STDLIB_SIZE=256;
+CFLAGS= "-O#{OPT} -std=gnu99 -g -DSTDLIB_SIZE=#{STDLIB_SIZE}"
 LDFLAGS= "-O#{OPT} -std=gnu99 -g "
 LDSCRIPT="gcc.ld"
 if hostp
@@ -18,13 +19,14 @@ if hostp
   LDFLAGS << "-Wl,-Map=#{MAP}"
 else
   INSTBASE=0xa0
+  CODEMEM=0x2000ef6c
   LDFLAGS << " -Wl,-Map=#{MAP} --specs=nano.specs -lc -lnosys -flto -Wl,--gc-sections -Wl,--cref -nostartfiles -mcpu=cortex-m3 -mthumb"
   LDFLAGS << " -v" if ENV['VERBOSE']
   CFLAGS << " -ffunction-sections -fdata-sections"
   CFLAGS << " -mcpu=cortex-m3 -D__START=main -mthumb"
   CFLAGS << " -v" if ENV['VERBOSE']
   CFLAGS << " -DCPU_LPC4337"
-  CFLAGS << " -DTRACE_INTERPRETER=0"
+  CFLAGS << " -DTRACE_INTERPRETER=2"
   CC="arm-none-eabi-gcc"
   GDB="arm-none-eabi-gdb"
   OBJDUMP="arm-none-eabi-objdump"
@@ -66,10 +68,13 @@ file PROG do
   sh "#{CC} #{LDFLAGS} #{ofiles} -o #{PROG}"
   unless hostp
     sh "#{OBJDUMP} -dS #{PROG} > #{PROG.ext('lst')}"
-    sh "#{SIZE} #{PROG}"
   end
 end
 CLOBBER.include PROG
+
+task :size do
+  sh "#{SIZE} #{PROG}"
+end
 
 task :default => PROG
 
@@ -109,15 +114,106 @@ GDBEND
   sh "#{GDB} #{args} #{PROG}"
 end
 
+class YAML_Mfactor
+  class ISet
+    def initialize(yaml)
+      @i_by_name={}
+      @icodes={}
+      j=INSTBASE
+      yaml.each do |mnem,public_name|
+        if public_name != :private
+          @i_by_name[public_name]=mnem
+        end
+        @icodes[mnem]=j
+        j += 1
+      end
+    end
+    def code(mnem)
+      @icodes[mnem]
+    end
+  end
+  class MFThread
+    attr_accessor :instructions
+    attr_accessor :name
+    attr_accessor :start
+    def initialize(name, instlist, iset, start)
+      @instructions=instlist+[:qend]
+      @name=name
+      @instruction_set=iset
+      @start=start
+    end
+    def code
+      @instructions.map do |i|
+        @instruction_set.code(i.to_s) ? @instruction_set.code(i.to_s) :
+          (i.is_a?(String) ? i.ord : i)
+      end
+    end
+    def length
+      sum=0
+      code().each do |i|
+        sum += (i.is_a?(Integer) ? 1 : 4) # platform dependent (ptrdiff)!!!
+      end
+      sum
+    end
+    # whiel start is the logical start in forward order, address
+    # returns an actual target memory address
+    def address
+      CODEMEM+STDLIB_SIZE-start-1 # off by one
+    end
+  end
+  
+  def initialize(ymlfile,isetyaml)
+    @yaml=YAML.load_file(ymlfile)
+    @thread_index={}
+    @threads={}
+    @instruction_set=ISet.new(isetyaml)
+    codeptr=0
+    @yaml.each do |name, thread|
+      mft=MFThread.new(name,thread,@instruction_set,codeptr);
+      @threads[name]=mft;
+      @thread_index[mft]=codeptr;
+      codeptr += mft.length;
+    end
+  end
+  def length
+    @thread_index.keys.map{|t| t.length}.reduce(:+)
+  end
+  def code(out)
+    padding=STDLIB_SIZE-length()
+    puts "code exceeding stdlib size" unless padding >= 0
+    padding.times { out << " 0," }
+    pass1=@thread_index.keys.map{|mft| mft.code}.flatten.reverse    
+    # puts pass1.inspect
+    # j=0
+    pass1.each do |value|
+      if value.is_a?(Symbol)
+        mft=@threads[value.to_s]
+        puts "thread not found: #{value}" unless mft
+        jump=mft.address;
+        out << " /*#{value}:0x#{jump.to_s(16)}*/"
+        out << " 0x"+(((jump>>0))&0xff).to_s(16)+","
+        out << " 0x"+(((jump>>8))&0xff).to_s(16)+","
+        out << " 0x"+(((jump>>16))&0xff).to_s(16)+","
+        out << " 0x"+(((jump>>24))&0xff).to_s(16)+","
+        # j += 4
+      else
+        out << "0x"+value.to_s(16)+","
+        # j += 1
+      end
+    end
+    nil
+  end
+end
+
 directory "generated"
-task :iset => ["instructionset.yml","generated"] do
+task :stdlib => ["instructionset.yml","stdlib.yml","generated"] do
   require 'yaml'
   YAML::ENGINE.yamler = 'syck'
-  @iset=YAML.load_file("instructionset.yml")
+  iset=YAML.load_file("instructionset.yml")
   File.open("generated/inst_enum.h","w") do |f|
     f.puts "enum inst_set {\n"
     i=INSTBASE
-    @iset.each do |mnem,name| 
+    iset.each do |mnem,name| 
       name ||= mnem
       f.puts <<END
 /* #{name} */
@@ -128,41 +224,14 @@ END
     end
     f.puts "};"
   end
-end
-
-def ymlforth(infile)
-  Rake::Task["iset"].invoke
-  def getinst(n)
-    case n
-    when Symbol
-      i=@iset.keys.index(n.to_s)
-      # i ? (INSTBASE+i) : "CALL(#{n.to_s})"
-      i ? n : "CALL(#{n.to_s})"
-    when String
-      n.inspect
-    else
-      puts "unknown word or literal: #{n}"
-    end
-  end
-  require 'yaml'
-  lib=YAML.load_file(infile.ext("yml"))
-  File.open(("generated/"+File.basename(infile,".*")+".code.x").ext("h"),"w") do |f|
-    lib.each do |name, thread|
-      f.write "inst #{name}[] {"
-      f.write(thread.reverse.push(:retsub).map{|word| getinst(word)}.join(", "))
-      f.write("};\n\n")
-    end
-  end
-  File.open(("generated/"+File.basename(infile,".*")+".dict.x").ext("h"),"w") do |f|
-    lib.each do |name, thread|
-      f.puts("TDICT(#{name.inspect},#{name}),\n")
-    end
+  stdlib=YAML_Mfactor.new("stdlib.yml",iset)
+  File.open(("generated/stdlib.code.h"),"w") do |f|
+    f.write "inst stdlib[#{STDLIB_SIZE}]= {\n"
+    stdlib.code(f)
+    f.write "};\n"
   end
 end
 
-task :inst do
-  ymlforth("stdlib.yml")
-end
-
+task :inst => :stdlib
 
 file "interpreter.o" => :inst

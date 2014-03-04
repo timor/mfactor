@@ -13,12 +13,13 @@ receive:
 to_r: ">r"
 r_from: "r>"
 lit: :private
+blit: :private
+oplit:
 name:
 qstart: :private
 qend: :private
 lstart: :private
 lend: :private
-retsub: :private
 truefalse: "?"
 call:
 ref: :private
@@ -40,7 +41,6 @@ set:
 get:
 input_list: "{"
 input_quot: "["
-blit: :private
 bitand:
 bitor:
 bitxor:
