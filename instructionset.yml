@@ -21,6 +21,7 @@ qend: :private
 lstart: :private
 lend: :private
 truefalse: "?"
+# call on stack
 call:
 ref: :private
 swap:
@@ -47,3 +48,8 @@ bitxor:
 bitnot:
 recurse:
 pprint: "."
+# enter subroutine in code (absolute)
+qcall: :private
+# enter subroutine in code (relative)
+rcall: :private
+

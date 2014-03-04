@@ -1,5 +1,5 @@
 # toplevel ( -- )
-toplevel: [ :token, :find, :oplit, :call, :lit, :unknown_token, :ifquot, :quit ]
+toplevel: [ :token, :find, :oplit, :call, :lit, :unknown_token, :rcall, :ifquot, :quit ]
 
 square: [ :dup, :mul ]
 ifquot: [ :truefalse, :call ]
@@ -18,5 +18,5 @@ whilequot: [ ]
 colon: [ ]
 
 # ( tok -- )
-unknown_token: [ :parsenum, :oplit, :nop, :lit, :bad_input, :ifquot ]
+unknown_token: [ :parsenum, :oplit, :nop, :lit, :bad_input, :rcall, :ifquot ]
 
