@@ -89,11 +89,11 @@ dict_entry dict[VM_DICT] __attribute__((aligned(1))) = {
     /* #include "generated/stdlib.dict.h" */
 };
 
-const inst const square[]={retsub,mul,dup};
+const inst const square[]={qend,mul,dup};
 /* (cond [true ...] [false ...] -- ... ) */
-const inst const ifquot[]={retsub,call,truefalse};
+const inst const ifquot[]={qend,call,truefalse};
 /* ( trash -- )  */
-const inst const display_notfound[]={retsub,emit,'\n', blit, emit,'X',blit,emit,'_',blit,emit,'X',blit, drop};
+const inst const display_notfound[]={qend,emit,'\n', blit, emit,'X',blit,emit,'_',blit,emit,'X',blit, drop};
 /* ( addr -- bool )  */
 
 /* returns same address again if not found*/
@@ -208,13 +208,13 @@ void interpreter(inst * user_program)
 	/* TODO: name stack */
 	static cell* CP=memory;
 	cell x;								/* temporary value for operations */
-	inst unknown_token[]={retsub, CALL(ifquot), CALL(display_notfound), lit, PCALL(nop), lit, parsenum};
-	inst program[]={quit, CALL(ifquot), CALL(unknown_token), lit, PCALL(call), lit, find, token };
-	inst *pc = user_program ? : &program[sizeof(program)/sizeof(inst)-1];
+#include "generated/stdlib.code.h"
+	/* inst unknown_token[]={qend, CALL(ifquot), CALL(display_notfound), lit, PCALL(nop), lit, parsenum}; */
+	/* inst program[]={quit, CALL(ifquot), CALL(unknown_token), lit, PCALL(call), lit, find, token }; */
+	inst *pc = user_program ? : &stdlib[STDLIB_SIZE-1];
 	return_entry start_entry = {.return_address=NULL,.current_call = pc};
 	returnpush(start_entry);
-
-	while(1) {
+    while(1) {
 		inst i;
 	next:
 		IFTRACE2(printstack(psp,pstack));
@@ -257,6 +257,10 @@ void interpreter(inst * user_program)
 				x=(cell)(*(pc--));
 				ppush(x);
 				break;
+            case oplit:
+              x=(cell)(*(pc--));
+              ppush(((inst)x)<<24);
+              break;
 			case pprint:
 printf("%#x",ppop());
 break;
@@ -270,8 +274,7 @@ break;
 			case quit:
 				printf("bye!\n");
 				return;
- case qend:
- case retsub: {
+ case qend: {
 	 return_entry e = returnpop();
 	 pc=e.return_address;
  } break;
@@ -302,7 +305,7 @@ break;
 					error("token reader error");
 					return;
 				}} break;
-				/* (str -- foundp addr) */
+				/* (str -- foundp quot/addr) */
 			case find: {
 				cell orig=ppop();
 				inst * addr=find_by_name((char*)orig);

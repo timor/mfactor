@@ -17,7 +17,7 @@ typedef unsigned char inst;     /* it's byte code after all */
 #endif
 /* parameter stack size (affects transient data)*/
 #ifndef VM_PSTACK
-#define VM_PSTACK 256
+#define VM_PSTACK 64
 #endif
 /* return stack size (affects nesting of functions)*/
 #ifndef VM_RETURNSTACK
