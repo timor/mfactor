@@ -12,6 +12,7 @@ STDLIB_SIZE=256;
 CFLAGS= "-O#{OPT} -std=gnu99 -g -DSTDLIB_SIZE=#{STDLIB_SIZE}"
 LDFLAGS= "-O#{OPT} -std=gnu99 -g "
 LDSCRIPT="gcc.ld"
+CODEOFFSET=0
 if hostp
   INSTBASE=0x80
   CC="gcc"
@@ -19,7 +20,7 @@ if hostp
   LDFLAGS << "-Wl,-Map=#{MAP}"
 else
   INSTBASE=0xa0
-  CODEMEM=0x2000ef6c
+  # CODEMEM=0x2000ef6c
   LDFLAGS << " -Wl,-Map=#{MAP} --specs=nano.specs -lc -lnosys -flto -Wl,--gc-sections -Wl,--cref -nostartfiles -mcpu=cortex-m3 -mthumb"
   LDFLAGS << " -v" if ENV['VERBOSE']
   CFLAGS << " -ffunction-sections -fdata-sections"
