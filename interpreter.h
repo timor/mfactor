@@ -55,38 +55,8 @@ inst stdlib[STDLIB_SIZE];
 #endif
 #define INSTBASE_CELL (INSTBASE<<(8*(sizeof(inst *)-sizeof(inst))))
 
-
-/* primitive instruction set */
-/* enum inst_set { */
-/*   dup=INSTBASE,                     /\* starting value architecture dependent!!! *\/ */
-/*   eql, rot, drop, zero, one, two, add, mul, neg, sub, emit, receive, to_r, r_from, lit, */
-/*   name, qstart, qend, lstart, lend, retsub, truefalse, call, ref, swap, allot, */
-/*   input_str, find, token, store_tos, store_ptr,quit, stack_show, asl, div, mod, */
-/*   parsenum, nop, set, get, input_list, input_quot, blit, */
-/*   bitand, bitor, bitxor, bitnot, recurse, pprint */
-/* }; */
 #include "generated/inst_enum.h"
 
-/* const inst const square[3]; */
-/* const inst const ifquot[3]; */
-
-
 void interpreter(inst *);
-
-#define TBEGIN(word) (intptr_t)&word[sizeof(word)/sizeof(inst)-1]
-#define CELL64(word) (word>>0)&0xff,(word>>8)&0xff,(word>>16)&0xff,(word>>24)&0xff,(word>>32)&0xff,(word>>40)&0xff,(word>>48)&0xff,(word>>56)&0xff
-#define CELL32(word) (word>>0)&0xff,(word>>8)&0xff,(word>>16)&0xff,(word>>24)&0xff
-#if (__SIZEOF_POINTER__ == 4)
-#define CELL(word) CELL32(word)
-#elif (__SIZEOF_POINTER__ == 8)
-#define CELL(word) CELL64(word)
-#else
-#error "size of pointer unkown"
-#endif
-
-#define CALL(thread) CELL(TBEGIN(thread))
-	#define PCALL(prim) CELL((((intptr_t)prim)<<(8*(sizeof(inst*)-sizeof(inst)))))
-/* breaks down scalar value for insertion into byte code stream */
-#define FIXNUM(x) CELL(x)
 
 #endif
