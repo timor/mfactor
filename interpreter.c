@@ -51,44 +51,7 @@ typedef struct return_entry {
 } return_entry;
 
 /* dictionary grows up*/
-	#define DICT(wname,addr)	{.address=(void *)addr,.name=wname,.name_length=sizeof(wname)}
-	#define PDICT(wname,addr) DICT(wname, ((intptr_t)addr << (8*(sizeof(inst*)-sizeof(inst)))))
-#define TDICT(wname,word) DICT(wname,TBEGIN(word))
-dict_entry dict[VM_DICT] __attribute__((aligned(1))) = {
-	PDICT("dup",dup),
-	PDICT("drop",drop),
-	PDICT(".",pprint),
-	PDICT("+",add),
-	PDICT("*",mul),
-	PDICT("0",zero),
-	PDICT("1",one),
-	PDICT("2",two),
-	/* PDICT("}",lend), */
-	PDICT("{",input_list),
-	PDICT("[",input_quot),
-	/* PDICT("]",qend), */
-	PDICT("neg",neg),
-	PDICT("-",sub),
-	PDICT("?",truefalse),
-	PDICT("allot",allot),
-	PDICT("recurse",recurse),
-	PDICT("\"",input_str),
-	PDICT("st",stack_show),
-	PDICT("shift",asl),
-	PDICT("/",div),
-	PDICT("mod",mod),
-	PDICT("swap",swap),
-	PDICT("set",set),
-	PDICT("get",get),
-	PDICT("bitand",bitand),
-	PDICT("bitor",bitor),
-	PDICT("bitxor",bitxor),
-	PDICT("bitnot",bitnot),
-	/* TDICT("if",ifquot), */
-	/* TDICT("square",square), */
-    /* #include "generated/stdlib.dict.h" */
-};
-
+#include "generated/stdlib.dict.h"
 /* const inst const square[]={qend,mul,dup}; */
 /* /\* (cond [true ...] [false ...] -- ... ) *\/ */
 /* const inst const ifquot[]={qend,call,truefalse}; */
@@ -163,13 +126,16 @@ static inst * skip_instruction(inst* pc,inst until){
         case lit:
           ptr+=sizeof(cell);
           break;
-        case blit:
+        case litb:
         case oplit:
           ptr+=sizeof(inst);
           break;
-        case qcall:
-        case rcall:
+        case acall:
           ptr+=sizeof(jump_target);
+          break;
+        case blitq:
+        case bcall:
+          ptr+=sizeof(short_jump_target);
           break;
         }
     }
@@ -201,6 +167,8 @@ static void error(char * str)
 #define peek_n(sp,nth) (*(sp-nth))
 
 
+#include "generated/stdlib.code.h"
+
 static cell memory[VM_MEM];
 
 void interpreter(inst * user_program)
@@ -220,7 +188,7 @@ void interpreter(inst * user_program)
 	/* TODO: name stack */
 	static cell* CP=memory;
 	cell x;								/* temporary value for operations */
-#include "generated/stdlib.code.h"
+    static inst *base=stdlib;  /* base address for base-relative short calls */
 	/* inst unknown_token[]={qend, CALL(ifquot), CALL(display_notfound), lit, PCALL(nop), lit, parsenum}; */
 	/* inst program[]={quit, CALL(ifquot), CALL(unknown_token), lit, PCALL(call), lit, find, token }; */
 	inst *pc = user_program ? : &stdlib[0];
@@ -260,18 +228,23 @@ void interpreter(inst * user_program)
           ppush((cell)&CP);
           break;
         case ref:					  /* only gc knows a difference */
-        case lit: {
-          cell y=*((cell*)(pc+1));
-          ppush(y);
+        case lit: 
+          x=*((cell*)(pc+1));
+          ppush(x);
           pc+=sizeof(cell);
-        } break;
+          break;
         case oplit:
           x=(cell)*(pc++);
           ppush(x<<(8*(sizeof(cell)-sizeof(inst))));         /*  */
           break;
-        case blit:
+        case litb:
           x=(cell)(*(pc++));
           ppush(x);
+          break;
+        case blitq:
+          x=(cell)(*((short_jump_target*) pc));
+          ppush((cell) (base + ((short_jump_target) x)));
+          pc += sizeof(short_jump_target);
           break;
         case pprint:
           printf("%#x",ppop());
@@ -325,21 +298,18 @@ void interpreter(inst * user_program)
           ppush(addr==NULL ? false : true);
         }
           break;
-        case call: {
+        case scall: 
           /* check if call is primitive, if yes, substitute execution, since call only
              applies to quotations */
-          cell quot = ppop();
-          if (quot >= INSTBASE_CELL) {
+          x = ppop();
+          if (x >= INSTBASE_CELL) {
             IFTRACE2(printf("call: prim\n"));
-            i=(quot>>(8*(sizeof(inst*)-sizeof(inst))));
+            i=(x>>(8*(sizeof(inst*)-sizeof(inst))));
             goto dispatch;
           } else {
             IFTRACE2(printf("call: inmem word\n"));
-            return_entry e = {.return_address = pc, .current_call=(inst*) quot};
-            returnpush(e);
-            pc=(inst *)quot;
-            goto next;
-          }} break;
+            goto inline_call;
+          } break;
         case stack_show:
           printf("\np");
           printstack(psp,pstack);
@@ -376,13 +346,13 @@ void interpreter(inst * user_program)
         case recurse:
           pc=(returnsp-1)->current_call;
           break;
-          /* short relative call */
-        case rcall: {
-          x= (cell)(pc+*((jump_target *)pc));
-          pc += sizeof(jump_target);
+          /* short relative-to-base call */
+        case bcall: {
+          x= (cell)(base+*((short_jump_target *)pc));
+          pc += sizeof(short_jump_target);
           goto inline_call;
         } break;
-        case qcall: {
+        case acall: {
           x =(cell) *((jump_target *)pc);
           pc += sizeof(jump_target);
           goto inline_call;

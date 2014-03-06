@@ -10,6 +10,8 @@ typedef unsigned short short_jump_target;    /* relative jumps in 64k on 32 bit 
 typedef intptr_t jump_target;                /* long absolute jump */
 typedef intptr_t cell;                 /* memory cell must at least hold pointer */
 
+inst stdlib[STDLIB_SIZE];
+
 
 /* data memory (affects non-transient data) in cells*/
 #ifndef VM_MEM

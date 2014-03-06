@@ -12,17 +12,22 @@ emit:
 receive:
 to_r: ">r"
 r_from: "r>"
+# literal word
 lit: :private
-blit: :private
-oplit:
+# literal byte
+litb: :private
+# literal instruction
+oplit: :private
+# literal base-relative quotation (short)
+blitq: :private
 name:
 qstart: :private
 qend: :private
 lstart: :private
 lend: :private
 truefalse: "?"
-# call on stack
-call:
+# call absolute address on stack
+scall: "call"
 ref: :private
 swap:
 allot:
@@ -48,8 +53,8 @@ bitxor:
 bitnot:
 recurse:
 pprint: "."
-# enter subroutine in code (absolute)
-qcall: :private
-# enter subroutine in code (relative)
-rcall: :private
+# call quotation in code (absolute)
+acall: :private
+# call quotation in code (relative to base address, short)
+bcall: :private
 

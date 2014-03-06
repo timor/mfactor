@@ -1,22 +1,22 @@
 # toplevel ( -- )
-toplevel: [ :token, :find, :oplit, :call, :lit, :unknown_token, :rcall, :ifquot, :quit ]
+toplevel: [ :token, :find, :oplit, :scall, :blitq, :unknown_token, :bcall, :ifquot, :quit ]
 
 square: [ :dup, :mul ]
-ifquot: [ :truefalse, :call ]
+ifquot: [ :truefalse, :scall ]
 
 # ( input -- )
-bad_input: [ :drop, :blit, '\n', :blit, 'X', :dup, :blit, '_', :swap, :emit, :emit, :emit, :emit ]
+bad_input: [ :drop, :litb, "\n", :litb, 'X', :dup, :litb, '_', :swap, :emit, :emit, :emit, :emit ]
 
 # ( x y -- y )
 nip: [ :swap, :drop ]
 
 # ( x quot -- x)
-dip: [ :swap, :to_r, :call, :r_from ]
+dip: [ :swap, :to_r, :scall, :r_from ]
 
 # ( pred:( ..a -- ..b ?) body:( ..b -- ..a) -- ..b)
 whilequot: [ ]
 colon: [ ]
 
 # ( tok -- )
-unknown_token: [ :parsenum, :oplit, :nop, :lit, :bad_input, :rcall, :ifquot ]
+unknown_token: [ :parsenum, :oplit, :nop, :blitq, :bad_input, :bcall, :ifquot ]
 
