@@ -28,6 +28,7 @@ lend: :private
 truefalse: "?"
 # call absolute address on stack
 scall: "call"
+# used to refer to non-quotation data
 ref: :private
 swap:
 allot:
@@ -35,7 +36,7 @@ input_str: '"'
 find:
 token:
 store_tos: ","
-store_ptr: :private
+store_ptr: "_CP"
 quit:
 stack_show: "st"
 asl: "shift"
@@ -43,7 +44,9 @@ div: "/"
 mod:
 parsenum: :private
 nop:
+# (value address -- )
 set:
+# (address -- value)
 get:
 input_list: "{"
 input_quot: "["
