@@ -18,8 +18,10 @@ if hostp
   CC="gcc"
   GDB="gdb"
   LDFLAGS << "-Wl,-Map=#{MAP}"
+  PTRSIZE=64
 else
   INSTBASE=0xa0
+  PTRSIZE=32
   # CODEMEM=0x2000ef6c
   LDFLAGS << " -Wl,-Map=#{MAP} --specs=nano.specs -lc -lnosys -flto -Wl,--gc-sections -Wl,--cref -nostartfiles -mcpu=cortex-m3 -mthumb"
   LDFLAGS << " -v" if ENV['VERBOSE']

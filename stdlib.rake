@@ -20,10 +20,11 @@ class YAML_Mfactor
     def code(mnem)
       @icodes[mnem]
     end
+    # print dictionary entry
     def dict(out)
       puts @i_by_name unless Rake.application.options.silent
       @i_by_name.each do |name, mnem|
-        out << YAML_Mfactor::dict_entry(@icodes[mnem] << 24,name,true)
+        out << YAML_Mfactor::dict_entry(@icodes[mnem] << (PTRSIZE-8),name,true)
       end
     end
   end

@@ -61,7 +61,7 @@ static inst* find_by_name(char *fname)
 		(ptr < ((char*)dict+sizeof(dict)))&&(((dict_entry*)ptr)->name_length > 0);
 		ptr += (((dict_entry*)ptr)->name_length + sizeof(length) + sizeof(void*))) {
 	 dict_entry *dptr = (dict_entry*)ptr;
-	 IFTRACE1(printf("comparing to (%#x): %s; ",(intptr_t)dptr->name,dptr->name));
+	 IFTRACE1(printf("comparing to (%#x): %s; ",(uintptr_t)dptr->name,dptr->name));
 	 if (strcmp(fname,dptr->name)==0) {
 		IFTRACE1(printf("found at: %#x\n",(cell)dptr->address));
 		return dptr->address;
@@ -99,7 +99,7 @@ static void print_return_stack(return_entry * sp, return_entry * stack)
 	printf("stack:");
 	for(return_entry* ptr = sp-1;ptr >= stack;ptr--)
 		{
-			printf(" {%#x->%#x}",(intptr_t)ptr->current_call,(intptr_t)ptr->return_address);
+			printf(" {%#x->%#x}",(uintptr_t)ptr->current_call,(uintptr_t)ptr->return_address);
 		}
 	printf("\n");
 }
@@ -133,7 +133,7 @@ static inst * skip_instruction(inst* pc,inst until){
           break;
         }
     }
-    IFTRACE2(printf("skipped until %#x\n",(intptr_t)ptr));
+    IFTRACE2(printf("skipped until %#x\n",(uintptr_t)ptr));
 	return ptr;
 }
 
@@ -330,7 +330,7 @@ void interpreter(inst * user_program)
           break;
           /* skip over to end of quotation , leave starting address on parameter stack*/
         case qstart:
-          IFTRACE2(printf("qstart saving #%x\n",(intptr_t)pc));
+          IFTRACE2(printf("qstart saving #%x\n",(uintptr_t)pc));
           ppush((cell)pc);
           pc=skip_instruction(pc,qend);
           pc+=1;

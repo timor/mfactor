@@ -7,11 +7,10 @@
 
 typedef unsigned char inst;     /* it's byte code after all */
 typedef unsigned short short_jump_target;    /* relative jumps in 64k on 32 bit */
-typedef intptr_t jump_target;                /* long absolute jump */
-typedef intptr_t cell;                 /* memory cell must at least hold pointer */
+typedef uintptr_t jump_target;                /* long absolute jump */
+typedef uintptr_t cell;                 /* memory cell must at least hold pointer */
 
 inst stdlib[STDLIB_SIZE];
-
 
 /* data memory (affects non-transient data) in cells*/
 #ifndef VM_MEM
@@ -53,7 +52,7 @@ inst stdlib[STDLIB_SIZE];
 #error "don't know instruction code base for architecure!"
 #endif
 #endif
-#define INSTBASE_CELL (INSTBASE<<(8*(sizeof(inst *)-sizeof(inst))))
+#define INSTBASE_CELL ((cell)INSTBASE<<(8*(sizeof(inst *)-sizeof(inst))))
 
 #include "generated/inst_enum.h"
 
