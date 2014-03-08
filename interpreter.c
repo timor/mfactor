@@ -241,8 +241,8 @@ void interpreter(inst * user_program)
           ppush((cell) (base + ((short_jump_target) x)));
           pc += sizeof(short_jump_target);
           break;
-        case pprint:
-          printf("%#x\n",ppop());
+        case pwrite:
+          printf("%#x",ppop());
           break;
         case emit:
           putchar(ppop());

@@ -58,7 +58,7 @@ bitor:
 bitxor:
 bitnot:
 recurse:
-pprint: "."
+pwrite:
 # call quotation in code (absolute)
 acall: :private
 # call quotation in code (relative to base address, short)
