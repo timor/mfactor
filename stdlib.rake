@@ -76,6 +76,7 @@ class YAML_Mfactor
       @thread_index[mft]=codeptr;
       codeptr += mft.length;
     end
+    $stdlib_size=codeptr
   end
   def length
     @thread_index.keys.map{|t| t.length}.reduce(:+)
@@ -136,7 +137,7 @@ END
   end
   stdlib=YAML_Mfactor.new("stdlib.yml",iset)
   File.open(("generated/stdlib.code.h"),"w") do |f|
-    f.write "inst stdlib[#{STDLIB_SIZE}]= {\n"
+    f.write "inst stdlib[#{$stdlib_size}]= {\n"
     stdlib.code(f)
     f.write "};\n"
   end

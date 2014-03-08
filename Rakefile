@@ -8,8 +8,7 @@ PROG=hostp ? "mfactor" : "mfactor.elf"
 MAP=PROG.ext('.map')
 CLEAN.include MAP
 OPT="0"
-STDLIB_SIZE=256;
-CFLAGS= "-O#{OPT} -std=gnu99 -g -DSTDLIB_SIZE=#{STDLIB_SIZE}"
+CFLAGS= "-O#{OPT} -std=gnu99 -g "
 LDFLAGS= "-O#{OPT} -std=gnu99 -g "
 LDSCRIPT="gcc.ld"
 CODEOFFSET=0
@@ -52,9 +51,10 @@ BUILD="build"
 directory BUILD
 
 rule '.o' => '.c' do |t|
+  cflags=CFLAGS + " -DSTDLIB_SIZE=#{$stdlib_size}"
   tname = t.source.pathmap("#{BUILD}/%n.i")
-  sh "#{CC} #{CFLAGS} #{t.source} -E -o #{tname}"
-  sh "#{CC} #{CFLAGS} #{t.source} -c -o #{t.name}"
+  sh "#{CC} #{cflags} #{t.source} -E -o #{tname}"
+  sh "#{CC} #{cflags} #{t.source} -c -o #{t.name}"
 end
 
 rule '.o' => '.S' do |t|
