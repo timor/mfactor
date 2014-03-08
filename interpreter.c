@@ -160,7 +160,6 @@ static void error(char * str)
 
 #define peek_n(sp,nth) (*(sp-nth))
 
-
 #include "generated/stdlib.code.h"
 
 static cell memory[VM_MEM];
@@ -181,6 +180,7 @@ void interpreter(inst * user_program)
 	/* static cell* csp = &cstack[0]; */
 	/* TODO: name stack */
 	static cell* CP=memory;
+    static cell* NP=(cell*)dict;
 	cell x;								/* temporary value for operations */
     static inst *base=stdlib;  /* base address for base-relative short calls */
 	inst *pc = user_program ? : &stdlib[0];
@@ -218,6 +218,9 @@ void interpreter(inst * user_program)
           ppush(peek_n(psp,1)); break;
         case store_ptr:
           ppush((cell)&CP);
+          break;
+        case name_ptr:
+          ppush((cell)&NP);
           break;
         case ref:					  /* only gc knows a difference */
         case lit: 

@@ -37,6 +37,7 @@ find:
 token:
 store_tos: ","
 store_ptr: "_CP"
+name_ptr: "_NP"
 quit:
 stack_show: "st"
 asl: "shift"
