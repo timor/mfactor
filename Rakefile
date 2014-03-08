@@ -12,6 +12,8 @@ CFLAGS= "-O#{OPT} -std=gnu99 -g "
 LDFLAGS= "-O#{OPT} -std=gnu99 -g "
 LDSCRIPT="gcc.ld"
 CODEOFFSET=0
+trace_level=2
+CFLAGS << " -DTRACE_INTERPRETER=#{trace_level}"
 if hostp
   INSTBASE=0x80
   CC="gcc"
@@ -29,7 +31,6 @@ else
   CFLAGS << " -mcpu=cortex-m3 -D__START=main -mthumb"
   CFLAGS << " -v" if ENV['VERBOSE']
   CFLAGS << " -DCORTEX_M"
-  CFLAGS << " -DTRACE_INTERPRETER=2"
   CC="arm-none-eabi-gcc"
   GDB="arm-none-eabi-gdb"
   OBJDUMP="arm-none-eabi-objdump"
