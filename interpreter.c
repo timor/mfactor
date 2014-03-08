@@ -332,6 +332,7 @@ void interpreter(inst * user_program)
           break;
         case parsenum: {
           char *str = (char *)ppop();
+          assert_memread((cell *)str);
           cell num = 0xa5a5a5a5;
           bool success=parse_number(str,&num);
           ppush(success ? num : (cell) str);
