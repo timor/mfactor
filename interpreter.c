@@ -242,7 +242,7 @@ void interpreter(inst * user_program)
           pc += sizeof(short_jump_target);
           break;
         case pprint:
-          printf("%#x",ppop());
+          printf("%#x\n",ppop());
           break;
         case emit:
           putchar(ppop());
