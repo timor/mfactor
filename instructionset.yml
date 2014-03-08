@@ -25,6 +25,7 @@ qstart: :private
 qend: :private
 lstart: :private
 lend: :private
+# ( cond true false -- true/false )
 truefalse: "?"
 # call absolute address on stack
 scall: "call"
@@ -34,6 +35,7 @@ swap:
 allot:
 input_str: '"'
 find:
+# ( -- token )
 token:
 store_tos: ","
 store_ptr: "_CP"

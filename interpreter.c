@@ -293,6 +293,7 @@ void interpreter(inst * user_program)
           cell cond = ppop();
           ppush(cond ? true_cons : false_cons);
         } break;
+        /* ( -- token ) */
         case token: {
           char *tok = read_token();
           if (tok) {
