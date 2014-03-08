@@ -327,8 +327,16 @@ void interpreter(inst * user_program)
           x=ppop();
           *((cell*)x)=(ppop());
           break;
+        case _setchar:
+          x=ppop();
+          *((char*)x)=((ppop()&0xff));
+          break;
         case get:
           x = *((cell *)(ppop()));
+          ppush(x);
+          break;
+        case _getchar:
+          x = (cell)*((char *)(ppop()));
           ppush(x);
           break;
           /* skip over to end of quotation , leave starting address on parameter stack*/

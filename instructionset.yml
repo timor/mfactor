@@ -47,8 +47,10 @@ parsenum: :private
 nop:
 # (value address -- )
 set:
+_setchar: "setc"
 # (address -- value)
 get:
+_getchar: "getc"
 input_list: "{"
 input_quot: "["
 bitand:
