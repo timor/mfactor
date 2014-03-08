@@ -163,6 +163,22 @@ static void error(char * str)
 #include "generated/stdlib.code.h"
 
 static cell memory[VM_MEM];
+/* writes are only allowed into dedicated memory area for now */
+#define assert_memwrite(x) if ((x < memory) || (x >= (memory+VM_MEM))) {printf("prevented memory access at %#x\n",x);return;}
+/* reads are only allowed inside data space */
+#if __linux
+#define DATA_START __data_start
+#define DATA_END end
+#elif CORTEX_M
+#define DATA_START __data_start__
+#define DATA_END end
+#endif
+
+extern cell DATA_START;
+extern cell DATA_END;
+
+#define assert_memread(x) if ((x < &DATA_START)||(x >= &DATA_END)) {printf("prevented memory read at %#x\n",x);return;}
+
 
 void interpreter(inst * user_program)
 {
@@ -325,20 +341,27 @@ void interpreter(inst * user_program)
 /* ( value address -- ) */
         case set:
           x=ppop();
+          assert_memwrite((cell *)x);
           *((cell*)x)=(ppop());
           break;
         case _setchar:
           x=ppop();
+          assert_memwrite((cell*)x);
           *((char*)x)=((ppop()&0xff));
           break;
-        case get:
-          x = *((cell *)(ppop()));
+          /*  (address -- value )) */
+        case get: {
+          cell *addr=(cell *)ppop();
+          assert_memread(addr);
+          x = *addr;
           ppush(x);
-          break;
-        case _getchar:
-          x = (cell)*((char *)(ppop()));
+        } break;
+        case _getchar: {
+          char *addr=(char *)ppop();
+          assert_memread((cell *)addr);
+          x = (cell)(*(addr));
           ppush(x);
-          break;
+        } break;
           /* skip over to end of quotation , leave starting address on parameter stack*/
         case qstart:
           IFTRACE2(printf("qstart saving #%x\n",(uintptr_t)pc));

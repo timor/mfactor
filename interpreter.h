@@ -46,7 +46,7 @@ inst stdlib[STDLIB_SIZE];
 #ifndef INSTBASE
 #if (__linux && __LP64__)
 #define INSTBASE 0x80U
-#elif (CPU_LPC4337)             /* all cortexes, actually */
+#elif (CORTEX_M)
 #define INSTBASE 0xA0U
 #else
 #error "don't know instruction code base for architecure!"

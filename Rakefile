@@ -28,7 +28,7 @@ else
   CFLAGS << " -ffunction-sections -fdata-sections"
   CFLAGS << " -mcpu=cortex-m3 -D__START=main -mthumb"
   CFLAGS << " -v" if ENV['VERBOSE']
-  CFLAGS << " -DCPU_LPC4337"
+  CFLAGS << " -DCORTEX_M"
   CFLAGS << " -DTRACE_INTERPRETER=2"
   CC="arm-none-eabi-gcc"
   GDB="arm-none-eabi-gdb"
@@ -77,7 +77,7 @@ end
 CLOBBER.include PROG
 
 task :size => [PROG] do
-  sh "#{SIZE} #{PROG}"
+  sh "#{SIZE} #{PROG}" unless Rake.application.options.silent
 end
 
 task :default => [PROG,:size]
