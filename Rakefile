@@ -19,6 +19,7 @@ if hostp
   GDB="gdb"
   LDFLAGS << "-Wl,-Map=#{MAP}"
   PTRSIZE=64
+  SIZE="size"
 else
   INSTBASE=0xa0
   PTRSIZE=32
@@ -75,11 +76,11 @@ file PROG do
 end
 CLOBBER.include PROG
 
-task :size do
+task :size => [PROG] do
   sh "#{SIZE} #{PROG}"
 end
 
-task :default => PROG
+task :default => [PROG,:size]
 
 if hostp
   task :run => PROG do
