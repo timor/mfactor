@@ -1,5 +1,5 @@
 # toplevel ( -- )
-toplevel: [ :token, :find, :oplit, :scall, :blitq, :unknown_token, :bcall, :ifquot, :quit ]
+toplevel: [ :snum, :pprint, :litb, '>', :emit, :litb, ' ', :emit, :token, :find, :oplit, :scall, :blitq, :unknown_token, :bcall, :ifquot, :quit ]
 
 square: [ :dup, :mul ]
 ifquot: [ :truefalse, :scall ]

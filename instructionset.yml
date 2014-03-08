@@ -60,4 +60,7 @@ pprint: "."
 acall: :private
 # call quotation in code (relative to base address, short)
 bcall: :private
-
+# clear parameter stack
+clear:
+# number of items on stack
+snum:

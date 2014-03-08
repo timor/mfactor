@@ -349,6 +349,13 @@ void interpreter(inst * user_program)
           pc += sizeof(jump_target);
           goto inline_call;
         } break;
+        case clear:
+          psp = &pstack[0];
+          break;
+        case snum:
+          x=(cell)(psp-pstack);
+          ppush(x);
+          break;
         default:
           printf("unimplemented instruction %#x\n",i);
           return;
