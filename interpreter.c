@@ -129,6 +129,7 @@ static inst * skip_instruction(inst* pc,inst until){
           break;
         case blitq:
         case bcall:
+        case btcall:
           ptr+=sizeof(short_jump_target);
           break;
         }
@@ -311,16 +312,26 @@ void interpreter(inst * user_program)
         }
           break;
         case scall: 
-          /* check if call is primitive, if yes, substitute execution, since call only
+          /* check if call is primitive, if yes, substitute execution (tail call), since call only
              applies to quotations */
           x = ppop();
           if (x >= INSTBASE_CELL) {
-            IFTRACE2(printf("call: prim\n"));
+            IFTRACE2(printf("s(t)call: prim\n"));
             i=(x>>(8*(sizeof(inst*)-sizeof(inst))));
             goto dispatch;
           } else {
-            IFTRACE2(printf("call: inmem word\n"));
+            IFTRACE2(printf("scall: inmem word\n"));
             goto inline_call;
+          } break;
+        case stcall:            /* WARNING: copied code above */
+          x = ppop();
+          if (x >= INSTBASE_CELL) {
+            IFTRACE2(printf("stcall: prim\n"));
+            i=(x>>(8*(sizeof(inst*)-sizeof(inst))));
+            goto dispatch;      /* already a tail call */
+          } else {
+            IFTRACE2(printf("stcall: inmem word\n"));
+            pc=(inst*)x;
           } break;
         case stack_show:
           printf("\np");
@@ -380,6 +391,10 @@ void interpreter(inst * user_program)
           pc += sizeof(short_jump_target);
           goto inline_call;
         } break;
+          /* base-relative tail-call, effectively a goto */
+        case btcall: 
+          pc=(inst*)(base+*((short_jump_target *)pc));
+          break;
         case acall: {
           x =(cell) *((jump_target *)pc);
           pc += sizeof(jump_target);
