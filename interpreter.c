@@ -321,7 +321,7 @@ void interpreter(inst * user_program)
             goto dispatch;
           } else {
             IFTRACE2(printf("scall: inmem word\n"));
-            goto inline_call;
+            goto nested_call;
           } break;
         case stcall:            /* WARNING: copied code above */
           x = ppop();
@@ -331,7 +331,7 @@ void interpreter(inst * user_program)
             goto dispatch;      /* already a tail call */
           } else {
             IFTRACE2(printf("stcall: inmem word\n"));
-            pc=(inst*)x;
+            goto tail_call;
           } break;
         case stack_show:
           printf("\np");
@@ -389,16 +389,17 @@ void interpreter(inst * user_program)
         case bcall: {
           x= (cell)(base+*((short_jump_target *)pc));
           pc += sizeof(short_jump_target);
-          goto inline_call;
+          goto nested_call;
         } break;
           /* base-relative tail-call, effectively a goto */
         case btcall: 
-          pc=(inst*)(base+*((short_jump_target *)pc));
+          x=(cell)(base+*((short_jump_target *)pc));
+          goto tail_call;
           break;
         case acall: {
           x =(cell) *((jump_target *)pc);
           pc += sizeof(jump_target);
-          goto inline_call;
+          goto nested_call;
         } break;
         case clear:
           psp = &pstack[0];
@@ -412,7 +413,7 @@ void interpreter(inst * user_program)
           return;
         }
         goto end_inst;
-    inline_call: 
+    nested_call: 
         {
           inst *next_word = (inst *) x;
           IFTRACE2(printf("w:%#x\n",(cell)next_word));
@@ -420,6 +421,15 @@ void interpreter(inst * user_program)
           returnpush(e);
           pc=next_word; 
         }
+        goto end_inst;
+    tail_call: 
+        {
+          inst *next_word = (inst *) x;
+          IFTRACE2(printf("w:%#x\n",(cell)next_word));
+          returnsp->current_call = next_word;
+          pc = next_word;
+        }
+        goto end_inst;
     end_inst:
         (void)0;
     }
