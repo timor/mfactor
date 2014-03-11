@@ -10,15 +10,17 @@ typedef unsigned short short_jump_target;    /* relative jumps in 64k on 32 bit 
 typedef uintptr_t jump_target;                /* long absolute jump */
 typedef uintptr_t cell;                 /* memory cell must at least hold pointer */
 
+#include "generated/stdlib_size.h"
+
 inst stdlib[STDLIB_SIZE];
 
 /* data memory (affects non-transient data) in cells*/
 #ifndef VM_MEM
-#define VM_MEM 2048
+#define VM_MEM 256
 #endif
 /* dictionary size (affects number of named items)*/
 #ifndef VM_DICT
-#define VM_DICT 1024
+#define VM_DICT 128
 #endif
 /* parameter stack size (affects transient data)*/
 #ifndef VM_PSTACK

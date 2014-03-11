@@ -36,12 +36,20 @@ ref: :private
 swap:
 allot:
 input_str: '"'
-find:
-# ( -- token )
+# ( -- cstring )
 token:
-store_tos: ","
-store_ptr: "_CP"
-name_ptr: "_NP"
+# (cstring -- foundp quot/addr)
+find:
+# memory bounds
+# code + data mem
+memstart:
+memend:
+# dictionary mem
+dictstart:
+dictend:
+# store_tos: ","
+# store_ptr: "_CP"
+# name_ptr: "_NP"
 quit:
 stack_show: "st"
 asl: "shift"
@@ -49,6 +57,7 @@ div: "/"
 mod:
 parsenum: :private
 nop:
+# safe memory operations
 # (value address -- )
 set:
 _setchar: "setc"
@@ -74,4 +83,4 @@ btcall: private
 # clear parameter stack
 clear:
 # number of items on stack
-snum:
+psplevel:

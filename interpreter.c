@@ -88,7 +88,7 @@ static inst* find_by_name(char *fname)
 static void printstack(cell * sp, cell * stack)
 {
 	printf("stack:");
-	for(cell* ptr = sp-1;ptr >= stack;ptr--)
+	for(cell* ptr = stack;ptr >= sp;ptr++)
 		{
 			printf(" %#x",*ptr);
 		}
@@ -115,7 +115,7 @@ enum nesting_type {
 static inst * skip_instruction(inst* pc,inst until){
 	inst *ptr=pc;
 	for(inst i= *ptr; i != until; i=*(++ptr)) {
-		IFTRACE2(printf("skipping over %#x, ",i));
+		  IFTRACE2(printf("skipping over %#x, ",i));
         switch (i) {
         case lit:
           ptr+=sizeof(cell);
@@ -147,7 +147,7 @@ static void error(char * str)
 
 #define assert_pop(sp,min) if (sp <= min) { error("stack underflow");return;}
 #define assert_push(sp,min,size) if (sp > min+size){ error("stack overflow");return;}
-  
+
 
 /* empty ascending stack */
 #define push_(sp,val) *sp=val;sp++;
@@ -165,7 +165,7 @@ static void error(char * str)
 
 static cell memory[VM_MEM];
 /* writes are only allowed into dedicated memory area for now */
-#define assert_memwrite(x) if ((x < memory) || (x >= (memory+VM_MEM))) {printf("prevented memory access at %#x\n",x);return;}
+#define assert_memwrite(x) if ((x < memory) || (x >= (memory+VM_MEM))) {printf("prevented memory access at %p\n",x);return;}
 /* reads are only allowed inside data space */
 #if __linux
 #define DATA_START __data_start
@@ -178,7 +178,7 @@ static cell memory[VM_MEM];
 extern cell DATA_START;
 extern cell DATA_END;
 
-#define assert_memread(x) if ((x < &DATA_START)||(x >= &DATA_END)) {printf("prevented memory read at %#x\n",x);return;}
+#define assert_memread(x) if ((x < &DATA_START)||(x >= &DATA_END)) {printf("prevented memory read at %p\n",x);return;}
 
 
 void interpreter(inst * user_program)
@@ -196,8 +196,6 @@ void interpreter(inst * user_program)
 	/* static cell cstack[VM_CSTACK]={0}; */
 	/* static cell* csp = &cstack[0]; */
 	/* TODO: name stack */
-	static cell* CP=memory;
-    static cell* NP=(cell*)dict;
 	cell x;								/* temporary value for operations */
     static inst *base=stdlib;  /* base address for base-relative short calls */
 	inst *pc = user_program ? : &stdlib[0];
@@ -206,6 +204,7 @@ void interpreter(inst * user_program)
     while(1) {
 		inst i;
 	next:
+		__attribute__((unused))
 		IFTRACE2(printstack(psp,pstack));
 		IFTRACE2(printstack(retainsp,retainstack));
 		IFTRACE2(print_return_stack(returnsp,returnstack));
@@ -233,14 +232,20 @@ void interpreter(inst * user_program)
         case bitnot: UNOP(~);
         case dup:
           ppush(peek_n(psp,1)); break;
-        case store_ptr:
-          ppush((cell)&CP);
+        case memstart:
+          ppush((cell)memory);
           break;
-        case name_ptr:
-          ppush((cell)&NP);
+        case memend:
+			  ppush((cell)(memory+VM_MEM));
           break;
+		  case dictstart:
+			  ppush((cell)dict);
+			  break;
+		  case dictend:
+			  ppush((cell)(dict+VM_DICT));
+			  break;
         case ref:					  /* only gc knows a difference */
-        case lit: 
+        case lit:
           x=(cell)(*pc);
           ppush(x);
           pc+=sizeof(cell);
@@ -311,7 +316,7 @@ void interpreter(inst * user_program)
           ppush(addr==NULL ? false : true);
         }
           break;
-        case scall: 
+        case scall:
           /* check if call is primitive, if yes, substitute execution (tail call), since call only
              applies to quotations */
           x = ppop();
@@ -392,7 +397,7 @@ void interpreter(inst * user_program)
           goto nested_call;
         } break;
           /* base-relative tail-call, effectively a goto */
-        case btcall: 
+        case btcall:
           x=(cell)(base+*((short_jump_target *)pc));
           goto tail_call;
           break;
@@ -404,7 +409,7 @@ void interpreter(inst * user_program)
         case clear:
           psp = &pstack[0];
           break;
-        case snum:
+        case psplevel:
           x=(cell)(psp-pstack);
           ppush(x);
           break;
@@ -413,16 +418,16 @@ void interpreter(inst * user_program)
           return;
         }
         goto end_inst;
-    nested_call: 
+    nested_call:
         {
           inst *next_word = (inst *) x;
           IFTRACE2(printf("w:%#x\n",(cell)next_word));
           return_entry e = {.return_address = pc, .current_call=next_word};
           returnpush(e);
-          pc=next_word; 
+          pc=next_word;
         }
         goto end_inst;
-    tail_call: 
+    tail_call:
         {
           inst *next_word = (inst *) x;
           IFTRACE2(printf("w:%#x\n",(cell)next_word));

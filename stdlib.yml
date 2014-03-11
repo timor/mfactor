@@ -1,9 +1,13 @@
 # toplevel ( -- )
-toplevel: [ :snum, :pwrite, :litb, '>', :emit, :litb, ' ', :emit, :token, :find, :oplit, :scall, :blitq, :unknown-token, :bcall, :if, :quit ]
+toplevel: [ :bcall, :prompt, :token, :find, :oplit, :scall, :blitq, :unknown-token, :bcall, :if, :btcall, :toplevel ]
 
+# (prompt) ( -- )
+prompt: [ :psplevel, :pwrite, :litb, '>', :emit, :litb, ' ', :emit ]
+
+# ( x -- x^2 )
 square: [ :dup, :mul ]
 
-# ( cond true false -- )
+# ( cond true false -- [effect] )
 if: [ :truefalse, :stcall ]
 
 # ( input -- )
@@ -15,12 +19,22 @@ nip: [ :swap, :drop ]
 # ( x quot -- x)
 dip: [ :swap, :to_r, :scall, :r_from ]
 
-# ( quot -- )
+# ( x y -- x y x )
+over: [ :swap, :dup, :to_r, :swap, :r_from ]
+
+# ( quot:( -- ? ) -- [effect] )
+# stops when ? is false
 loop: [ :dup, :scall, :blitq, :loop, :qstart, :drop, :qend, :btcall, :if ]
 
+# ( x y quot -- x y )
+2dip: [ :swap, :blitq, :dip, :btcall, :dip ]
+
+# ( -- quot )
+'\': [ :token, :find, :oplit, :nop, :blitq, :bad-input, :btcall, :if ]
+
 # ( pred:( ..a -- ..b ?) body:( ..b -- ..a) -- ..b)
-while: [ ]
-":": [ ]
+while: [ :bcall, :over, :scall, :qstart, :qend, :qstart, :qend, :btcall, :if  ]
+':': [ ]
 
 # ( tok -- )
 unknown-token: [ :parsenum, :oplit, :nop, :blitq, :bad-input, :btcall, :if ]
@@ -32,4 +46,4 @@ unknown-token: [ :parsenum, :oplit, :nop, :blitq, :bad-input, :btcall, :if ]
 t: [ :litb, 1 ]
 f: [ :litb, 0 ]
 
-testloop: [ :qstart, :litb, "!", :emit, :btcall, :t, :qend, :bcall, :loop ]
+testloop: [ :qstart, :litb, "!", :emit, :btcall, :t, :qend, :btcall, :loop ]

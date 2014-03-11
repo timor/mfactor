@@ -1,7 +1,7 @@
 # -*- mode:ruby -*-
 class YAML_Mfactor
   def self.dict_entry(address, name, prim=false)
-    "{ .address = (void *)#{prim ? " " : "&stdlib+"}0x#{address.to_s(16)}, .name = #{name.inspect}, .name_length=#{name.length + 1}},\n"
+    "{ .address = (inst *)#{prim ? " " : "&stdlib+"}0x#{address.to_s(16)}, .name = #{name.inspect}, .name_length=#{name.length + 1}},\n"
   end
   class ISet
     def initialize(yaml)
@@ -136,12 +136,15 @@ END
     f.puts "};"
   end
   stdlib=YAML_Mfactor.new("stdlib.yml",iset)
-  File.open(("generated/stdlib.code.h"),"w") do |f|
+  File.open("generated/stdlib_size.h","w") do |f|
+    f.puts "#define STDLIB_SIZE #{$stdlib_size}"
+  end
+  File.open("generated/stdlib.code.h","w") do |f|
     f.write "inst stdlib[#{$stdlib_size}]= {\n"
     stdlib.code(f)
     f.write "};\n"
   end
-  File.open(("generated/stdlib.dict.h"),"w") do |f|
+  File.open("generated/stdlib.dict.h","w") do |f|
     f.write "dict_entry dict[VM_DICT] __attribute((aligned(1))) = {\n"
     stdlib.dict(f)
     f.write "};\n"
