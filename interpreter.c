@@ -88,7 +88,7 @@ static inst* find_by_name(char *fname)
 static void printstack(cell * sp, cell * stack)
 {
 	printf("stack:");
-	for(cell* ptr = stack;ptr >= sp;ptr++)
+	for(cell* ptr = stack;ptr < sp;ptr++)
 		{
 			printf(" %#x",*ptr);
 		}
