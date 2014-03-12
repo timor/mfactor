@@ -42,11 +42,11 @@ token:
 find:
 # memory bounds
 # code + data mem
-memstart:
-memend:
+memstart: :private
+memend: :private
 # dictionary mem
-dictstart:
-dictend:
+dictstart: :private
+dictend: :private
 # store_tos: ","
 # store_ptr: "_CP"
 # name_ptr: "_NP"
