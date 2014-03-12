@@ -34,7 +34,6 @@ stcall: private
 # used to refer to non-quotation data
 ref: :private
 swap:
-allot:
 input_str: '"'
 # ( -- cstring )
 token:
