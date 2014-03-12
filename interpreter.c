@@ -110,29 +110,31 @@ enum nesting_type {
 	nesting_list
 };
 
-/* skip over instruction stream until a certain one */
-/* TODO: support nesting, since this is akin to quoting */
-static inst * skip_instruction(inst* pc,inst until){
+/* skip over instruction stream until a certain one, supports nesting */
+static inst * skip_to_instruction(inst* pc,inst until, inst nest_on){
 	inst *ptr=pc;
-	for(inst i= *ptr; i != until; i=*(++ptr)) {
+    for(inst i= *ptr; (i != until); i=*(++ptr)) {
 		  IFTRACE2(printf("skipping over %#x, ",i));
-        switch (i) {
-        case lit:
-          ptr+=sizeof(cell);
-          break;
-        case litb:
-        case oplit:
-          ptr+=sizeof(inst);
-          break;
-        case acall:
-          ptr+=sizeof(jump_target);
-          break;
-        case blitq:
-        case bcall:
-        case btcall:
-          ptr+=sizeof(short_jump_target);
-          break;
-        }
+          if (i == nest_on)
+            ptr=skip_to_instruction(ptr+1, until, nest_on);
+            else
+              switch (i) {
+              case lit:
+                ptr+=sizeof(cell);
+                break;
+              case litb:
+              case oplit:
+                ptr+=sizeof(inst);
+                break;
+              case acall:
+                ptr+=sizeof(jump_target);
+                break;
+              case blitq:
+              case bcall:
+              case btcall:
+                ptr+=sizeof(short_jump_target);
+                break;
+              }
     }
     IFTRACE2(printf("skipped until %#x\n",(uintptr_t)ptr));
 	return ptr;
@@ -384,7 +386,7 @@ void interpreter(inst * user_program)
         case qstart:
           IFTRACE2(printf("qstart saving #%x\n",(uintptr_t)pc));
           ppush((cell)pc);
-          pc=skip_instruction(pc,qend);
+          pc=skip_to_instruction(pc,qend,qstart);
           pc+=1;
           break;
         /* case recurse: */
