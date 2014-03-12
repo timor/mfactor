@@ -238,14 +238,20 @@ void interpreter(inst * user_program)
           ppush((cell)memory);
           break;
         case memend:
-			  ppush((cell)(memory+VM_MEM));
+          ppush((cell)(memory+VM_MEM));
           break;
-		  case dictstart:
-			  ppush((cell)dict);
-			  break;
-		  case dictend:
-			  ppush((cell)(dict+VM_DICT));
-			  break;
+        case dictstart:
+          ppush((cell)dict);
+          break;
+        case dictend:
+          ppush((cell)(dict+VM_DICT));
+          break;
+        case cellsize:
+          ppush((cell)sizeof(cell));
+          break;
+        case instbase:
+          ppush((cell)INSTBASE);
+          break;
         case ref:					  /* only gc knows a difference */
         case lit:
           x=(cell)(*pc);
