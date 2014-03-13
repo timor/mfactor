@@ -24,9 +24,7 @@ int main(void)
   /* interpreter((inst*)TBEGIN(p4)); */
   /* interpreter(&p1[sizeof(p1)/sizeof(inst)-1]); */
   /* interpreter((inst*)TBEGIN(p5)); */
-  do {
-	  interpreter(NULL);
-  } while(1);
+  interpreter(NULL);
 }
 
 

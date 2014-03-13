@@ -1,5 +1,7 @@
 dup:
 eql: "="
+gt: ">"
+lt: "<"
 drop:
 zero: "0"
 one: "1"
@@ -60,13 +62,17 @@ div: "/"
 mod:
 parsenum: :private
 nop:
-# safe memory operations
+# unsafe memory operations
+# ( -- data-start data-end mem-start mem-end )
+memrange: :private
 # (value address -- )
-set:
-_setchar: "setc"
+_set: :private
+_setbyte: :private
 # (address -- value)
-get:
-_getchar: "getc"
+_get: :private
+_getbyte: :private
+# unsafe memory operations, for peripherals
+# (value address -- )
 input_list: "{"
 input_quot: "["
 bitand:

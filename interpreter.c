@@ -71,19 +71,33 @@ static inst* find_by_name(char *fname)
   return (inst *) NULL;
 }
 
-	static bool parse_number(char *str, cell * number){
-		int num;
-		IFTRACE1(printf("trying to read '%s' as number...",str));
-		unsigned int read = sscanf(str,"%i",&num);
-		if (read == 1) {
-			IFTRACE1(printf("got %d\n",num));
-			*number=(cell)num;
-			return true;
-		} else {
-			IFTRACE1(printf("failed\n"));
-			return false;
-		}
-	}
+/* get the name of the word, only for debugging */
+static char* find_by_address( inst * word) 
+{
+  static char notfound[] = "(internal or private)";
+  for (char * ptr=(char*)dict;
+       (ptr < ((char*)dict+sizeof(dict)))&&(((dict_entry*)ptr)->name_length > 0);
+       ptr += (((dict_entry*)ptr)->name_length + sizeof(length) + sizeof(void*))) {
+    dict_entry *dptr = (dict_entry*)ptr;
+    if (dptr->address == word)
+      return dptr->name;
+  }
+  return notfound;
+}
+
+static bool parse_number(char *str, cell * number){
+  int num;
+  IFTRACE1(printf("trying to read '%s' as number...",str));
+  unsigned int read = sscanf(str,"%i",&num);
+  if (read == 1) {
+    IFTRACE1(printf("got %d\n",num));
+    *number=(cell)num;
+    return true;
+  } else {
+    IFTRACE1(printf("failed\n"));
+    return false;
+  }
+}
 
 static void printstack(cell * sp, cell * stack)
 {
@@ -207,16 +221,24 @@ void interpreter(inst * user_program)
 		inst i;
 	next:
 		__attribute__((unused))
+        IFTRACE2(printf("\n"));
 		IFTRACE2(printstack(psp,pstack));
 		IFTRACE2(printstack(retainsp,retainstack));
-		IFTRACE2(print_return_stack(returnsp,returnstack));
+		/* IFTRACE2(print_return_stack(returnsp,returnstack)); */
 		i= (*pc++);
 
     dispatch:
         IFTRACE2(printf("i:%#x\n",i));
+        {
+          char * name = find_by_address((inst*)((cell)i<<(8*(sizeof(inst *)-sizeof(inst)))));
+          if (name) {
+            IFTRACE2(printf("%s\n",name));
+            fflush(stdout);
+          }
+        }
         switch (i) {
-#define UNOP(op) { x=(op (ppop())); ppush(x);} break
-#define BINOP(op) { x = ppop(); cell y = ppop(); ppush(y op x);} break
+#define UNOP(op) { x=(op ((intptr_t) ppop())); ppush(x);} break
+#define BINOP(op) { x = ppop(); cell y = ppop(); ppush(((intptr_t)y) op ((intptr_t)x));} break
         case drop: ppop(); break;
         case zero: ppush(0); break;
         case one: ppush(1); break;
@@ -232,6 +254,8 @@ void interpreter(inst * user_program)
         case bitor: BINOP(|);
         case bitxor: BINOP(^);
         case bitnot: UNOP(~);
+        case gt: BINOP(>);
+        case lt: BINOP(<);
         case dup:
           ppush(peek_n(psp,1)); break;
         case memstart:
@@ -286,6 +310,12 @@ void interpreter(inst * user_program)
           return;
         case qend: {
           return_entry e = returnpop();
+          char * name = find_by_address(e.current_call);
+          if (name) {
+            IFTRACE2(printf("<- %s\n",name));
+            fflush(stdout);
+          }
+
           pc=e.return_address;
         } break;
         case eql: BINOP(==);
@@ -364,27 +394,34 @@ void interpreter(inst * user_program)
         } break;
         case nop:
           break;
-/* ( value address -- ) */
-        case set:
+/* ( -- data-start data-end mem-start mem-end ) */
+        case memrange:
+          ppush((cell) &DATA_START);
+          ppush((cell) &DATA_END);
+          ppush((cell) memory);
+          ppush((cell) memory+VM_MEM);
+          break;
+          /* ( value address -- ) */
+        case _set:
           x=ppop();
-          assert_memwrite((cell *)x);
+          /* assert_memwrite((cell *)x); */
           *((cell*)x)=(ppop());
           break;
-        case _setchar:
+        case _setbyte:
           x=ppop();
-          assert_memwrite((cell*)x);
+          /* assert_memwrite((cell*)x); */
           *((char*)x)=((ppop()&0xff));
           break;
           /*  (address -- value )) */
-        case get: {
+        case _get: {
           cell *addr=(cell *)ppop();
-          assert_memread(addr);
+          /* assert_memread(addr); */
           x = *addr;
           ppush(x);
         } break;
-        case _getchar: {
+        case _getbyte: {
           char *addr=(char *)ppop();
-          assert_memread((cell *)addr);
+          /* assert_memread((cell *)addr); */
           x = (cell)(*(addr));
           ppush(x);
         } break;
@@ -430,6 +467,11 @@ void interpreter(inst * user_program)
         {
           inst *next_word = (inst *) x;
           IFTRACE2(printf("w:%#x\n",(cell)next_word));
+          char * name = find_by_address(next_word);
+          if (name) {
+            IFTRACE2(printf("-> %s\n",name));
+            fflush(stdout);
+          }
           return_entry e = {.return_address = pc, .current_call=next_word};
           returnpush(e);
           pc=next_word;
@@ -439,6 +481,11 @@ void interpreter(inst * user_program)
         {
           inst *next_word = (inst *) x;
           IFTRACE2(printf("w:%#x\n",(cell)next_word));
+          char * name = find_by_address(next_word);
+          if (name) {
+            IFTRACE2(printf("-> %s\n",name));
+            fflush(stdout);
+          }
           returnsp->current_call = next_word;
           pc = next_word;
         }
