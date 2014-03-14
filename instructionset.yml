@@ -43,8 +43,8 @@ token:
 find:
 # memory bounds
 # code + data mem
-memstart: :private
-memend: :private
+memstart:
+memend:
 # dictionary mem
 dictstart: :private
 dictend: :private
