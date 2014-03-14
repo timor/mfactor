@@ -27,7 +27,7 @@ set: [ :dup, :memrange, :qstart, :drop, :drop, :qend, :bcall, :2dip, :bcall, :in
 
 # safe memory get
 # ( address -- )
-# [ dup memrange 2drop in-range [ gset ] [ 2drop f ] if ]
+# [ dup memrange 2drop in-range [ _get ] [ 2drop f ] if ]
 get: [ :dup, :memrange, :drop, :drop, :bcall, :in-range, :oplit, :_get, :qstart, :drop, :drop, :btcall, :f, :qend, :btcall, :if ]
 
 
