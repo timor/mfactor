@@ -36,10 +36,14 @@ get: [ :dup, :memrange, :drop, :drop, :bcall, :in-range, :oplit, :_get, :qstart,
 _init_storage: [ :memstart, :dup, :cellsize, :add, :swap, :btcall, :set ]
 
 # next free memory address ( -- _MP)
-_MP: [ :memstart, :btcall, :get ]
+_MP: [ :memstart ]
 
-# ( dest src size -- )
-# memcpy: [ 
+# ( cell -- )
+# _MP [ get set ] [ dup get cell + swap set ] bi
+",": [ :bcall, :_MP, :qstart, :bcall, :get, :btcall, :set, :qend, :qstart, :dup, :bcall, :get, :cellsize, :add, :swap, :bcall, :set , :qend, :btcall, :bi ]
+
+# implement above in terms of byte setting operations
+# "b,"
 
 # (prompt) ( -- )
 prompt: [ :psplevel, :pwrite, :litb, '>', :emit, :litb, ' ', :emit ]
