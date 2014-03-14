@@ -77,6 +77,14 @@ keep: [ :bcall, :over, :oplit, :scall, :btcall, :dip ]
 # [ 2dup ] dip 2dip
 2keep: [ :qstart, :bcall, :over, :bcall, :over, :qend, :bcall, :dip, :btcall, :2dip ]
 
+# ( x p q -- )
+# [ keep ] dip call
+bi: [ :blitq, :keep, :bcall, :dip, :stcall ]
+
+# tri ( x p q r -- )
+# [ [ keep ] dip keep ] dip call
+tri: [ :qstart, :blitq, :keep, :bcall, :dip, :btcall, :keep, :qend, :bcall, :dip, :stcall ]
+
 # ( pred quot -- pred quot )
 do: [ :dup, :btcall, :2dip ]
 
