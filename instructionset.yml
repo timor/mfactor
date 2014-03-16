@@ -32,7 +32,7 @@ truefalse: "?"
 # call absolute address on stack
 scall: "call"
 # call absolute address on stack (tail call)
-stcall: private
+stcall: :private
 # used to refer to non-quotation data
 ref: :private
 swap:
@@ -89,7 +89,7 @@ acall: :private
 # call quotation in code (relative to base address, short)
 bcall: :private
 # tail call quotation in code (relative to base address, short)
-btcall: private
+btcall: :private
 # clear parameter stack
 clear:
 # number of items on stack
