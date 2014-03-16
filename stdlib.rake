@@ -9,8 +9,12 @@ class YAML_Mfactor
       @icodes={}
       j=INSTBASE
       yaml.each do |mnem,public_name|
-        if public_name != :private
+        if (public_name != :private)
           @i_by_name[public_name || mnem.to_s]=mnem
+        else
+          if $noprivate
+            @i_by_name[mnem.to_s] = mnem
+          end
         end
         @icodes[mnem]=j
         j += 1

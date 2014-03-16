@@ -3,6 +3,7 @@ require 'rake/clean'
 require 'tempfile'
 
 hostp=ENV['ONHOST']
+$noprivate=ENV['NOPRIVATE']
 
 PROG=hostp ? "mfactor" : "mfactor.elf"
 MAP=PROG.ext('.map')
