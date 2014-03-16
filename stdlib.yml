@@ -104,7 +104,10 @@ loop: [ :dup, :scall, :blitq, :loop, :qstart, :drop, :qend, :btcall, :if ]
 # ( n quot -- )
 # swap dup 0 = [ 2drop ] [ [ [ call ] keep ] dip 1 - swap times ] if
 # TODO maybe rewrite using loop and composition/currying
-times: [ :swap, :dup, :litb, 0, :eql, :blitq, :drop, :drop, :qstart, :qstart, :oplit, :scall, :bcall, :keep, :qend, :bcall, :dip, :litb, 1, :sub, :swap, :btcall, :times, :qend, :btcall, :if ]
+# times: [ :swap, :dup, :litb, 0, :eql, :qstart, :drop, :drop, :qend, :qstart, :qstart, :oplit, :stcall, :btcall, :keep, :qend, :bcall, :dip, :litb, 1, :sub, :swap, :btcall, :times, :qend, :btcall, :if ]
+# swap dup 0 = [ 2drop ] [ >r dup >r call r> r> 1 - swap times ] if
+times: [ :swap, :dup, :litb, 0, :eql, :qstart, :drop, :drop, :qend, :qstart, :to_r, :dup, :to_r, :scall, :r_from, :r_from, :litb, 1, :sub, :swap, :btcall, :times, :qend, :btcall, :if ]
+
 
 # ( -- quot )
 "\\": [ :token, :find, :oplit, :nop, :blitq, :bad-input, :btcall, :if ]
