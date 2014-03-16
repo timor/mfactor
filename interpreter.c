@@ -482,7 +482,8 @@ void interpreter(inst * user_program)
             IFTRACE2(printf("-> %s\n",name));
             fflush(stdout);
           }
-          returnsp->current_call = next_word;
+          /* dont update caller field to ease debugging */
+          /* returnsp->current_call = next_word; */
           pc = next_word;
         }
         goto end_inst;
