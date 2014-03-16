@@ -61,9 +61,9 @@ static inst* find_by_name(char *fname)
 		(ptr < ((char*)dict+sizeof(dict)))&&(((dict_entry*)ptr)->name_length > 0);
 		ptr += (((dict_entry*)ptr)->name_length + sizeof(length) + sizeof(void*))) {
 	 dict_entry *dptr = (dict_entry*)ptr;
-	 IFTRACE1(printf("comparing to (%#x): %s; ",(uintptr_t)dptr->name,dptr->name));
+	 IFTRACE1(printf("comparing to (%#lx): %s; ",(uintptr_t)dptr->name,dptr->name));
 	 if (strcmp(fname,dptr->name)==0) {
-		IFTRACE1(printf("found at: %#x\n",(cell)dptr->address));
+		IFTRACE1(printf("found at: %#lx\n",(cell)dptr->address));
 		return dptr->address;
 	 }
   }
@@ -104,7 +104,7 @@ static void printstack(cell * sp, cell * stack)
 	printf("stack:");
 	for(cell* ptr = stack;ptr < sp;ptr++)
 		{
-			printf(" %#x",*ptr);
+			printf(" %#lx",*ptr);
 		}
 	printf("\n");
 }
@@ -113,7 +113,7 @@ static void print_return_stack(return_entry * sp, return_entry * stack)
 	printf("stack:");
 	for(return_entry* ptr = sp-1;ptr >= stack;ptr--)
 		{
-			printf(" {%#x->%#x}",(uintptr_t)ptr->current_call,(uintptr_t)ptr->return_address);
+			printf(" {%#lx->%#lx}",(uintptr_t)ptr->current_call,(uintptr_t)ptr->return_address);
 		}
 	printf("\n");
 }
@@ -150,7 +150,7 @@ static inst * skip_to_instruction(inst* pc,inst until, inst nest_on){
                 break;
               }
     }
-    IFTRACE2(printf("skipped until %#x\n",(uintptr_t)ptr));
+    IFTRACE2(printf("skipped until %#lx\n",(uintptr_t)ptr));
 	return ptr;
 }
 
@@ -181,7 +181,7 @@ static void error(char * str)
 
 static cell memory[VM_MEM];
 /* writes are only allowed into dedicated memory area for now */
-#define assert_memwrite(x) if ((x < memory) || (x >= (memory+VM_MEM))) {printf("prevented memory access at %p\n",x);return;}
+#define assert_memwrite(x) if ((x < memory) || (x >= (memory+VM_MEM))) {printf("prevented memory access at %#lx\n",x);return;}
 /* reads are only allowed inside data space */
 #if __linux
 #define DATA_START __data_start
@@ -194,7 +194,7 @@ static cell memory[VM_MEM];
 extern cell DATA_START;
 extern cell DATA_END;
 
-#define assert_memread(x) if ((x < &DATA_START)||(x >= &DATA_END)) {printf("prevented memory read at %p\n",x);return;}
+#define assert_memread(x) if ((x < &DATA_START)||(x >= &DATA_END)) {printf("prevented memory read at %#lx\n",x);return;}
 
 
 void interpreter(inst * user_program)
@@ -297,7 +297,7 @@ void interpreter(inst * user_program)
           pc += sizeof(short_jump_target);
           break;
         case pwrite:
-          printf("%#x",ppop());
+          printf("%#lx",ppop());
           break;
         case emit:
           putchar(ppop());
@@ -364,6 +364,7 @@ void interpreter(inst * user_program)
             i=(x>>(8*(sizeof(inst*)-sizeof(inst))));
             goto dispatch;
           } else {
+            assert_memread((cell *)x);
             IFTRACE2(printf("scall: inmem word\n"));
             goto nested_call;
           } break;
@@ -374,6 +375,7 @@ void interpreter(inst * user_program)
             i=(x>>(8*(sizeof(inst*)-sizeof(inst))));
             goto dispatch;      /* already a tail call */
           } else {
+            assert_memread((cell *)x);
             IFTRACE2(printf("stcall: inmem word\n"));
             goto tail_call;
           } break;
@@ -428,7 +430,7 @@ void interpreter(inst * user_program)
         } break;
           /* skip over to end of quotation , leave starting address on parameter stack*/
         case qstart:
-          IFTRACE2(printf("qstart saving #%x\n",(uintptr_t)pc));
+          IFTRACE2(printf("qstart saving %#lx\n",(uintptr_t)pc));
           ppush((cell)pc);
           pc=skip_to_instruction(pc,qend,qstart);
           pc+=1;
@@ -463,7 +465,7 @@ void interpreter(inst * user_program)
     nested_call:
         {
           inst *next_word = (inst *) x;
-          IFTRACE2(printf("w:%#x\n",(cell)next_word));
+          IFTRACE2(printf("w:%#lx\n",(cell)next_word));
           char * name = find_by_address(next_word);
           if (name) {
             IFTRACE2(printf("-> %s\n",name));
@@ -477,10 +479,10 @@ void interpreter(inst * user_program)
     tail_call:
         {
           inst *next_word = (inst *) x;
-          IFTRACE2(printf("w:%#x\n",(cell)next_word));
+          IFTRACE2(printf("w:%#lx\n",(cell)next_word));
           char * name = find_by_address(next_word);
           if (name) {
-            IFTRACE2(printf("-> %s\n",name));
+            IFTRACE2(printf("..-> %s\n",name));
             fflush(stdout);
           }
           /* dont update caller field to ease debugging */
