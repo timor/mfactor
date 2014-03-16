@@ -248,6 +248,7 @@ void interpreter(inst * user_program)
         case sub: BINOP(-);
         case neg: UNOP(-);
         case asl: BINOP(<<);
+        case asr: BINOP(>>);
         case div: BINOP(/);
         case mod: BINOP(%);
         case bitand: BINOP(&);
