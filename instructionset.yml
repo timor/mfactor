@@ -81,8 +81,6 @@ bitxor:
 bitnot:
 # restart current (non-tail-called) quotation, should be used with
 # care since it depends heavily on invocation context
-# TODO: recurse should very probably be a parse-time only word
-# recurse:
 pwrite:
 # call quotation in code (absolute)
 acall: :private

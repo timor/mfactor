@@ -432,10 +432,6 @@ void interpreter(inst * user_program)
           pc=skip_to_instruction(pc,qend,qstart);
           pc+=1;
           break;
-        /* case recurse: */
-        /*   pc=(returnsp-1)->current_call; */
-        /*   break; */
-          /* short relative-to-base call */
         case bcall: {
           x= (cell)(base+*((short_jump_target *)pc));
           pc += sizeof(short_jump_target);
