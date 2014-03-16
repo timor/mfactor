@@ -57,7 +57,8 @@ instbase:
 # name_ptr: "_NP"
 quit:
 stack_show: "st"
-asl: "shift"
+asl:
+asr:
 div: "/"
 mod:
 parsenum: :private

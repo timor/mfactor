@@ -44,6 +44,11 @@ _MP: [ :memstart ]
 
 # implement above in terms of byte setting operations
 # "b,"
+# bitwise shifting x by n
+# ( x n .. y )
+# dup 0 > [ asl ] [ neg asr ] if
+shift: [ :dup, :litb, 0, :gt, :oplit, :asl, :qstart, :neg, :asr, :qend, :btcall, :if ]
+
 
 # (prompt) ( -- )
 prompt: [ :psplevel, :pwrite, :litb, '>', :emit, :litb, ' ', :emit ]
