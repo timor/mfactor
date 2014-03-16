@@ -105,6 +105,7 @@ class YAML_Mfactor
       elsif value.is_a?(String)
         out << "/*#{value}*/ "
       else
+        raise "negative literals not supported right now" if value < 0
         out << "0x"+value.to_s(16)+","
         j += 1
       end
