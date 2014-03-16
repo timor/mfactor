@@ -85,7 +85,7 @@ task :default => [PROG,:size]
 
 if hostp
   task :run => PROG do
-    sh PROG
+    sh "./#{PROG}"
   end
 end
 
