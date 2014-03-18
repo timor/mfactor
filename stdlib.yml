@@ -44,7 +44,8 @@ get: [ :oplit, :_get, :btcall, :_safeget ]
 
 # set the first word in memory as the memory write pointer (_MP)
 # ( -- )
-_init_storage: [ :memstart, :dup, :cellsize, :add, :swap, :btcall, :set ]
+# memstart cell + _MP set
+_init_storage: [ :memstart, :cellsize, :add, :bcall, :_MP, :bcall, :set ]
 
 # next free memory address ( -- _MP)
 _MP: [ :memstart ]
