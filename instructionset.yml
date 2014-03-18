@@ -1,13 +1,16 @@
+# duplicate top element on stack
 dup:
 eql: "="
 gt: ">"
 lt: "<"
+# drop top element of stack
 drop:
 zero: "0"
 one: "1"
 two: "2"
 add: "+"
 mul: "*"
+# negate
 neg:
 sub: "-"
 # arithmetic shift left
@@ -23,8 +26,11 @@ bitxor:
 bitnot:
 # emit one byte as character on stdout
 emit:
+# read one byte from stdin
 receive:
+# push from parameter to retain stack
 to_r: ">r"
+# pop from retain to parameter stack
 r_from: "r>"
 # literal word
 lit: :private
@@ -34,10 +40,15 @@ litb: :private
 oplit: :private
 # literal base-relative quotation (short)
 blitq: :private
+# start of inline quotation
 qstart: :private
+# end of inline quotation
 qend: :private
+# start of inline list (vector)
 lstart: :private
+# end of inline list
 lend: :private
+# decision primitive, only keep one value based on condition
 # ( cond true false -- true/false )
 truefalse: "?"
 # call absolute address on stack
@@ -46,8 +57,11 @@ scall: "call"
 stcall: :private
 # used to refer to non-quotation data
 ref: :private
+# swap two top elements on stack
 swap:
+# get next token (parsing primitive)
 token:
+# find a token by name in the dictionary
 # (cstring -- foundp quot/addr)
 find:
 # memory bounds
@@ -61,13 +75,17 @@ dictend: :private
 cellsize: "cell"
 # start of instruction codes
 instbase:
+# quit interpreter
 quit:
+# show current stack contents
 stack_show: "st"
+# try to parse string on top of stack as number
+# ( str -- num/str success? )
 parsenum: :private
 nop:
-# unsafe memory operations
 # ( -- data-start data-end mem-start mem-end )
 memrange: :private
+# unsafe memory operations
 # (value address -- )
 _set: :private
 _setbyte: :private
