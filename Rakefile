@@ -13,7 +13,7 @@ CFLAGS= "-O#{OPT} -std=gnu99 -g "
 LDFLAGS= "-O#{OPT} -std=gnu99 -g "
 LDSCRIPT="gcc.ld"
 CODEOFFSET=0
-trace_level=0
+trace_level=ENV['TRACE_LEVEL'] || 0
 CFLAGS << " -DTRACE_INTERPRETER=#{trace_level}"
 if hostp
   INSTBASE=0x80
