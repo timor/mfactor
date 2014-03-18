@@ -63,12 +63,12 @@ change: [ :qstart, :blitq, :get, :bcall, :keep, :qend, :bcall, :dip, :bcall, :di
 
 # ( byteval -- )
 # _MP [ get setbyte ] [ 1 swap +@ ] bi
-"b,": [ :bcall, :_MP, :qstart, :bcall, :get, :btcall, :setbyte, :qend, :qstart, :litb, 1, :swap, :btcall, :"+@", :qend, :btcall, :bi ]
+"b,": [ :bcall, :_MP, :qstart, :bcall, :get, :btcall, :setbyte, :qend, :qstart, :one, :swap, :btcall, :"+@", :qend, :btcall, :bi ]
 
 # bitwise shifting x by n
 # ( x n .. y )
 # dup 0 > [ asl ] [ neg asr ] if
-shift: [ :dup, :litb, 0, :gt, :oplit, :asl, :qstart, :neg, :asr, :qend, :btcall, :if ]
+shift: [ :dup, :zero, :gt, :oplit, :asl, :qstart, :neg, :asr, :qend, :btcall, :if ]
 
 # ( val -- )
 # setbyte does the masking already
@@ -124,14 +124,14 @@ do: [ :dup, :btcall, :2dip ]
 
 # ( quot:( -- ? ) -- [effect] )
 # stops when ? is false
-loop: [ :dup, :scall, :blitq, :loop, :qstart, :drop, :qend, :btcall, :if ]
+loop: [ :dup, :scall, :blitq, :loop, :oplit, :drop, :btcall, :if ]
 
 # ( n quot -- )
 # swap dup 0 = [ 2drop ] [ [ [ call ] keep ] dip 1 - swap times ] if
 # TODO maybe rewrite using loop and composition/currying
 # times: [ :swap, :dup, :litb, 0, :eql, :qstart, :drop, :drop, :qend, :qstart, :qstart, :oplit, :stcall, :btcall, :keep, :qend, :bcall, :dip, :litb, 1, :sub, :swap, :btcall, :times, :qend, :btcall, :if ]
 # swap dup 0 = [ 2drop ] [ >r dup >r call r> r> 1 - swap times ] if
-times: [ :swap, :dup, :litb, 0, :eql, :qstart, :drop, :drop, :qend, :qstart, :to_r, :dup, :to_r, :scall, :r_from, :r_from, :litb, 1, :sub, :swap, :btcall, :times, :qend, :btcall, :if ]
+times: [ :swap, :dup, :zero, :eql, :qstart, :drop, :drop, :qend, :qstart, :to_r, :dup, :to_r, :scall, :r_from, :r_from, :one, :sub, :swap, :btcall, :times, :qend, :btcall, :if ]
 
 
 # ( -- quot )
@@ -151,7 +151,7 @@ unknown-token: [ :parsenum, :oplit, :nop, :blitq, :bad-input, :btcall, :if ]
 
 # ( -- next_free_name )
 
-t: [ :litb, 1 ]
-f: [ :litb, 0 ]
+t: [ :one ]
+f: [ :zero ]
 
 testloop: [ :qstart, :litb, "!", :emit, :btcall, :t, :qend, :btcall, :loop ]
