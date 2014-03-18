@@ -16,6 +16,12 @@ asl:
 asr:
 div: "/"
 mod:
+# bitwise operations
+bitand:
+bitor:
+bitxor:
+bitnot:
+# emit one byte as character on stdout
 emit:
 receive:
 to_r: ">r"
@@ -68,11 +74,6 @@ _setbyte: :private
 # (address -- value)
 _get: :private
 _getbyte: :private
-bitand:
-bitor:
-bitxor:
-bitnot:
-# restart current (non-tail-called) quotation, should be used with
 # care since it depends heavily on invocation context
 pwrite:
 # call quotation in code (absolute)
