@@ -28,7 +28,6 @@ litb: :private
 oplit: :private
 # literal base-relative quotation (short)
 blitq: :private
-name:
 qstart: :private
 qend: :private
 lstart: :private
@@ -42,8 +41,6 @@ stcall: :private
 # used to refer to non-quotation data
 ref: :private
 swap:
-input_str: '"'
-# ( -- cstring )
 token:
 # (cstring -- foundp quot/addr)
 find:
@@ -58,9 +55,6 @@ dictend: :private
 cellsize: "cell"
 # start of instruction codes
 instbase:
-# store_tos: ","
-# store_ptr: "_CP"
-# name_ptr: "_NP"
 quit:
 stack_show: "st"
 parsenum: :private
@@ -74,10 +68,6 @@ _setbyte: :private
 # (address -- value)
 _get: :private
 _getbyte: :private
-# unsafe memory operations, for peripherals
-# (value address -- )
-input_list: "{"
-input_quot: "["
 bitand:
 bitor:
 bitxor:
