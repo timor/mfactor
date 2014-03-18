@@ -10,6 +10,12 @@ add: "+"
 mul: "*"
 neg:
 sub: "-"
+# arithmetic shift left
+asl:
+# arithmetic shift right
+asr:
+div: "/"
+mod:
 emit:
 receive:
 to_r: ">r"
@@ -57,10 +63,6 @@ instbase:
 # name_ptr: "_NP"
 quit:
 stack_show: "st"
-asl:
-asr:
-div: "/"
-mod:
 parsenum: :private
 nop:
 # unsafe memory operations
