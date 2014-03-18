@@ -70,4 +70,8 @@
     - 0: no trace output
     - 1: basic word lookup tracing
     - 2: full execution tracing
+- example:
+
+        rake ONHOST=1 NOPRIVATE=1
+        ./mfactor
 
