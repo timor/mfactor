@@ -4,6 +4,7 @@ require 'tempfile'
 
 hostp=ENV['ONHOST']
 $noprivate=ENV['NOPRIVATE']
+notailcall=ENV['NOTAILCALL']
 
 PROG=hostp ? "mfactor" : "mfactor.elf"
 MAP=PROG.ext('.map')
@@ -54,6 +55,7 @@ directory BUILD
 
 rule '.o' => '.c' do |t|
   cflags=CFLAGS + " -DSTDLIB_SIZE=#{$stdlib_size}"
+  cflags += " -DNOTAILCALL" if notailcall
   tname = t.source.pathmap("#{BUILD}/%n.i")
   sh "#{CC} #{cflags} #{t.source} -E -o #{tname}"
   sh "#{CC} #{cflags} #{t.source} -c -o #{t.name}"

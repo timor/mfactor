@@ -237,6 +237,11 @@ void interpreter(inst * user_program)
           }
         }
         switch (i) {
+/* #ifdef NOTAILCALL */
+/* #define TAIL_CALL nested_call */
+/* #else */
+/* #define TAIL_CALL tail_call */
+/* #endif */
 #define UNOP(op) { x=(op ((intptr_t) ppop())); ppush(x);} break
 #define BINOP(op) { x = ppop(); cell y = ppop(); ppush(((intptr_t)y) op ((intptr_t)x));} break
         case drop: ppop(); break;
@@ -355,6 +360,9 @@ void interpreter(inst * user_program)
           ppush(addr==NULL ? false : true);
         }
           break;
+#ifdef NOTAILCALL
+        case stcall:
+#endif
         case scall:
           /* check if call is primitive, if yes, substitute execution (tail call), since call only
              applies to quotations */
@@ -368,6 +376,7 @@ void interpreter(inst * user_program)
             IFTRACE2(printf("scall: inmem word\n"));
             goto nested_call;
           } break;
+#ifndef NOTAILCALL
         case stcall:            /* WARNING: copied code above */
           x = ppop();
           if (x >= INSTBASE_CELL) {
@@ -379,6 +388,7 @@ void interpreter(inst * user_program)
             IFTRACE2(printf("stcall: inmem word\n"));
             goto tail_call;
           } break;
+#endif
         case stack_show:
           printf("\np");
           printstack(psp,pstack);
@@ -435,16 +445,21 @@ void interpreter(inst * user_program)
           pc=skip_to_instruction(pc,qend,qstart);
           pc+=1;
           break;
+#ifdef NOTAILCALL
+        case btcall:
+#endif
         case bcall: {
           x= (cell)(base+*((short_jump_target *)pc));
           pc += sizeof(short_jump_target);
           goto nested_call;
         } break;
           /* base-relative tail-call, effectively a goto */
+#ifndef NOTAILCALL
         case btcall:
           x=(cell)(base+*((short_jump_target *)pc));
           goto tail_call;
           break;
+#endif
         case acall: {
           x =(cell) *((jump_target *)pc);
           pc += sizeof(jump_target);
