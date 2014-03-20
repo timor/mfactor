@@ -1,6 +1,9 @@
 # top ( .. )
-top: [ :bcall, :_init_storage, :btcall, :listener ]
-# top: [ :btcall, :listener ]
+top: [ :bcall, :_test1, :bcall, :_init_storage, :btcall, :listener ]
+#top: [ :bcall, :_test1, :btcall, :listener ]
+
+_test1: [ :qstart, :qstart, :litb, "a", :emit, :qend, :litb, "b", :emit, :stcall, :qend, :stcall, :btcall, :_test2 ]
+_test2: [ :litb, "c", :emit ]
 
 # listener ( -- )
 listener: [ :bcall, :prompt, :token, :find, :oplit, :scall, :blitq, :unknown-token, :bcall, :if, :btcall, :listener ]
