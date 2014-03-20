@@ -32,15 +32,12 @@
 #define IFTRACE2(expr)
 #endif
 
-/* for storing the length of a stack item, note that this is ONLY for the stack, not for in-memory data */
-typedef unsigned char length;
-
 /* entry in name dictionary */
 /* TODO: ensure correct scanning direction so that skipping over entries stays trivial */
 typedef struct dict_entry
 {
 	void * address;					/* pointer into memory */
-	length name_length;
+    unsigned char name_length;
 	char name[];
 }	__attribute__((packed)) dict_entry;
 /* TODO: doc quirk that primitive names are null-terminated */
@@ -53,16 +50,16 @@ typedef struct return_entry {
 /* dictionary grows up*/
 #include "generated/stdlib.dict.h"
 
-/* returns same address again if not found*/
+/* returns NULL if not found*/
 static inst* find_by_name(char *fname)
 {
   IFTRACE1(printf("looking for '%s' ", fname));
   for(char * ptr=(char*)dict;
 		(ptr < ((char*)dict+sizeof(dict)))&&(((dict_entry*)ptr)->name_length > 0);
-		ptr += (((dict_entry*)ptr)->name_length + sizeof(length) + sizeof(void*))) {
+		ptr += (((dict_entry*)ptr)->name_length + sizeof(unsigned char) + sizeof(void*))) {
 	 dict_entry *dptr = (dict_entry*)ptr;
 	 IFTRACE1(printf("comparing to (%#lx): %s; ",(uintptr_t)dptr->name,dptr->name));
-	 if (strcmp(fname,dptr->name)==0) {
+	 if (strncmp(fname,dptr->name,dptr->name_length)==0) {
 		IFTRACE1(printf("found at: %#lx\n",(cell)dptr->address));
 		return dptr->address;
 	 }
@@ -77,7 +74,7 @@ static char* find_by_address( inst * word)
   static char notfound[] = "(internal or private)";
   for (char * ptr=(char*)dict;
        (ptr < ((char*)dict+sizeof(dict)))&&(((dict_entry*)ptr)->name_length > 0);
-       ptr += (((dict_entry*)ptr)->name_length + sizeof(length) + sizeof(void*))) {
+       ptr += (((dict_entry*)ptr)->name_length + sizeof(unsigned char) + sizeof(void*))) {
     dict_entry *dptr = (dict_entry*)ptr;
     if (dptr->address == word)
       return dptr->name;
