@@ -2,8 +2,9 @@
 top: [ :bcall, :_test1, :bcall, :_init_storage, :btcall, :listener ]
 #top: [ :bcall, :_test1, :btcall, :listener ]
 
-_test1: [ :qstart, :qstart, :litb, "a", :emit, :qend, :litb, "b", :emit, :stcall, :qend, :stcall, :btcall, :_test2 ]
-_test2: [ :litb, "c", :emit ]
+_test1: [ :qstart, :qstart, :litb, "a", :emit, :qend, :litb, "b", :emit, :stcall, :qend, :stcall, :bcall, :_test2, :bcall, :_test3]
+_test2: [ :litb, "c", :emit, :qstart, :bcall, :f, :qend, :bcall, :loop]
+_test3: [ :litb, 5, :qstart, :dup, :litb, "0", :add, :emit, :one, :sub, :dup, :qend, :btcall, :loop, :drop ]
 
 # listener ( -- )
 # prompt token find [ call ] [ unkown-token ] if listener
@@ -132,7 +133,8 @@ do: [ :dup, :btcall, :2dip ]
 
 # ( quot:( -- ? ) -- [effect] )
 # stops when ? is false
-loop: [ :dup, :scall, :blitq, :loop, :oplit, :drop, :btcall, :if ]
+# dup >r call [ r> loop ] [ r> drop ] if
+loop: [ :dup, :to_r, :scall, :qstart, :r_from, :btcall, :loop, :qend, :qstart, :r_from, :drop, :qend, :btcall, :if ]
 
 # ( n quot -- )
 # swap dup 0 = [ 2drop ] [ [ [ call ] keep ] dip 1 - swap times ] if
