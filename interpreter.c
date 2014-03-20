@@ -173,8 +173,10 @@ static void print_error(char * str)
   printf("\n");
 }
 
-#define assert_pop(sp,min) if (sp <= min) { print_error("stack underflow");return;}
-#define assert_push(sp,min,size) if (sp > min+size){ print_error("stack overflow");return;}
+#define BACKTRACE() backtrace(returnsp,returnstack,base,pc);
+
+#define assert_pop(sp,min) if (sp <= min) { print_error("stack underflow");BACKTRACE();return;}
+#define assert_push(sp,min,size) if (sp > min+size){ print_error("stack overflow");BACKTRACE();return;}
 
 
 /* empty ascending stack */
@@ -193,7 +195,7 @@ static void print_error(char * str)
 
 static cell memory[VM_MEM];
 /* writes are only allowed into dedicated memory area for now */
-#define assert_memwrite(x) if ((x < memory) || (x >= (memory+VM_MEM))) {printf("prevented memory access at %#lx\n",x);return;}
+#define assert_memwrite(x) if ((x < memory) || (x >= (memory+VM_MEM))) {printf("prevented memory access at %#lx\n",x); BACKTRACE();return;}
 /* reads are only allowed inside data space */
 #if __linux
 #define DATA_START __data_start
@@ -206,7 +208,7 @@ static cell memory[VM_MEM];
 extern cell DATA_START;
 extern cell DATA_END;
 
-#define assert_memread(x) if ((x < &DATA_START)||(x >= &DATA_END)) {printf("prevented memory read at %#lx\n",x);return;}
+#define assert_memread(x) if ((x < &DATA_START)||(x >= &DATA_END)) {printf("prevented memory read at %#lx\n",x); BACKTRACE(); return;}
 
 
 void interpreter(inst * user_program)
@@ -483,9 +485,15 @@ void interpreter(inst * user_program)
           x=(cell)(psp-pstack);
           ppush(x);
           break;
+        case error:
+          printf("error!\n");
+          BACKTRACE();
+          return;
+          break;
+
         default:
           printf("unimplemented instruction %#x\n",i);
-          backtrace(returnsp,returnstack,base,pc);
+          BACKTRACE();
           return;
         }
         goto end_inst;

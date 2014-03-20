@@ -104,3 +104,5 @@ btcall: :private
 clear:
 # number of items on stack
 psplevel:
+# error (without message)
+error:

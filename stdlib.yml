@@ -31,7 +31,7 @@ in-range: [ :qstart, :bcall, :over, :blitq, :">=", :btcall, :dip, :qend, :bcall,
 # safe memory manipulation
 # ( value address setter: (val addr -- ) -- )
 # [ dup memrange [ 2drop ] 2dip in-range ] dip swap [ call ] [ 3drop f ] if
-_safeset: [ :qstart, :dup, :memrange, :qstart, :drop, :drop, :qend, :bcall, :2dip, :btcall, :in-range, :qend, :bcall, :dip, :swap, :oplit, :stcall, :qstart, :bcall, :3drop, :btcall, :f, :qend, :btcall, :if ]
+_safeset: [ :qstart, :dup, :memrange, :qstart, :drop, :drop, :qend, :bcall, :2dip, :btcall, :in-range, :qend, :bcall, :dip, :swap, :oplit, :stcall, :qstart, :bcall, :3drop, :error, :qend, :btcall, :if ]
 
 #( byteval addr -- )
 setbyte: [ :oplit, :_setbyte, :btcall, :_safeset ]
@@ -41,7 +41,7 @@ set: [ :oplit, :_set, :btcall, :_safeset ]
 # safe memory get
 # ( address getter: (addr -- val ) -- val )
 # [ dup memrange 2drop in-range ] dip swap [ call ] [ 2drop f ] if
-_safeget: [ :qstart, :dup, :memrange, :drop, :drop, :btcall, :in-range, :qend, :bcall, :dip, :swap, :oplit, :stcall, :qstart, :drop, :drop, :btcall, :f, :qend, :btcall, :if ]
+_safeget: [ :qstart, :dup, :memrange, :drop, :drop, :btcall, :in-range, :qend, :bcall, :dip, :swap, :oplit, :stcall, :qstart, :drop, :drop, :error, :qend, :btcall, :if ]
 
 #( addr -- byteval )
 getbyte: [ :oplit, :_getbyte, :btcall, :_safeget ]
