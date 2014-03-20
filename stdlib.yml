@@ -62,6 +62,11 @@ _init_storage: [ :memstart, :cellsize, :add, :bcall, :_MP, :bcall, :set ]
 # next free memory address ( -- _MP)
 _MP: [ :memstart ]
 
+# next name entry - search for string with length 0
+# dictstart [ cell + dup getbyte [ + 1 + ] keep 0 = not ] loop cell - 1 -
+next-name: [ :dictstart, :qstart, :cellsize, :add, :dup, :bcall, :getbyte, :qstart, :add, :one, :add, :qend, :bcall, :keep, :zero, :eql, :btcall, :not, :qend, :bcall, :loop, :cellsize, :sub, :one, :sub ]
+
+# combinator: bind value to different val during quotation evaluation
 
 # apply quotation to variable's value, update
 # ( var quot: ( old -- new ) -- )
