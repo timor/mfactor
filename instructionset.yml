@@ -92,7 +92,7 @@ _setbyte: :private
 # (address -- value)
 _get: :private
 _getbyte: :private
-# care since it depends heavily on invocation context
+# prettywrite ( value -- )
 pwrite:
 # call quotation in code (absolute)
 acall: :private
