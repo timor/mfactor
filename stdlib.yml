@@ -6,12 +6,15 @@ _test1: [ :qstart, :qstart, :litb, "a", :emit, :qend, :litb, "b", :emit, :stcall
 _test2: [ :litb, "c", :emit ]
 
 # listener ( -- )
+# prompt token find [ call ] [ unkown-token ] if listener
 listener: [ :bcall, :prompt, :token, :find, :oplit, :scall, :blitq, :unknown-token, :bcall, :if, :btcall, :listener ]
 
 # ( obj1 obj2 -- ? )
+# over ?
 and: [ :bcall, :over, :truefalse ]
 
 # ( obj1 obj2 -- ? )
+# dupd ?
 or: [ :bcall, :dupd, :truefalse ]
 
 # ( n1 n2 -- ? )
@@ -46,6 +49,7 @@ getbyte: [ :oplit, :_getbyte, :btcall, :_safeget ]
 get: [ :oplit, :_get, :btcall, :_safeget ]
 
 # set the first word in memory as the memory write pointer (_MP)
+# set the second word in memory as the dictionary write pointer (_NP)
 # ( -- )
 # memstart cell + _MP set
 _init_storage: [ :memstart, :cellsize, :add, :bcall, :_MP, :bcall, :set ]
@@ -97,6 +101,7 @@ nip: [ :swap, :drop ]
 dip: [ :swap, :to_r, :scall, :r_from ]
 
 # ( x y quot -- x y )
+# swap [ dip ] dip
 2dip: [ :swap, :blitq, :dip, :btcall, :dip ]
 
 # ( x y -- x x y )
@@ -145,7 +150,9 @@ compose: [ ]
 
 # ( pred:( ..a -- ..b ?) body:( ..b -- ..a) -- ..b)
 while: [ :bcall, :over, :scall, :qstart, :qend, :qstart, :qend, :btcall, :if ]
-':': [ ]
+
+# colon compiler
+":": [ ]
 
 # ( tok -- )
 unknown-token: [ :parsenum, :oplit, :nop, :blitq, :bad-input, :btcall, :if ]
