@@ -18,6 +18,10 @@ and: [ :bcall, :over, :truefalse ]
 # dupd ?
 or: [ :bcall, :dupd, :truefalse ]
 
+# ( ? -- \? )
+# 0 1 ?
+not: [ :zero, :one, :truefalse ]
+
 # ( n1 n2 -- ? )
 # 2dup > [ 2drop t ] [ = ] if
 ">=": [ :bcall, :over, :bcall, :over, :gt, :qstart, :drop, :drop, :btcall, :t, :qend, :oplit, :eql, :btcall, :if ]
