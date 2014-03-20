@@ -221,8 +221,8 @@ void interpreter(inst * user_program)
 		inst i;
 	next:
 		__attribute__((unused))
-        IFTRACE2(printf("\n"));
-		IFTRACE2(printstack(psp,pstack));
+        IFTRACE1(printf("\n"));
+		IFTRACE1(printstack(psp,pstack));
 		IFTRACE2(printstack(retainsp,retainstack));
 		/* IFTRACE2(print_return_stack(returnsp,returnstack)); */
 		i= (*pc++);
@@ -232,7 +232,7 @@ void interpreter(inst * user_program)
         {
           char * name = find_by_address((inst*)((cell)i<<(8*(sizeof(inst *)-sizeof(inst)))));
           if (name) {
-            IFTRACE2(printf("%s\n",name));
+            IFTRACE1(printf("%s\n",name));
             fflush(stdout);
           }
         }
@@ -318,7 +318,7 @@ void interpreter(inst * user_program)
           return_entry e = returnpop();
           char * name = find_by_address(e.current_call);
           if (name) {
-            IFTRACE2(printf("<- %s\n",name));
+            IFTRACE1(printf("<- %s\n",name));
             fflush(stdout);
           }
 
@@ -440,7 +440,7 @@ void interpreter(inst * user_program)
         } break;
           /* skip over to end of quotation , leave starting address on parameter stack*/
         case qstart:
-          IFTRACE2(printf("qstart saving %#lx\n",(uintptr_t)pc));
+          IFTRACE1(printf("qstart saving %#lx\n",(uintptr_t)pc));
           ppush((cell)pc);
           pc=skip_to_instruction(pc,qend,qstart);
           pc+=1;
@@ -483,7 +483,7 @@ void interpreter(inst * user_program)
           IFTRACE2(printf("w:%#lx\n",(cell)next_word));
           char * name = find_by_address(next_word);
           if (name) {
-            IFTRACE2(printf("-> %s\n",name));
+            IFTRACE1(printf("-> %s\n",name));
             fflush(stdout);
           }
           return_entry e = {.return_address = pc, .current_call=next_word};
@@ -497,7 +497,7 @@ void interpreter(inst * user_program)
           IFTRACE2(printf("w:%#lx\n",(cell)next_word));
           char * name = find_by_address(next_word);
           if (name) {
-            IFTRACE2(printf("..-> %s\n",name));
+            IFTRACE1(printf("..-> %s\n",name));
             fflush(stdout);
           }
           /* dont update caller field to ease debugging */
