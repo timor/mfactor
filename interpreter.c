@@ -322,7 +322,6 @@ void interpreter(inst * user_program)
           break;
         case receive:
           ppush(getchar()); break;
-        case name:
         case quit:
           printf("bye!\n");
           return;
