@@ -154,15 +154,27 @@ static inst * skip_to_instruction(inst* pc,inst until, inst nest_on){
 	return ptr;
 }
 
-static void error(char * str)
+static void backtrace(return_entry * sp, return_entry * stack, inst * base, inst * pc) 
+{
+  printf("backtrace @ %#lx:\n",(uintptr_t)(pc-base));
+	for(return_entry* ptr = sp-1;ptr >= stack;ptr--)
+		{
+          char *current_name = find_by_address(ptr->current_call);
+          /* char *current_return = find_by_address(ptr->return_address); */
+          printf("%#lx %s\n",(uintptr_t)(ptr->current_call - base),current_name);
+		}
+}
+
+
+static void print_error(char * str)
 {
   printf("error: ");
   printf(str);
   printf("\n");
 }
 
-#define assert_pop(sp,min) if (sp <= min) { error("stack underflow");return;}
-#define assert_push(sp,min,size) if (sp > min+size){ error("stack overflow");return;}
+#define assert_pop(sp,min) if (sp <= min) { print_error("stack underflow");return;}
+#define assert_push(sp,min,size) if (sp > min+size){ print_error("stack overflow");return;}
 
 
 /* empty ascending stack */
@@ -349,7 +361,7 @@ void interpreter(inst * user_program)
           if (tok) {
             ppush((cell)tok);
           } else {
-            error("token reader error");
+            print_error("token reader error");
             return;
           }} break;
           /* (str -- foundp quot/addr) */
@@ -474,6 +486,7 @@ void interpreter(inst * user_program)
           break;
         default:
           printf("unimplemented instruction %#x\n",i);
+          backtrace(returnsp,returnstack,base,pc);
           return;
         }
         goto end_inst;
