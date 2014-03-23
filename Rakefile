@@ -54,7 +54,7 @@ BUILD="build"
 directory BUILD
 
 rule '.o' => '.c' do |t|
-  cflags=CFLAGS + " -DSTDLIB_SIZE=#{$stdlib_size}"
+  cflags=CFLAGS
   cflags += " -DNOTAILCALL" if notailcall
   tname = t.source.pathmap("#{BUILD}/%n.i")
   sh "#{CC} #{cflags} #{t.source} -E -o #{tname}"
@@ -128,7 +128,7 @@ require 'yaml'
 
 CLEAN.include "stdlib.yml"
 
-file "stdlib.yml" => ["stdlib.mfactor","stdlib.rake","generated"] do
+file "generated/stdlib.yml" => ["stdlib.mfactor","stdlib.rake","generated"] do
   File.open("generated/stdlib.yml","w") do |f|
     code=load_factor("stdlib.mfactor","instructionset.yml")
     # puts code

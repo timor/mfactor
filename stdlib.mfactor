@@ -1,3 +1,4 @@
+! -*- mode: factor -*-
 ! top level loop
 : top ( -- ) _test1 _init_storage listener ;
 
