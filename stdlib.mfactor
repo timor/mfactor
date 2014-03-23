@@ -6,9 +6,10 @@
 : f ( -- f ) 0 ;
 
 ! some unit tests
-: _test1 ( -- ) [ [ 'a' emit ] 'b' emit call ] call _test2 _test3 nl emit ;
+: _test1 ( -- ) [ [ 'a' emit ] 'b' emit call ] call _test2 _test3 nl emit _test4 ;
 : _test2 ( -- ) 'c' emit [ f ] loop ;
 : _test3 ( -- ) 5 [ dup '0' + emit 1 - dup ] loop drop ;
+: _test4 ( -- ) 254 memstart setbyte 175 memstart 1 + setbyte memstart get . ;
 
 ! listener
 : unknown-token ( tok -- ) parsenum [ nop ] [ bad-input ] if ;
