@@ -356,6 +356,7 @@ void interpreter(inst * user_program)
         /* ( -- token ) */
         case token: {
           char *tok = read_token();
+          IFTRACE1(printf("got token:%s\n",tok));
           if (tok) {
             ppush((cell)tok);
           } else {
@@ -484,6 +485,12 @@ void interpreter(inst * user_program)
           break;
         case error:
           printf("error!\n");
+          printf("\np");
+          printstack(psp,pstack);
+          printf("retain");
+          printstack(retainsp,retainstack);
+          printf("return");
+          print_return_stack(returnsp,returnstack);
           BACKTRACE();
           return;
           break;
