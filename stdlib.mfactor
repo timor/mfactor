@@ -1,0 +1,79 @@
+! top level loop
+: top ( -- ) _test1 _init_storage listener ;
+
+: t ( -- t ) 1 ;
+: f ( -- f ) 0 ;
+
+! some unit tests
+: _test1 ( -- ) [ [ 'a' emit ] 'b' emit call ] call _test2 _test3 nl emit ;
+: _test2 ( -- ) 'c' emit [ f ] loop ;
+: _test3 ( -- ) 5 [ dup '0' + emit 1 - dup ] loop drop ;
+
+! listener
+: unknown-token ( tok -- ) parsenum [ nop ] [ bad-input ] if ;
+: listener ( -- ) prompt token find [ call ] [ unknown-token ] if listener ;
+: prompt ( -- ) psplevel pwrite '>' emit ' ' emit ;
+: nl ( -- nl ) 10 ;
+: bad-input ( input -- ) drop nl 'X' dup '_' swap emit emit emit emit ;
+
+: and ( obj1 obj2 -- ? ) over ? ;
+: or ( obj1 obj2 -- - ) dupd ? ;
+: not ( ? -- \? ) 0 1 ? ;
+
+: >= ( n1 n2 -- ? ) 2dup > [ 2drop t ] [ = ] if ;
+: in-range ( val start end -- ? ) [ over [ >= ] dip ] dip < and ;
+
+: _safeset ( value address setter: ( val addr -- ) -- ) [ dup memrange [ 2drop ] 2dip in-range ] dip swap  [ call ] [ 3drop error ] if ;
+: setbyte ( byteval -- addr ) [ _setbyte ] _safeset ;
+: set ( val -- addr ) [ _set ] _safeset ;
+
+: _safeget ( address getter: (addr -- val ) -- val ) [ dup memrange [ 2drop ] in-range ] dip swap [ call ] [ 2drop error ] if ;
+: getbyte ( addr -- byteval ) [ _getbyte ] _safeget ;
+: get ( addr -- val ) [ _get ] _safeget ;
+
+! first memory cell: memory write pointer _MP
+: _init_storage ( -- ) memstart cell + _MP set ;
+: _MP ( -- MP ) memstart ;
+
+! find next free dictionary entry (name length = 0)
+: next-name ( -- addr ) dictstart [ cell + dup getbyte [ + 1 + ] keep 0 = not ] loop cell - 1 - ;
+
+! apply q to var's value and update var
+: change ( var q: ( old -- new ) -- ) [ [ get ] keep ] dip dip set ;
+! incf var
+: +@ ( n var -- ) [ + ] change ;
+
+! compile byte
+: b, ( byteval -- ) _MP [ get setbyte ] [ 1 swap +@ ] bi ;
+: shift ( x n -- y ) dup 0 > [ asl ] [ neg asr ] if ;
+! compile cell
+: , ( val -- ) cell [ dup b, 8 neg shift ] times drop ;
+
+: square ( x -- x² ) dup * ;
+
+: if ( cond true false -- true/false ) ? call ;
+: when ( ..a ? true: ( ..a -- ..a ) -- ..a ) [ nop ] if ;
+
+! some stack shufflers and combinators
+: nip ( x y - y ) swap drop ;
+: dip ( x quot -- x ) swap >r call r> ;
+: 2dip ( x y quot -- x y ) swap [ dip ] dip ;
+: 2dup ( a b  -- a b a b ) over over ;
+: dupd ( x y -- x x y ) >r dup r> ;
+: 2drop ( a b -- ) drop drop ;
+: 3drop ( x y z -- ) drop drop drop ;
+: over ( x y -- x y x ) dupd swap ;
+: keep ( ..a x quot: ( ..a x -- ..b ) -- ..b x ) over [ call ] dip ;
+: 2keep ( ..a x y quot: ( ..a x y -- ..b ) -- ..b x y ) [ 2dup ] dip 2dip ;
+: bi ( x p q -- ) [ keep ] dip call ;
+: tri ( x p q r -- ) [ [ keep ] dip keep ] dip call ;
+
+: loop ( ... pred: ( ... -- ... ? ) -- ... ) dup >r call [ r> loop ] [ r> drop ] if ;
+: times ( n quot -- ) swap dup 0 = [ 2drop ] [ [ [ call ] keep ] dip 1 - swap times ] if ;
+! : while ( pred:( ..a -- ..b ?) body:( ..b -- ..a) -- ..b)
+
+! parsing word
+: \ ( -- quot ) token find [ nop ] [ bad-input ] if ;
+: . ( thing -- ) pwrite nl emit ;
+
+: testloop ( -- ) [ '!' emit t ] loop ;

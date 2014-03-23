@@ -1,4 +1,5 @@
 # -*- mode:ruby -*-
+
 class YAML_Mfactor
   def self.dict_entry(address, name, prim=false)
     "{ .address = (inst *)#{prim ? " " : "&stdlib+"}0x#{address.to_s(16)}, .name = #{name.inspect}, .name_length=#{name.length + 1}},\n"
@@ -37,7 +38,7 @@ class YAML_Mfactor
     attr_accessor :name
     attr_accessor :start
     def initialize(name, instlist, iset, start)
-      @instructions=instlist+[:qend]
+      @instructions=instlist
       @name=name
       @instruction_set=iset
       @start=start
@@ -121,10 +122,65 @@ class YAML_Mfactor
   end
 end
 
+def maybe_tailcall(body)
+  if body.length >= 1 && body[-1] == :scall
+    body[-1] = :stcall
+  elsif body.length >= 2 && body[-2] == :bcall
+    body[-2] = :btcall
+  end
+end
+
+def load_instructions(filename)
+  iset={}
+  IO.readlines(filename).each do |line|
+    /(?<mnem>\w+):\s+("(?<name>\S+)")?/ =~ line
+    if mnem
+      iset[name||mnem] = mnem
+    end
+  end
+  # puts iset,"\n"
+  iset
+end
+
+def load_factor(filename,instructionset)
+  # puts "reading instruction set from #{instructionset}"
+  prims=load_instructions(instructionset)
+  res={}
+  IO.readlines(filename).each do |line|
+    # puts "checking line:\n#{line}"
+    /(:\s+(?<name>\S+)\s+(?<stackeffect>\(.+\))\s+(?<words>(\S+\s*)+)\s+;)?(!(?<comment>.*))?/ =~ line
+    if name
+      # puts "found word: #{name}"
+      body=[]
+      words.gsub!(/'(.)'/) { |match| $1.ord.to_s }
+      words.gsub!("[","qstart")
+      words.gsub!("]","qend")
+      words.split("\s").each do |word|
+        if prims[word]
+          # possible proper tail call insertion
+          if prims[word] == "qend"
+            maybe_tailcall(body)
+          end
+          body.push prims[word].to_sym
+        elsif /^\d+$/ =~ word
+          body.push :litb
+          body.push word.to_i
+        else
+          body.push :bcall
+          body.push word.to_sym
+        end
+      end
+      maybe_tailcall(body)
+      body.push :qend
+      res[name] = body
+    end
+  end
+  res
+end
+
 directory "generated"
-task :stdlib => ["instructionset.yml","stdlib.yml","generated"] do
+task :stdlib => ["instructionset.yml","generated/stdlib.yml","generated"] do
   require 'yaml'
-  YAML::ENGINE.yamler = 'syck'
   iset=YAML.load_file("instructionset.yml")
   File.open("generated/inst_enum.h","w") do |f|
     f.puts "enum inst_set {\n"
@@ -140,7 +196,7 @@ END
     end
     f.puts "};"
   end
-  stdlib=YAML_Mfactor.new("stdlib.yml",iset)
+  stdlib=YAML_Mfactor.new("generated/stdlib.yml",iset)
   File.open("generated/stdlib_size.h","w") do |f|
     f.puts "#define STDLIB_SIZE #{$stdlib_size}"
   end
