@@ -69,6 +69,7 @@
 : 2keep ( ..a x y quot: ( ..a x y -- ..b ) -- ..b x y ) [ 2dup ] dip 2dip ;
 : bi ( x p q -- ) [ keep ] dip call ;
 : tri ( x p q r -- ) [ [ keep ] dip keep ] dip call ;
+: pick ( x y z -- x y z x ) >r over r> swap ;
 
 : loop ( ... pred: ( ... -- ... ? ) -- ... ) dup >r call [ r> loop ] [ r> drop ] if ;
 : times ( n quot -- ) swap dup 0 = [ 2drop ] [ [ [ call ] keep ] dip 1 - swap times ] if ;
