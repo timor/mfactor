@@ -79,4 +79,18 @@
 : \ ( -- quot ) token find [ nop ] [ bad-input ] if ;
 : . ( thing -- ) pwrite nl emit ;
 
+! compile until should inspect nesting frames, which reside on the
+! retain stack during read. nesting frames need to supply information
+! about current length and termination action
+
+! nesting types: 0: quotation, 1:list
+
+! compare first char of string
+: starts-with ( str char -- ? ) swap getbyte = ;
+
+! loop until char
+: until-token ( quot: ( tok -- ) char -- )  [ token 2dup swap starts-with [ drop f ] [ pick call t ] if ] loop 2drop ;
+
+! quotations on the stack
+: [ ( -- type num ) 0 0 [ find . . ] ']' until-token 2drop ;
 : testloop ( -- ) [ '!' emit t ] loop ;
