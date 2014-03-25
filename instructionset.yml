@@ -60,6 +60,7 @@ ref: :private
 # swap two top elements on stack
 swap:
 # get next token (parsing primitive)
+# ( -- string length )
 token:
 # find a token by name in the dictionary
 # (cstring -- foundp quot/addr)

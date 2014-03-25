@@ -60,14 +60,17 @@ static unsigned int skip_whitespace(void)
 }
 
 /* exception for double-quote */
-char * read_token()
+char * read_token(unsigned int * len)
 {
 	char c;
+    unsigned int i=0;
+    *len=0;
 	char *tokptr=token;
 	skip_whitespace();
 	bool nosep_token_found=false;
 	while (!whitespacep(c=read_char())) {
 		*tokptr++=c;
+        i++;
 		if (c == '"') {
 			nosep_token_found = true;
 			break;
@@ -77,5 +80,6 @@ char * read_token()
 	if (!nosep_token_found)
 		if (!unread_char(c))
 			return NULL;
+    *len = i;
 	return token;
 }

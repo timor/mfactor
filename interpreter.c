@@ -354,12 +354,14 @@ void interpreter(inst * user_program)
           cell cond = ppop();
           ppush(cond ? true_cons : false_cons);
         } break;
-        /* ( -- token ) */
+        /* ( -- cstring length ) */
         case token: {
-          char *tok = read_token();
+          unsigned int len;
+          char *tok = read_token(&len);
           IFTRACE1(printf("got token:%s\n",tok));
           if (tok) {
             ppush((cell)tok);
+            ppush((cell)len);
           } else {
             print_error("token reader error");
             return;
