@@ -374,11 +374,6 @@ void interpreter(inst * user_program)
           ppush(addr==NULL ? false : true);
         }
           break;
-        case is_semi: 
-        {
-          char * addr = (char *)ppop();
-          ppush((strncmp(addr, ";",1) == 0)? true : false);
-        } break;
 #ifdef NOTAILCALL
         case stcall:
 #endif
