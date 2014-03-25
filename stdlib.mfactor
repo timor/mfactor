@@ -33,8 +33,11 @@
 : getbyte ( addr -- byteval ) [ _getbyte ] _safeget ;
 : get ( addr -- val ) [ _get ] _safeget ;
 
-! first memory cell: memory write pointer _MP
-: _init_storage ( -- ) memstart cell + _MP set ;
+! memory pointers:
+! MP: make pointer for comma operations, also pointing into data memory for allocation
+! DP: data pointer pointing into empty data memory, for allocation
+: _init_storage ( -- ) memstart cell 2 * + _DP set _DP get _MP set ;
+: _DP ( -- DP ) memstart cell + ;
 : _MP ( -- MP ) memstart ;
 
 ! find next free dictionary entry (name length = 0)
