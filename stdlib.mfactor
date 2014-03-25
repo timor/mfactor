@@ -63,23 +63,29 @@
 : nip ( x y - y ) swap drop ;
 : dip ( x quot -- x ) swap >r call r> ;
 : 2dip ( x y quot -- x y ) swap [ dip ] dip ;
+: 3dip ( x y z quot -- x y z ) swap [ 2dip ] dip ;
 : 2dup ( a b  -- a b a b ) over over ;
 : dupd ( x y -- x x y ) >r dup r> ;
 : 2drop ( a b -- ) drop drop ;
 : 3drop ( x y z -- ) drop drop drop ;
 : over ( x y -- x y x ) dupd swap ;
 : keep ( ..a x quot: ( ..a x -- ..b ) -- ..b x ) over [ call ] dip ;
-: 2keep ( ..a x y quot: ( ..a x y -- ..b ) -- ..b x y ) [ 2dup ] dip 2dip ;
-: bi ( x p q -- ) [ keep ] dip call ;
+: 2keep ( ..a x y quot: ( ..a x y -- ..b ) -- ..b x y ) [ 2dup ] dip 2dip ;: bi ( x p q -- ) [ keep ] dip call ;
 : tri ( x p q r -- ) [ [ keep ] dip keep ] dip call ;
 : pick ( x y z -- x y z x ) >r over r> swap ;
+! deprecated ones
+: rot ( x y z -- y z x ) >r swap r> swap ;
+: -rot (x y z -- z x y ) swap >r swap r> ;
+: spin ( x y z -- z y x ) swap rot ;
+: tuck ( x y -- y x y ) swap over ;
 
 : loop ( ... pred: ( ... -- ... ? ) -- ... ) dup >r call [ r> loop ] [ r> drop ] if ;
 : times ( n quot -- ) swap dup 0 = [ 2drop ] [ [ [ call ] keep ] dip 1 - swap times ] if ;
-! : while ( pred:( ..a -- ..b ?) body:( ..b -- ..a) -- ..b)
+! : while ( pred:( ..a -- ..b ?) body:( ..b -- ..a) -- ..b) over [ call ] 2keep [ swap [ call ]] [] if
 
 ! parsing word
 : \ ( -- quot ) token find [ nop ] [ bad-input ] if ;
+
 : . ( thing -- ) pwrite nl emit ;
 
 ! compile until should inspect nesting frames, which reside on the
