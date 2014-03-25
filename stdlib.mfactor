@@ -93,13 +93,27 @@
 ! about current length and termination action
 
 ! nesting types: 0: quotation, 1:list
+! nesting frame: type number
 
 ! compare first char of string
 : starts-with ( str char -- ? ) swap getbyte = ;
 
 ! loop until char
-: until-token ( quot: ( tok -- ) char -- )  [ token 2dup swap starts-with [ drop f ] [ pick call t ] if ] loop 2drop ;
+: until-token ( quot: ( tok -- ) char -- )  [ token swap 2dup starts-with [ drop f ] [ [ swap [ call ] keep ] dip t ] if ] loop 2drop ;
+
+: inst, ( inst -- ) cell 1 - 8 * neg shift b, ;
+! compile short to mem, little endian
+: short, ( short -- ) dup b, 8 neg shift b, ;
+
+! compile stack item
+: q, ( inst -- ) dup instbase > [ inst, ] [ oplit bcall inst, short, ] if ;
+
+! compile number of instructions on stack into memory
+: stack2code ( ..inst num -- ) dup [ swap >r ] times [ r> inst, ] times ;
 
 ! quotations on the stack
-: [ ( -- type num ) 0 0 [ find . . ] ']' until-token 2drop ;
+: [ ( -- type num ) 0 0 [ find [ -rot 1 + ] [ error ] if ] ']' until-token ;
+
+! colon compiler
+
 : testloop ( -- ) [ '!' emit t ] loop ;
