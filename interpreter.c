@@ -101,16 +101,17 @@ static void printstack(cell * sp, cell * stack)
 	printf("stack:");
 	for(cell* ptr = stack;ptr < sp;ptr++)
 		{
-			printf(" %#lx",*ptr);
+          printf(" %#lx",*ptr);
 		}
 	printf("\n");
 }
-static void print_return_stack(return_entry * sp, return_entry * stack)
+static void print_return_stack(return_entry * sp, return_entry * stack, inst * base)
 {
 	printf("stack:");
 	for(return_entry* ptr = sp-1;ptr >= stack;ptr--)
 		{
-			printf(" {%#lx->%#lx}",(uintptr_t)ptr->current_call,(uintptr_t)ptr->return_address);
+          printf(" {%#lx->%#lx}",((uintptr_t)ptr->current_call-(uintptr_t)base),
+                 ((uintptr_t)ptr->return_address)-(uintptr_t) base);
 		}
 	printf("\n");
 }
@@ -122,12 +123,12 @@ enum nesting_type {
 };
 
 /* skip over instruction stream until a certain one, supports nesting */
-static inst * skip_to_instruction(inst* pc,inst until, inst nest_on){
+static inst * skip_to_instruction(inst* pc,inst until, inst nest_on, inst *base){
 	inst *ptr=pc;
     for(inst i= *ptr; (i != until); i=*(++ptr)) {
 		  IFTRACE2(printf("skipping over %#x, ",i));
           if (i == nest_on)
-            ptr=skip_to_instruction(ptr+1, until, nest_on);
+            ptr=skip_to_instruction(ptr+1, until, nest_on, base);
             else
               switch (i) {
               case lit:
@@ -147,7 +148,7 @@ static inst * skip_to_instruction(inst* pc,inst until, inst nest_on){
                 break;
               }
     }
-    IFTRACE2(printf("skipped until %#lx\n",(uintptr_t)ptr));
+    IFTRACE2(printf("skipped until %#lx\n",(uintptr_t)ptr-(uintptr_t)base));
 	return ptr;
 }
 
@@ -371,6 +372,11 @@ void interpreter(inst * user_program)
           ppush(addr==NULL ? false : true);
         }
           break;
+        case is_semi: 
+        {
+          char * addr = (char *)ppop();
+          ppush((strncmp(addr, ";",1) == 0)? true : false);
+        } break;
 #ifdef NOTAILCALL
         case stcall:
 #endif
@@ -406,7 +412,7 @@ void interpreter(inst * user_program)
           printf("retain");
           printstack(retainsp,retainstack);
           printf("return");
-          print_return_stack(returnsp,returnstack);
+          print_return_stack(returnsp,returnstack,base);
           break;
         case parsenum: {
           char *str = (char *)ppop();
@@ -451,9 +457,9 @@ void interpreter(inst * user_program)
         } break;
           /* skip over to end of quotation , leave starting address on parameter stack*/
         case qstart:
-          IFTRACE1(printf("qstart saving %#lx\n",(uintptr_t)pc));
+          IFTRACE1(printf("qstart saving %#lx\n",(uintptr_t)pc-(uintptr_t)base));
           ppush((cell)pc);
-          pc=skip_to_instruction(pc,qend,qstart);
+          pc=skip_to_instruction(pc,qend,qstart,base);
           pc+=1;
           break;
 #ifdef NOTAILCALL
@@ -490,7 +496,7 @@ void interpreter(inst * user_program)
           printf("retain");
           printstack(retainsp,retainstack);
           printf("return");
-          print_return_stack(returnsp,returnstack);
+          print_return_stack(returnsp,returnstack,base);
           BACKTRACE();
           return;
           break;
@@ -504,7 +510,7 @@ void interpreter(inst * user_program)
     nested_call:
         {
           inst *next_word = (inst *) x;
-          IFTRACE2(printf("w:%#lx\n",(cell)next_word));
+          IFTRACE2(printf("w:%#lx\n",(cell)next_word-(uintptr_t)base));
           char * name = find_by_address(next_word);
           if (name) {
             IFTRACE1(printf("-> %s\n",name));
@@ -518,7 +524,7 @@ void interpreter(inst * user_program)
     tail_call:
         {
           inst *next_word = (inst *) x;
-          IFTRACE2(printf("w:%#lx\n",(cell)next_word));
+          IFTRACE2(printf("w:%#lx\n",(cell)next_word-(uintptr_t)base));
           char * name = find_by_address(next_word);
           if (name) {
             IFTRACE1(printf("..-> %s\n",name));
