@@ -70,7 +70,8 @@
 : 3drop ( x y z -- ) drop drop drop ;
 : over ( x y -- x y x ) dupd swap ;
 : keep ( ..a x quot: ( ..a x -- ..b ) -- ..b x ) over [ call ] dip ;
-: 2keep ( ..a x y quot: ( ..a x y -- ..b ) -- ..b x y ) [ 2dup ] dip 2dip ;: bi ( x p q -- ) [ keep ] dip call ;
+: 2keep ( ..a x y quot: ( ..a x y -- ..b ) -- ..b x y ) [ 2dup ] dip 2dip ;
+: bi ( x p q -- ) [ keep ] dip call ;
 : tri ( x p q r -- ) [ [ keep ] dip keep ] dip call ;
 : pick ( x y z -- x y z x ) >r over r> swap ;
 ! deprecated ones
