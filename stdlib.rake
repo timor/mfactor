@@ -27,7 +27,7 @@ class YAML_Mfactor
     end
     # print dictionary entry
     def dict(out)
-      puts @i_by_name unless Rake.application.options.silent
+      # puts @i_by_name unless Rake.application.options.silent
       @i_by_name.each do |name, mnem|
         out << YAML_Mfactor::dict_entry(@icodes[mnem] << (PTRSIZE-8),name,true)
       end
@@ -89,7 +89,7 @@ class YAML_Mfactor
   # output a c array with the stdlib bytecode
   def code(out)
     structured=@thread_index.keys.map{|mft| mft.code}
-    puts structured.inspect unless Rake.application.options.silent
+    # puts structured.inspect unless Rake.application.options.silent
     pass1=structured.flatten    
     j=0
     pass1.each do |value|
