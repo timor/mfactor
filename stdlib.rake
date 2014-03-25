@@ -44,10 +44,17 @@ class YAML_Mfactor
       @start=start
     end
     def code
+      thread=[]
       @instructions.map do |i|
-        @instruction_set.code(i.to_s) ? @instruction_set.code(i.to_s) :
-          (i.is_a?(String) ? i.ord : i)
-      end.unshift("0x#{@start.to_s(16)}:#{@name}")
+        if @instruction_set.code(i.to_s)
+          thread.push("#{i}")
+          thread.push(@instruction_set.code(i.to_s))
+        else
+          thread.push i
+        end
+      end
+      thread.unshift("0x#{@start.to_s(16)}:#{@name}")
+      thread
     end
     def length
       sum=0
