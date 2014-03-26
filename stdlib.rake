@@ -1,5 +1,24 @@
 # -*- mode:ruby -*-
 
+
+# source: http://stackoverflow.com/questions/4692437/regex-with-named-capture-groups-getting-all-matches-in-ruby
+class String
+  # This method will return an array of MatchData's rather than the
+  # array of strings returned by the vanilla `scan`.
+  def match_all(regex)
+    match_str = self
+    match_datas = []
+    while match_str.length > 0 do
+      md = match_str.match(regex)
+      break unless md
+      match_datas << md
+      match_str = md.post_match
+    end
+    return match_datas
+  end
+end
+
+
 class YAML_Mfactor
   def self.dict_entry(address, name, prim=false)
     "{ .address = (inst *)#{prim ? " " : "&stdlib+"}0x#{address.to_s(16)}, .name = #{name.inspect}, .name_length=#{name.length + 1}},\n"
@@ -153,13 +172,16 @@ def load_factor(filename,instructionset)
   # puts "reading instruction set from #{instructionset}"
   prims=load_instructions(instructionset)
   res={}
-  IO.readlines(filename).each do |line|
-    # puts "checking line:\n#{line}"
-    /(:\s+(?<name>\S+)\s+(?<stackeffect>\(.+\))\s+(?<words>(\S+\s*)+)\s+;)?(!(?<comment>.*))?/ =~ line
-    if name
-      # puts "found word: #{name}"
+  text=File.read(filename).gsub(/!.*\n/,"") # remove comments here
+  text.match_all(/(?<type>\S+)?:\s+(?<name>\S+)\s+(?<effect>\(.+\))\s+(?<words>.+);/).each do |match|
+    name=match[:name]
+    words=match[:words]
+    type=match[:type]
+    if match[:name]
+      # puts "found word: #{name]}"
+      puts "parsing word found: #{name}" if type == "SYNTAX"
       body=[]
-      words.gsub!(/'(.)'/) { |match| $1.ord.to_s }
+      words.gsub!(/'(.)'/) { |m| $1.ord.to_s }
       words.gsub!("[","qstart")
       words.gsub!("]","qend")
       words.split("\s").each do |word|
@@ -172,6 +194,9 @@ def load_factor(filename,instructionset)
         elsif /^\d+$/ =~ word
           body.push :litb
           body.push word.to_i
+        elsif /^0[xX]|[[:xdigit:]]+$/ =~ word
+          body.push :litb
+          body.push word.hex
         else
           body.push :bcall
           body.push word.to_sym
