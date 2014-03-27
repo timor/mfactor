@@ -366,7 +366,7 @@ void interpreter(inst * user_program)
             print_error("token reader error");
             return;
           }} break;
-          /* (str -- foundp quot/addr) */
+          /* (str -- quot/addr foundp) */
         case find: {
           cell orig=ppop();
           inst * addr=find_by_name((char*)orig);
