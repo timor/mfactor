@@ -40,6 +40,8 @@
 : _DP ( -- DP ) memstart cell + ;
 : _MP ( -- MP ) memstart ;
 
+: showmem ( -- ) memstart _MP get [ 2dup = [ f ] [ [ dup getbyte . 1 + ] dip t ] if ] loop 2drop ;
+
 ! find next free dictionary entry (name length = 0)
 : next-name ( -- addr ) dictstart [ cell + dup getbyte [ + 1 + ] keep 0 = not ] loop cell - 1 - ;
 
