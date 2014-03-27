@@ -87,6 +87,7 @@
 
 : loop ( ... pred: ( ... -- ... ? ) -- ... ) dup >r call [ r> loop ] [ r> drop ] if ;
 : times ( ... n quot: ( ... -- ... ) -- ... ) swap dup 0 = [ 2drop ] [ [ [ call ] keep ] dip 1 - swap times ] if ;
+: each-integer ( ... n quot: ( ... i -- ... ) -- ... ) swap 0 swap [ [ swap call ] 2keep 1 + ] times 2drop ;
 ! : while ( pred:( ..a -- ..b ?) body:( ..b -- ..a) -- ..b) over [ call ] 2keep [ swap [ call ]] [] if
 
 ! parsing word
