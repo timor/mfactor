@@ -171,7 +171,7 @@ static void print_error(char * str)
   printf("\n");
 }
 
-#define BACKTRACE() backtrace(returnsp,returnstack,base,pc);
+#define BACKTRACE() (printstack(psp,pstack),printstack(retainsp,retainstack),backtrace(returnsp,returnstack,base,pc));
 
 #define assert_pop(sp,min) if (sp <= min) { print_error("stack underflow");BACKTRACE();return;}
 #define assert_push(sp,min,size) if (sp > min+size){ print_error("stack overflow");BACKTRACE();return;}
