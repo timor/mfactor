@@ -104,18 +104,21 @@ SYNTAX: \ ( -- quot ) token drop find [ nop ] [ bad-input ] if ;
 ! loop until char
 : until-token ( quot: ( tok -- ) char -- )  [ token drop swap 2dup starts-with [ drop f ] [ [ swap [ call ] keep ] dip t ] if ] loop 2drop ;
 
-: inst, ( inst -- ) cell 1 - 8 * neg shift b, ;
-! compile short to mem, little endian
+! convert tos to inst
+: inst ( inst -- ) cell 1 - 8 * neg shift 0xff bitand ;
+! ! compile short to mem, little endian
 : short, ( short -- ) dup b, 8 neg shift b, ;
 
 ! compile stack item
-: q, ( inst -- ) dup instbase > [ inst, ] [ oplit bcall inst, short, ] if ;
+! : q, ( inst -- ) dup instbase > [ inst, ] [ oplit bcall inst, short, ] if ;
 
-! compile number of instructions on stack into memory
-: stack2code ( ..inst num -- ) dup [ swap >r ] times [ r> inst, ] times ;
 ! add item pair to stack sequence
 : seq+ ( ..item/itype num item itype -- ..item/itype new-item new-itype num+1 ) rot 1 + ;
 
+: prim? ( address -- ? ) inst instbase >= ;
+
+! compile number of words to memory words: ( word type )
+: stack2code ( ..item/itype num -- ) [ dup 0 = [ drop b, ] [ dup 1 = [ drop oplit bcall b, short, ] [ dup 2 = [ drop oplit acall b, , ] [ = 3 [ oplit lit b, , ] [ error ] if ] if ] if ] if ] times oplit qend b, ;
 
 ! quotations on the stack
 ! put element on the stack along with word type information: 0: instruction, 1: short jump, 2: long jump, 3: long literal, 4: byte literal
