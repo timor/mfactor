@@ -194,7 +194,7 @@ def load_factor(filename,instructionset)
         elsif /^\d+$/ =~ word
           body.push :litb
           body.push word.to_i
-        elsif /^0[xX]|[[:xdigit:]]+$/ =~ word
+        elsif /^0[xX][[:xdigit:]]+$/ =~ word
           body.push :litb
           body.push word.hex
         else
