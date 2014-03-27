@@ -87,7 +87,7 @@
 ! : while ( pred:( ..a -- ..b ?) body:( ..b -- ..a) -- ..b) over [ call ] 2keep [ swap [ call ]] [] if
 
 ! parsing word
-: \ ( -- quot ) token drop find [ nop ] [ bad-input ] if ;
+SYNTAX: \ ( -- quot ) token drop find [ nop ] [ bad-input ] if ;
 
 : . ( thing -- ) pwrite nl emit ;
 
@@ -113,9 +113,13 @@
 
 ! compile number of instructions on stack into memory
 : stack2code ( ..inst num -- ) dup [ swap >r ] times [ r> inst, ] times ;
+! add item pair to stack sequence
+: seq+ ( ..item/itype num item itype -- ..item/itype new-item new-itype num+1 ) rot 1 + ;
+
 
 ! quotations on the stack
-: [ ( -- type num ) 0 0 [ find [ -rot 1 + ] [ error ] if ] ']' until-token ;
+! put element on the stack along with word type information: 0: instruction, 1: short jump, 2: long jump, 3: long literal, 4: byte literal
+SYNTAX: [ ( -- num ) 0 [ find [ dup prim? [ inst 0 seq+ ] [ 2 seq+ ] if ] [ parsenum [ 3 seq+ ] [ error ] if ] if ] ']' until-token ;
 
 ! colon compiler
 
