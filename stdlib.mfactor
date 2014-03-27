@@ -50,11 +50,14 @@
 ! incf var
 : +@ ( n var -- ) [ + ] change ;
 
-! compile byte
-: b, ( byteval -- ) _MP [ get setbyte ] [ 1 swap +@ ] bi ;
 : shift ( x n -- y ) dup 0 > [ asl ] [ neg asr ] if ;
+
+! compile reverse
+: -b, ( byteval -- ) _MP [ 1 neg swap +@ ] [ get setbyte ] bi ;
+! ! compile short to mem, little endian
+: -s, ( short -- ) dup 8 neg shift -b, -b, ;
 ! compile cell
-: , ( val -- ) cell [ dup b, 8 neg shift ] times drop ;
+: -, ( val -- ) cell [ neg over swap shift -b, ] each-integer drop ;
 
 : square ( x -- x² ) dup * ;
 
@@ -91,13 +94,6 @@ SYNTAX: \ ( -- quot ) token drop find [ nop ] [ bad-input ] if ;
 
 : . ( thing -- ) pwrite nl emit ;
 
-! compile until should inspect nesting frames, which reside on the
-! retain stack during read. nesting frames need to supply information
-! about current length and termination action
-
-! nesting types: 0: quotation, 1:list
-! nesting frame: type number
-
 ! compare first char of string
 : starts-with ( str char -- ? ) swap getbyte = ;
 
@@ -106,23 +102,26 @@ SYNTAX: \ ( -- quot ) token drop find [ nop ] [ bad-input ] if ;
 
 ! convert tos to inst
 : inst ( inst -- ) cell 1 - 8 * neg shift 0xff bitand ;
-! ! compile short to mem, little endian
-: short, ( short -- ) dup b, 8 neg shift b, ;
 
-! compile stack item
-! : q, ( inst -- ) dup instbase > [ inst, ] [ oplit bcall inst, short, ] if ;
+: prim? ( address -- ? ) inst instbase >= ;
+
+! quotations on the stack
+! put element on the stack along with word type information: 0: instruction, 1: short jump, 2: long jump, 3: long literal, 4: byte literal
 
 ! add item pair to stack sequence
 : seq+ ( ..item/itype num item itype -- ..item/itype new-item new-itype num+1 ) rot 1 + ;
 
-: prim? ( address -- ? ) inst instbase >= ;
+: qstacksize ( type -- size )  dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup 2 = [ drop 5 ] [ dup 3 = [ drop 5 ] [ 4 = [ 2 ] [ error ] if ] if ] if ] if ] if ;
+
+! increment DP by size of word type
+: DP+q ( type -- ) qstacksize dup '+' emit . _DP +@ ;
+
+: q, ( item type -- ) dup 0 = [ drop -b, ] [ dup 1 = [ drop oplit bcall inst -b, -s, ] [ dup 2 = [ drop oplit acall inst -b, -, ] [ = 3 [ oplit lit inst -b, -, ] -b, [ error ] if ] if ] if ] if ;
 
 ! compile number of words to memory words: ( word type )
-: stack2code ( ..item/itype num -- ) [ dup 0 = [ drop b, ] [ dup 1 = [ drop oplit bcall b, short, ] [ dup 2 = [ drop oplit acall b, , ] [ = 3 [ oplit lit b, , ] [ error ] if ] if ] if ] if ] times oplit qend b, ;
+: _stack2code ( ..item/itype num -- )  [ q, ] times ;
 
-! quotations on the stack
-! put element on the stack along with word type information: 0: instruction, 1: short jump, 2: long jump, 3: long literal, 4: byte literal
-SYNTAX: [ ( -- num ) 0 [ find [ dup prim? [ inst 0 seq+ ] [ 2 seq+ ] if ] [ parsenum [ 3 seq+ ] [ error ] if ] if ] ']' until-token ;
+SYNTAX: [ ( -- num ) 0 [ find [ dup prim? [ inst 0 dup DP+q seq+ ] [ 2 dup DP+q seq+ ] if ] [ parsenum [ 3 dup DP+q seq+ ] [ error ] if ] if ] ']' until-token oplit qend inst 0 dup DP+q seq+ _MP get [ _DP get _MP set _stack2code ] dip ;
 
 ! colon compiler
 
