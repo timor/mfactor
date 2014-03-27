@@ -81,7 +81,7 @@
 : pick ( x y z -- x y z x ) >r over r> swap ;
 ! deprecated ones
 : rot ( x y z -- y z x ) >r swap r> swap ;
-: -rot (x y z -- z x y ) swap >r swap r> ;
+: -rot ( x y z -- z x y ) swap >r swap r> ;
 : spin ( x y z -- z y x ) swap rot ;
 : tuck ( x y -- y x y ) swap over ;
 
