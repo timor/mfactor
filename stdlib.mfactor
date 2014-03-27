@@ -86,7 +86,7 @@
 : tuck ( x y -- y x y ) swap over ;
 
 : loop ( ... pred: ( ... -- ... ? ) -- ... ) dup >r call [ r> loop ] [ r> drop ] if ;
-: times ( n quot -- ) swap dup 0 = [ 2drop ] [ [ [ call ] keep ] dip 1 - swap times ] if ;
+: times ( ... n quot: ( ... -- ... ) -- ... ) swap dup 0 = [ 2drop ] [ [ [ call ] keep ] dip 1 - swap times ] if ;
 ! : while ( pred:( ..a -- ..b ?) body:( ..b -- ..a) -- ..b) over [ call ] 2keep [ swap [ call ]] [] if
 
 ! parsing word
