@@ -128,14 +128,6 @@ require 'yaml'
 
 CLEAN.include "stdlib.yml"
 
-file "generated/stdlib.yml" => ["stdlib.mfactor","stdlib.rake","generated"] do
-  File.open("generated/stdlib.yml","w") do |f|
-    code=load_factor("stdlib.mfactor","instructionset.yml")
-    # puts code
-    f.write(code.to_yaml)
-  end
-end
-
 task :inst => :stdlib
 
 file "interpreter.o" => :inst

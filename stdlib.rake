@@ -1,5 +1,6 @@
 # -*- mode:ruby -*-
 
+require 'yaml'
 
 # source: http://stackoverflow.com/questions/4692437/regex-with-named-capture-groups-getting-all-matches-in-ruby
 class String
@@ -210,10 +211,20 @@ def load_factor(filename,instructionset)
   res
 end
 
+THISDIR=File.dirname(__FILE__)
+puts "looking for instruction set and stdlib code in #{THISDIR}"
+
+file "generated/stdlib.yml" => ["#{THISDIR}/stdlib.mfactor","#{THISDIR}/stdlib.rake","generated"] do
+  File.open("generated/stdlib.yml","w") do |f|
+    code=load_factor("#{THISDIR}/stdlib.mfactor","#{THISDIR}/instructionset.yml")
+    # puts code
+    f.write(code.to_yaml)
+  end
+end
+
 directory "generated"
-task :stdlib => ["instructionset.yml","generated/stdlib.yml","generated"] do
-  require 'yaml'
-  iset=YAML.load_file("instructionset.yml")
+task :stdlib => ["#{THISDIR}/instructionset.yml","generated/stdlib.yml","generated"] do
+  iset=YAML.load_file("#{THISDIR}/instructionset.yml")
   File.open("generated/inst_enum.h","w") do |f|
     f.puts "enum inst_set {\n"
     i=INSTBASE
