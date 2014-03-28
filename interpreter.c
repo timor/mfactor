@@ -198,9 +198,14 @@ static cell memory[VM_MEM];
 #if __linux
 #define DATA_START __data_start
 #define DATA_END end
-#elif CORTEX_M
+#elif (PROCESSOR_EXPERT)
+#define DATA_START _sdata
+#define DATA_END _edata
+#elif (CORTEX_M)
 #define DATA_START __data_start__
 #define DATA_END end
+#else
+#error "no data segment information"
 #endif
 
 extern cell DATA_START;
