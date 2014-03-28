@@ -65,6 +65,8 @@
   - ONHOST: if set, will be compiled for host system
   - NOPRIVATE: if set, dictionary entries will be generated even for
     words only used internally, useful for tracing (see below)
+  - NOTAILCALL: if set, don't use tail calls at all.  Useful for debugging,
+    but limits operations massively since all loops are implemented recursively
 - compile time switches:
   - TRACE_LEVEL: controls execution trace information on standard output
     - 0: no trace output
