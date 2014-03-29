@@ -122,6 +122,7 @@ SYNTAX: \ ( -- quot ) token drop find [ nop ] [ bad-input ] if ;
 ! compile number of words to memory words: ( word type )
 : _stack2code ( ..item/itype num -- )  [ q, ] times ;
 
+! scan input stream until closing ']', advance DP (memory extent), call function that actually puts code on stack to memory
 SYNTAX: [ ( -- num ) 0 [ find [ dup prim? [ inst 0 dup DP+q seq+ ] [ 2 dup DP+q seq+ ] if ] [ parsenum [ 3 dup DP+q seq+ ] [ error ] if ] if ] ']' until-token oplit qend inst 0 dup DP+q seq+ _MP get [ _DP get _MP set _stack2code ] dip ;
 
 ! colon compiler
