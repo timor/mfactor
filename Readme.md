@@ -24,7 +24,7 @@
   point into inaccessible memory, it must be a primitive instruction
 
 # data memory #
-- Thw only memory handling available in the kernel is getting the
+- The only memory handling available in the kernel is getting the
   start and end of readable and writable memory as well as reading and
   writing (unsafely) to arbitrary memory addresses
 - Sequence accumulation works by collecting items on the stack until
@@ -35,11 +35,24 @@
 - garbage collection support relies on explicit ref instructions
   from quotations, which have the same runtime effect as lits
 - boxed data includes size and type information.
+## boxing/sequences ##
+- sequences consist of header containing sequence type ( 2 bytes ),
+  element length (1 byte) and sequence length (1 byte for now).
+- types of sequences
+  - arrays: one type field overhead per element
+  - byte-arrays: for strings
+  - quotations: like byte-arrays, but don't respond to nth
+
+- sequence access
+  - push sequence header elements to stack ( element-size elements type )
+  - use functions to work on this "header structure", nth can be
+    implemented generically that way
 
 # types (TODO) #
 - used in boxed data
 - for data on stack, type stack holds rtti
-- parse words can unbox data on type checks when known at parse time
+- parser can unbox data on type checks when known at parse time, this
+  however requires distinct words that work with unboxed values
 
 # stacks #
 

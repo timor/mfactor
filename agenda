@@ -3,9 +3,9 @@
 - DONE basic repl
 - DONE proper tail calls
 - DONE add primitives for allocating stuff in data mem
-- DOING add allocating stuff in dictionary 
-- untangle build system
-- sequence allocation
+- DONE add allocating stuff in dictionary
+- DONE untangle build system
+- DOING sequence allocation
 - type checking and boxing/unboxing
 - stopworld mark-sweep gc (should only be triggered during user input, so not time critical)
 - ssa compiler (graphical, to_c)
