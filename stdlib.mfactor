@@ -53,10 +53,13 @@
 : shift ( x n -- y ) dup 0 > [ asl ] [ neg asr ] if ;
 
 ! compile reverse
+: b, ( byteval -- ) _MP [ get setbyte ] [ 1 swap +@ ] bi ;
 : -b, ( byteval -- ) _MP [ 1 neg swap +@ ] [ get setbyte ] bi ;
 ! ! compile short to mem, little endian
+: s, ( short -- ) dup b, 8 neg shift b, ;
 : -s, ( short -- ) dup 8 neg shift -b, -b, ;
 ! compile cell
+: , ( val -- ) cell [ dup b, 8 neg shift ] times drop ;
 : -, ( val -- ) cell [ neg over swap shift -b, ] each-integer drop ;
 
 : square ( x -- x² ) dup * ;
