@@ -6,7 +6,10 @@
 - DONE add allocating stuff in dictionary
 - DONE untangle build system
 - DOING sequence allocation
+  - NEEDFIX: current scheme of directly increasing DP doesnt support
+    nesting, replace with atomic allocation after read
 - type checking and boxing/unboxing
-- stopworld mark-sweep gc (should only be triggered during user input, so not time critical)
+- stopworld mark-sweep gc (should only be triggered during user input,
+  so not time critical)
 - ssa compiler (graphical, to_c)
 
