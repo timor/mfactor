@@ -27,6 +27,7 @@ bitnot:
 # emit one byte as character on stdout
 emit:
 # read one byte from stdin
+# ( -- byte )
 receive:
 # push from parameter to retain stack
 to_r: ">r"
