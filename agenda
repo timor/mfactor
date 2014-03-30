@@ -9,6 +9,7 @@
   - NEEDFIX: current scheme of directly increasing DP doesnt support
     nesting, replace with atomic allocation after read
 - type checking and boxing/unboxing
+- graphical decompiler (should work on console, though)
 - stopworld mark-sweep gc (should only be triggered during user input,
   so not time critical)
 - ssa compiler (graphical, to_c)
