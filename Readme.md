@@ -53,6 +53,9 @@
 - for data on stack, type stack holds rtti
 - parser can unbox data on type checks when known at parse time, this
   however requires distinct words that work with unboxed values
+- 2 strategies for inline data:
+  - untyped, make sure compiler does all necessary checks
+  - typed, additional overhead needed since box must be stored
 
 # stacks #
 
