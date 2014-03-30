@@ -87,6 +87,8 @@
 : -rot ( x y z -- z x y ) swap >r swap r> ;
 : spin ( x y z -- z y x ) swap rot ;
 : tuck ( x y -- y x y ) swap over ;
+! mine
+: 2swap ( a b x y -- x y a b ) [ -rot ] dip -rot ;
 
 : loop ( ... pred: ( ... -- ... ? ) -- ... ) dup >r call [ r> loop ] [ r> drop ] if ;
 : times ( ... n quot: ( ... -- ... ) -- ... ) swap dup 0 = [ 2drop ] [ [ [ call ] keep ] dip 1 - swap times ] if ;
