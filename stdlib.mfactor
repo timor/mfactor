@@ -103,7 +103,8 @@ SYNTAX: \ ( -- quot ) token drop find [ nop ] [ bad-input ] if ;
 ! compare first char of string
 : starts-with ( str char -- ? ) swap getbyte = ;
 
-! loop until char
+! loop until token (char for now)
+! TODO: support parsing words here!!!
 : until-token ( quot: ( tok -- ) char -- )  [ token drop swap 2dup starts-with [ drop f ] [ [ swap [ call ] keep ] dip t ] if ] loop 2drop ;
 
 ! convert tos to inst
