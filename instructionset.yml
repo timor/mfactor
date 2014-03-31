@@ -49,6 +49,9 @@ qend: :private
 lstart: :private
 # end of inline list
 lend: :private
+# inline strings [ char.. strend ] ( -- str len )
+strstart: :private
+strend: :private
 # decision primitive, only keep one value based on condition
 # ( cond true false -- true/false )
 truefalse: "?"
