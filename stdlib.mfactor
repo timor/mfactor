@@ -6,7 +6,7 @@
 : f ( -- f ) 0 ;
 
 ! some unit tests
-: _test1 ( -- ) [ [ 'a' emit ] 'b' emit call ] call _test2 _test3 nl emit _test4 ;
+: _test1 ( -- ) [ [ 'a' emit ] 'b' emit call ] call _test2 _test3 nl _test4 ;
 : _test2 ( -- ) 'c' emit [ f ] loop ;
 : _test3 ( -- ) 5 [ dup '0' + emit 1 - dup ] loop drop ;
 : _test4 ( -- ) 254 memstart setbyte 175 memstart 1 + setbyte memstart get . ;
@@ -15,7 +15,7 @@
 : unknown-token ( tok -- ) parsenum [ nop ] [ bad-input ] if ;
 : listener ( -- ) prompt token drop find [ call ] [ unknown-token ] if listener ;
 : prompt ( -- ) psplevel pwrite '>' emit ' ' emit ;
-: nl ( -- nl ) 10 ;
+: nl ( -- nl ) 10 emit;
 : bad-input ( input -- ) drop nl 'X' dup '_' swap emit emit emit emit ;
 
 : and ( obj1 obj2 -- ? ) over ? ;
@@ -98,7 +98,7 @@
 ! parsing word
 SYNTAX: \ ( -- quot ) token drop find [ nop ] [ bad-input ] if ;
 
-: . ( thing -- ) pwrite nl emit ;
+: . ( thing -- ) pwrite nl ;
 
 ! compare first char of string
 : starts-with ( str char -- ? ) swap getbyte = ;
