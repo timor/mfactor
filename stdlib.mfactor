@@ -6,10 +6,11 @@
 : f ( -- f ) 0 ;
 
 ! some unit tests
-: _test1 ( -- ) [ [ 'a' emit ] 'b' emit call ] call _test2 _test3 nl _test4 ;
+: _test1 ( -- ) [ [ 'a' emit ] 'b' emit call ] call _test2 _test3 nl _test4 _test5 ;
 : _test2 ( -- ) 'c' emit [ f ] loop ;
 : _test3 ( -- ) 5 [ dup '0' + emit 1 - dup ] loop drop ;
 : _test4 ( -- ) 254 memstart setbyte 175 memstart 1 + setbyte memstart get . ;
+: _test5 ( -- ) [ "tests done." print ] call nl ;
 
 ! listener
 : unknown-token ( tok -- ) parsenum [ nop ] [ bad-input ] if ;
@@ -90,6 +91,9 @@
 ! mine
 : 2swap ( a b x y -- x y a b ) [ -rot ] dip -rot ;
 
+! print byte array
+: print ( str len -- ) [ dup getbyte emit 1 + ] times drop ;
+
 : loop ( ... pred: ( ... -- ... ? ) -- ... ) dup >r call [ r> loop ] [ r> drop ] if ;
 : times ( ... n quot: ( ... -- ... ) -- ... ) swap dup 0 = [ 2drop ] [ [ [ call ] keep ] dip 1 - swap times ] if ;
 : each-integer ( ... n quot: ( ... i -- ... ) -- ... ) swap 0 swap [ [ swap call ] 2keep 1 + ] times 2drop ;
@@ -134,10 +138,10 @@ SYNTAX: \ ( -- quot ) token drop find [ nop ] [ bad-input ] if ;
 : _find_qword ( token -- item type ) find [ dup prim? [ inst 0 ] [ 2 ] if ] [ parsenum [ 3 ] [ error ] if ] if ;
 
 ! scan input stream until closing ']', accumulate item type pairs and total size in bytes on stack
-: ([) ( -- ..item/types num size ) 0 0 [ _find_qword dup qstacksize [ 2swap ] dip + [ 1 + ] dip ] ']' until-token [ oplit qend inst 0 ] 2dip [ 1 + ] dip 1 + ;
+: _readq ( -- ..item/types num size ) 0 0 [ _find_qword dup qstacksize [ 2swap ] dip + [ 1 + ] dip ] ']' until-token [ oplit qend inst 0 ] 2dip [ 1 + ] dip 1 + ;
 
 ! return address of quotation, not header!
-SYNTAX: [ ( -- addr) ([) dup 255 > [ error ] [ 2 s, dup b, ] if _MP get [ _stack2code ] dip ;
+SYNTAX: [ ( -- addr) _readq dup 255 > [ error ] [ 2 s, dup b, ] if _MP get [ _stack2code ] dip ;
 
 ! sequence head types: 1: string, 2: quotation, 3: vector, anything above INSTBASE is an extended type
 

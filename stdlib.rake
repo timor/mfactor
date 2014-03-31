@@ -182,6 +182,7 @@ def load_factor(filename,instructionset)
       # puts "found word: #{name]}"
       puts "parsing word found: #{name}" if type == "SYNTAX"
       body=[]
+      words.gsub!(/".+?"/) { |m| '::'+m.gsub(/\s/,'::SPACE::')+'::' }
       words.gsub!(/'(.)'/) { |m| $1.ord.to_s }
       words.gsub!("[","qstart")
       words.gsub!("]","qend")
@@ -198,6 +199,10 @@ def load_factor(filename,instructionset)
         elsif /^0[xX][[:xdigit:]]+$/ =~ word
           body.push :litb
           body.push word.hex
+        elsif /::"(.+)"::/ =~ word
+          body.push :strstart
+          $1.gsub("::SPACE::"," ").chars.to_a.each { |s| body.push s.ord }
+          body.push :strend
         else
           body.push :bcall
           body.push word.to_sym

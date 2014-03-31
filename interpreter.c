@@ -460,8 +460,8 @@ void interpreter(inst * user_program)
           /* ( -- str len ) */
         case strstart: {
           inst * end = skip_to_instruction(pc, strend, 0 ,base); /* don't nest */
-          ppush((cell)pc+1);
-          ppush(end-pc-1);
+          ppush((cell)pc);
+          ppush(end-pc);
           pc=end+1;
         } break;
         case strend:
