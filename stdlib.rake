@@ -160,7 +160,7 @@ end
 def load_instructions(filename)
   iset={}
   IO.readlines(filename).each do |line|
-    /(?<mnem>\w+):\s+("(?<name>\S+)")?/ =~ line
+    /^\s*(?<mnem>\w+):\s+("(?<name>\S+)")?/ =~ line
     if mnem
       iset[name||mnem] = mnem
     end
