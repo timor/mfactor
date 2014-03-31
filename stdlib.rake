@@ -214,7 +214,7 @@ end
 THISDIR=File.dirname(__FILE__)
 puts "looking for instruction set and stdlib code in #{THISDIR}"
 
-file "generated/stdlib.yml" => ["#{THISDIR}/stdlib.mfactor","#{THISDIR}/stdlib.rake","generated"] do
+file "generated/stdlib.yml" => ["#{THISDIR}/instructionset.yml","#{THISDIR}/stdlib.mfactor","#{THISDIR}/stdlib.rake","generated"] do
   File.open("generated/stdlib.yml","w") do |f|
     code=load_factor("#{THISDIR}/stdlib.mfactor","#{THISDIR}/instructionset.yml")
     # puts code
