@@ -119,7 +119,8 @@ SYNTAX: \ ( -- quot ) token drop find [ nop ] [ bad-input ] if ;
 ! quotations on the stack
 ! put element on the stack along with word type information: 0: instruction, 1: short jump, 2: long jump, 3: long literal, 4: byte literal
 
-: _q+ ( ..item/itype num item itype -- ..item/itype new-item new-itype num+1 ) rot 1 + ;
+! deprecated
+! : _q+ ( ..item/itype num item itype -- ..item/itype new-item new-itype num+1 ) rot 1 + ;
 
 : qstacksize ( type -- size )  dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup 2 = [ drop 5 ] [ dup 3 = [ drop 5 ] [ 4 = [ 2 ] [ error ] if ] if ] if ] if ] if ;
 
