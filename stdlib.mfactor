@@ -1,7 +1,7 @@
 ! -*- mode: factor -*-
 ! top level loop
-: top ( -- ) _test1 _init_storage listener ;
-
+! : top ( -- ) _test1 _init_storage listener ;
+: top ( -- ) listener ;
 : t ( -- t ) 1 ;
 : f ( -- f ) 0 ;
 
@@ -17,7 +17,7 @@
 : listener ( -- ) prompt token drop find [ call ] [ unknown-token ] if listener ;
 : prompt ( -- ) psplevel pwrite '>' emit ' ' emit ;
 : nl ( -- nl ) 10 emit;
-: bad-input ( input -- ) drop nl 'X' dup '_' swap emit emit emit emit ;
+: bad-input ( input -- ) drop nl 'X' dup '_' swap emit emit emit nl ;
 
 : and ( obj1 obj2 -- ? ) over ? ;
 : or ( obj1 obj2 -- - ) dupd ? ;
