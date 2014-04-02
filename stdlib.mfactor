@@ -61,7 +61,7 @@
 : -s, ( short -- ) dup 8 neg shift -b, -b, ;
 ! compile cell
 : , ( val -- ) cell [ dup b, 8 neg shift ] times drop ;
-: -, ( val -- ) cell [ neg over swap shift -b, ] each-integer drop ;
+: -, ( val -- ) cell [ cell 1 - neg + 8 * over swap shift -b, ] each-integer drop ;
 
 : square ( x -- x² ) dup * ;
 
