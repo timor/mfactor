@@ -41,7 +41,7 @@
 : _DP ( -- DP ) memstart cell + ;
 : _MP ( -- MP ) memstart ;
 
-: showmem ( -- ) memstart _DP get [ 2dup >= [ f ] [ [ dup getbyte . 1 + ] dip t ] if ] loop 2drop ;
+: showmem ( -- ) memstart _DP get [ 2dup >= [ f ] [ [ dup getbyte .x 1 + ] dip t ] if ] loop 2drop ;
 
 ! find next free dictionary entry (name length = 0)
 : _free-name ( -- addr ) dictstart [ cell + dup getbyte [ + 1 + ] keep 0 = not ] loop cell - 1 - ;
@@ -109,6 +109,7 @@
 SYNTAX: \ ( -- quot ) token drop find [ nop ] [ bad-input ] if ;
 
 : . ( thing -- ) pwrite nl ;
+: .x ( thing -- ) pwritex nl ;
 
 ! compare first char of string
 : starts-with ( str char -- ? ) swap getbyte = ;

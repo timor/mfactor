@@ -319,6 +319,9 @@ void interpreter(inst * user_program)
           pc += sizeof(short_jump_target);
           break;
         case pwrite:
+          printf("%ld",ppop());
+          break;
+        case pwritex:
           printf("%#lx",ppop());
           break;
         case emit:

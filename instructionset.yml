@@ -99,6 +99,7 @@ _get: :private
 _getbyte: :private
 # prettywrite ( value -- )
 pwrite:
+pwritex:
 # call quotation in code (absolute)
 acall: :private
 # call quotation in code (absolute, tail call)
