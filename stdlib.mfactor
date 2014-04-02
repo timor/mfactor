@@ -154,6 +154,7 @@ SYNTAX: [ ( -- addr) _readq dup 255 > [ error ] [ dup qhead, ] if _MP get [ _sta
 
 ! accumulate bytes on stack (expensive, but hey)
 : _readstr ( -- ..bytes num ) 0 [ receive dup 34 = [ drop f ] [ swap 1 + t ] if ] loop ;
+SYNTAX: " ( -- address" )  _readstr [ strhead, ] keep dup _MP get [ [ + [ _MP set ] [ _DP set ] bi ] keep [ -b, ] times ] keep ;
 
 
 ! colon compiler
