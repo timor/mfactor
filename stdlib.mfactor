@@ -96,8 +96,13 @@
 ! mine
 : 2swap ( a b x y -- x y a b ) [ -rot ] dip -rot ;
 
+: uncount ( countedstr -- str len ) dup getbyte [ 1 + ] dip ;
+
 ! print byte array
-: print ( str len -- ) [ dup getbyte emit 1 + ] times drop ;
+: print_bytes ( str len -- ) [ dup getbyte emit 1 + ] times drop ;
+
+! print counted string
+: print ( countedstr -- ) uncount print_bytes ;
 
 ! call pred until it returns f
 : loop ( ... pred: ( ... -- ... ? ) -- ... ) dup >r call [ r> loop ] [ r> drop ] if ;

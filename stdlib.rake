@@ -201,8 +201,9 @@ def load_factor(filename,instructionset)
           body.push word.hex
         elsif /::"(.+)"::/ =~ word
           body.push :strstart
-          $1.gsub("::SPACE::"," ").chars.to_a.each { |s| body.push s.ord }
-          body.push :strend
+          outchars=$1.gsub("::SPACE::"," ").chars.to_a
+          body.push outchars.length;
+          outchars.each { |s| body.push s.ord }
         else
           body.push :bcall
           body.push word.to_sym

@@ -460,18 +460,12 @@ void interpreter(inst * user_program)
           x = (cell)(*(addr));
           ppush(x);
         } break;
-          /* ( -- str len ) */
+          /* ( -- countedstr ) */
         case strstart: {
-          inst * end = skip_to_instruction(pc, strend, 0 ,base); /* don't nest */
+          unsigned char len = *pc;
           ppush((cell)pc);
-          ppush(end-pc);
-          pc=end+1;
+          pc += len+1;
         } break;
-        case strend:
-          print_error("strend found");
-          BACKTRACE();
-          return;
-          break;
           /* skip over to end of quotation , leave starting address on parameter stack*/
         case qstart:
           IFTRACE1(printf("qstart saving %#lx\n",(uintptr_t)pc-(uintptr_t)base));
