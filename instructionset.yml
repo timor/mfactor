@@ -114,3 +114,7 @@ clear:
 psplevel:
 # error (without message)
 error:
+# start timer ( -- )
+tstart:
+# end timer ( -- usecs secs )
+tend:

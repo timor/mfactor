@@ -32,6 +32,8 @@
 #define IFTRACE2(expr)
 #endif
 
+#include "runtime.h"
+
 /* entry in name dictionary */
 /* TODO: ensure correct scanning direction so that skipping over entries stays trivial */
 typedef struct dict_entry
@@ -511,7 +513,17 @@ void interpreter(inst * user_program)
           BACKTRACE();
           return;
           break;
-
+        case tstart:
+          start_timer();
+          break;
+          /* end timer ( -- usecs secs ) */
+        case tend: 
+        { 
+          long int sec,usec;
+          end_timer(&sec,&usec);
+          ppush(usec);
+          ppush(sec);
+        } break;
         default:
           printf("unimplemented instruction %#x\n",i);
           BACKTRACE();
