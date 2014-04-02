@@ -200,7 +200,7 @@ static cell memory[VM_MEM];
 #define DATA_END end
 #elif (PROCESSOR_EXPERT)
 #define DATA_START _sdata
-#define DATA_END _edata
+#define DATA_END end
 #elif (CORTEX_M)
 #define DATA_START __data_start__
 #define DATA_END end
