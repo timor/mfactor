@@ -123,18 +123,20 @@ SYNTAX: \ ( -- quot ) token drop find [ nop ] [ bad-input ] if ;
 ! deprecated
 ! : _q+ ( ..item/itype num item itype -- ..item/itype new-item new-itype num+1 ) rot 1 + ;
 
-: qstacksize ( type -- size )  dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup 2 = [ drop 5 ] [ dup 3 = [ drop 5 ] [ 4 = [ 2 ] [ error ] if ] if ] if ] if ] if ;
+: qstacksize ( type -- size )  dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup 2 = [ drop cell 1 + ] [ dup 3 = [ drop cell 1 + ] [ 4 = [ 2 ] [ error ] if ] if ] if ] if ] if ;
 
 ! increment DP by size of word type
 ! : DP+q ( type -- ) qstacksize dup '+' emit . _DP +@ ;
 
-: q, ( item type -- ) dup 0 = [ drop -b, ] [ dup 1 = [ drop oplit bcall inst -b, -s, ] [ dup 2 = [ drop oplit acall inst -b, -, ] [ = 3 [ oplit lit inst -b, -, ] -b, [ error ] if ] if ] if ] if ;
+: -q, ( item type -- ) dup 0 = [ drop -b, ] [ dup 1 = [ drop -s, oplit bcall inst -b, ] [ dup 2 = [ drop -, oplit acall inst -b, ] [ 3 = [ -, oplit lit inst -b, ] [ error ] if ] if ] if ] if ;
 
-! compile number of words to memory words: ( word type ), update _DP
-: _stack2code ( ..item/itype num size -- ) _MP +@ [ q, ] times ;
+! compile number of words to memory words: ( word type ), update _DP and _MP
+: _stack2code ( ..item/itype num size -- ) _MP +@ _MP get _DP set [ -q, ] times _DP get _MP set ;
 
-! put quotation head to memory
-: qhead, ( blength -- ) ;
+! sequence head types: 1: string, 2: quotation, 3: vector, anything above INSTBASE is an extended type
+
+! put quotation head to memory TODO!!
+: qhead, ( blength -- ) 2 s, 0 b, b, ;
 
 ! find word for compilation in quotation, return type suitable for qstacksize
 : _find_qword ( token -- item type ) find [ dup prim? [ inst 0 ] [ 2 ] if ] [ parsenum [ 3 ] [ error ] if ] if ;
