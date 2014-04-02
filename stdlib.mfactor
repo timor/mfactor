@@ -26,11 +26,11 @@
 : >= ( n1 n2 -- ? ) 2dup > [ 2drop t ] [ = ] if ;
 : in-range ( val start end -- ? ) [ over [ >= ] dip ] dip < and ;
 
-: _safeset ( value address setter: ( val addr -- ) -- ) [ dup memrange [ 2drop ] 2dip in-range ] dip swap  [ call ] [ 3drop error ] if ;
+: _safeset ( value address setter: ( val addr -- ) -- ) [ dup memrange [ 2drop ] 2dip in-range ] dip swap  [ call ] [ 3drop "safe set failed" print error ] if ;
 : setbyte ( byteval addr -- ) [ _setbyte ] _safeset ;
 : set ( val addr -- ) [ _set ] _safeset ;
 
-: _safeget ( address getter: (addr -- val ) -- val ) [ dup memrange 2drop in-range ] dip swap [ call ] [ 2drop error ] if ;
+: _safeget ( address getter: (addr -- val ) -- val ) [ dup memrange 2drop in-range ] dip swap [ call ] [ 2drop "safe get failed" print error ] if ;
 : getbyte ( addr -- byteval ) [ _getbyte ] _safeget ;
 : get ( addr -- val ) [ _get ] _safeget ;
 
