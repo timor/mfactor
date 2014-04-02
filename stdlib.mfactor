@@ -145,7 +145,7 @@ SYNTAX: \ ( -- quot ) token drop find [ nop ] [ bad-input ] if ;
 : _readq ( -- ..item/types num size ) 0 0 [ _find_qword dup qstacksize [ 2swap ] dip + [ 1 + ] dip ] ']' until-token [ oplit qend inst 0 ] 2dip [ 1 + ] dip 1 + ;
 
 ! return address of quotation, not header!
-SYNTAX: [ ( -- addr) _readq dup 255 > [ error ] [ 2 s, dup b, ] if _MP get [ _stack2code ] dip ;
+SYNTAX: [ ( -- addr) _readq dup 255 > [ error ] [ dup qhead, ] if _MP get [ _stack2code ] dip ;
 
 ! sequence head types: 1: string, 2: quotation, 3: vector, anything above INSTBASE is an extended type
 
