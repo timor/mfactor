@@ -150,10 +150,10 @@ SYNTAX: \ ( -- quot ) token drop find [ nop ] [ bad-input ] if ;
 ! return address of quotation, not header!
 SYNTAX: [ ( -- addr) _readq dup 255 > [ error ] [ dup qhead, ] if _MP get [ _stack2code ] dip ;
 
-! sequence head types: 1: string, 2: quotation, 3: vector, anything above INSTBASE is an extended type
+: strhead, ( blength -- ) 1 s, 1 b, b, ;
 
-! actually terminates on null character
-! SYNTAX: " ( -- address" )  1 s, _MP get [ 1 + _MP set receive dup 34 = [ drop f ] [ b,  ] ] keep
+! accumulate bytes on stack (expensive, but hey)
+: _readstr ( -- ..bytes num ) 0 [ receive dup 34 = [ drop f ] [ swap 1 + t ] if ] loop ;
 
 
 ! colon compiler
