@@ -20,7 +20,7 @@ if hostp
   INSTBASE=0x80
   CC="gcc"
   GDB="gdb"
-  LDFLAGS << "-Wl,-Map=#{MAP}"
+  LDFLAGS << "-lrt -Wl,-Map=#{MAP}"
   PTRSIZE=64
   SIZE="size"
 else
@@ -38,6 +38,9 @@ else
   OBJDUMP="arm-none-eabi-objdump"
   SIZE="arm-none-eabi-size"
 end
+
+# include
+CFLAGS << " -I. "
   
 hfiles = FileList['*.h']
 cfiles=FileList['*.[cCsS]']
@@ -128,8 +131,6 @@ import "stdlib.rake"
 
 require 'yaml'
 
-CLEAN.include "stdlib.yml"
+CLEAN.include "generated"
 
-task :inst => :stdlib
-
-file "interpreter.o" => :inst
+file "interpreter.o" => [:stdlib,"generated/inst_enum.h"]
