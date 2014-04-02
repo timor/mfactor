@@ -41,8 +41,10 @@ end
   
 hfiles = FileList['*.h']
 cfiles=FileList['*.[cCsS]']
-unless hostp
-  cfiles += FileList["target/*.[cCsS]"]
+if hostp
+  cfiles += FileList["target/linux/*.[cCsS]"]
+else
+  cfiles += FileList["target/cortex/*.[cCsS]"]
 end
 cfiles.each do |c|
   file c.ext('o') => c
