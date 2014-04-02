@@ -53,6 +53,9 @@
 
 : shift ( x n -- y ) dup 0 > [ asl ] [ neg asr ] if ;
 
+! temporarily different memory pointer
+: with-MP ( quot addr -- ) _MP get [ _MP set call ] dip _MP set ;
+
 ! compile reverse
 : b, ( byteval -- ) _MP [ get setbyte ] [ 1 swap +@ ] bi ;
 : -b, ( byteval -- ) _MP [ 1 neg swap +@ ] [ get setbyte ] bi ;
