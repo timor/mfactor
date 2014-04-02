@@ -301,7 +301,7 @@ void interpreter(inst * user_program)
           break;
         case ref:					  /* only gc knows a difference */
         case lit:
-          x=(cell)(*pc);
+          x=*((cell *)pc);
           ppush(x);
           pc+=sizeof(cell);
           break;
