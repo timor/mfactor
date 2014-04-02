@@ -229,7 +229,38 @@ file "generated/stdlib.yml" => ["#{THISDIR}/instructionset.yml","#{THISDIR}/stdl
 end
 
 directory "generated"
-task :stdlib => ["#{THISDIR}/instructionset.yml","generated/stdlib.yml","generated"] do
+
+def build_stdlib
+  puts "rebuilding stdlib from generated sources"
+  iset=YAML.load_file("#{THISDIR}/instructionset.yml")
+  stdlib=YAML_Mfactor.new("generated/stdlib.yml",iset)
+  File.open("generated/stdlib_size.h","w") do |f|
+    f.puts "#define STDLIB_SIZE #{$stdlib_size}"
+  end
+  File.open("generated/stdlib.code.h","w") do |f|
+    f.write "inst stdlib[#{$stdlib_size}]= {\n"
+    stdlib.code(f)
+    f.write "};\n"
+  end
+  File.open("generated/stdlib.dict.h","w") do |f|
+    f.write "dict_entry dict[VM_DICT] __attribute((aligned(1))) = {\n"
+    stdlib.dict(f)
+    f.write "};\n"
+  end
+end
+
+STDLIB_FILES=["generated/stdlib.code.h","generated/stdlib.dict.h","generated/stdlib_size.h"]
+file "generated/_generated_" => STDLIB_FILES+["generated/inst_enum.h"] do
+  touch "generated/_generated_"
+end
+
+STDLIB_FILES.each do |f|
+  file f => ["generated/stdlib.yml", "#{THISDIR}/instructionset.yml"] do
+    build_stdlib
+  end
+end
+    
+file "generated/inst_enum.h" => ["#{THISDIR}/instructionset.yml"] do
   puts "updating instruction set"
   iset=YAML.load_file("#{THISDIR}/instructionset.yml")
   File.open("generated/inst_enum.h","w") do |f|
@@ -246,18 +277,6 @@ END
     end
     f.puts "};"
   end
-  stdlib=YAML_Mfactor.new("generated/stdlib.yml",iset)
-  File.open("generated/stdlib_size.h","w") do |f|
-    f.puts "#define STDLIB_SIZE #{$stdlib_size}"
-  end
-  File.open("generated/stdlib.code.h","w") do |f|
-    f.write "inst stdlib[#{$stdlib_size}]= {\n"
-    stdlib.code(f)
-    f.write "};\n"
-  end
-  File.open("generated/stdlib.dict.h","w") do |f|
-    f.write "dict_entry dict[VM_DICT] __attribute((aligned(1))) = {\n"
-    stdlib.dict(f)
-    f.write "};\n"
-  end
 end
+
+task :stdlib => ["generated/stdlib.code.h","generated/stdlib.dict.h","generated/stdlib_size.h",__FILE__]
