@@ -220,6 +220,7 @@ THISDIR=File.dirname(__FILE__)
 puts "looking for instruction set and stdlib code in #{THISDIR}"
 
 file "generated/stdlib.yml" => ["#{THISDIR}/instructionset.yml","#{THISDIR}/stdlib.mfactor","#{THISDIR}/stdlib.rake","generated"] do
+  puts "regenerating mfactor code"
   File.open("generated/stdlib.yml","w") do |f|
     code=load_factor("#{THISDIR}/stdlib.mfactor","#{THISDIR}/instructionset.yml")
     # puts code
@@ -229,6 +230,7 @@ end
 
 directory "generated"
 task :stdlib => ["#{THISDIR}/instructionset.yml","generated/stdlib.yml","generated"] do
+  puts "updating instruction set"
   iset=YAML.load_file("#{THISDIR}/instructionset.yml")
   File.open("generated/inst_enum.h","w") do |f|
     f.puts "enum inst_set {\n"
