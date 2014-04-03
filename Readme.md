@@ -29,24 +29,33 @@
   writing (unsafely) to arbitrary memory addresses
 - Sequence accumulation works by collecting items on the stack until
   finished and exact size of data is known.  This should allow for
-  nesting data definitions.  Sequences and boxed data are constructed
-  on the stack between nested brace-like words, and after a closing
-  bracket the corresponding "load address" remains on the stack.
-- garbage collection support relies on explicit ref instructions
-  from quotations, which have the same runtime effect as lits
+  nesting data definitions (through parsing words).  Sequences and
+  boxed data are constructed on the stack between nested brace-like
+  words, and after a closing bracket the corresponding "load address"
+  remains on the stack.
 - boxed data includes size and type information.
 ## boxing/sequences ##
 - sequences consist of header containing sequence type ( 2 bytes ),
   element length (1 byte) and sequence length (1 byte for now).
 - types of sequences
-  - arrays: one type field overhead per element
+  - untyped arrays: one type field overhead per element
   - byte-arrays: for strings
   - quotations: like byte-arrays, but don't respond to nth
-
 - sequence access
   - push sequence header elements to stack ( element-size elements type )
   - use functions to work on this "header structure", nth can be
-    implemented generically that way
+    implemented generically that way (quotations have element size 0
+    and cannot be randomly accessed)
+
+## garbage collection ##
+- root set composed of
+  - namestack assocs
+  - ref instructions inside quotations
+- mark & compact ensures linear memory scanning 
+- types of objects inform gc wether to follow references
+  - untyped arrays hold only references to boxed types
+  - variables (array length 1) can reference other objects
+  - quotations can reference objects via ref instruction
 
 # types (TODO) #
 - used in boxed data
@@ -54,7 +63,7 @@
 - parser can unbox data on type checks when known at parse time, this
   however requires distinct words that work with unboxed values
 - 2 strategies for inline data:
-  - untyped, make sure compiler does all necessary checks
+  - untyped, make sure compiler does all necessary checks (preferred)
   - typed, additional overhead needed since box must be stored
 
 # stacks #
