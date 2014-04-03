@@ -37,16 +37,16 @@
 ! memory pointers:
 ! MP: make pointer for comma operations, also pointing into data memory for allocation
 ! DP: data pointer pointing into empty data memory, for allocation
-: _init_storage ( -- ) memstart cell 2 * + _DP set _DP get _MP set ;
-: _DP ( -- DP ) memstart cell + ;
+: _init_storage ( -- ) memstart cell + _MP set ;
+! : _DP ( -- DP ) memstart cell + ;
 : _MP ( -- MP ) memstart ;
 
-: showmem ( -- ) memstart _DP get [ 2dup >= [ f ] [ [ dup getbyte .x 1 + ] dip t ] if ] loop 2drop ;
+: showmem ( -- ) memstart _MP get [ 2dup >= [ f ] [ [ dup getbyte .x 1 + ] dip t ] if ] loop 2drop ;
 
 ! find next free dictionary entry (name length = 0)
 : _free-name ( -- addr ) dictstart [ cell + dup getbyte [ + 1 + ] keep 0 = not ] loop cell - 1 - ;
 ! save quotation in dictionary
-: name ( quot name -- ) [ swap , uncount dup b, [ dup getbyte b, 1 + ] times drop ] _free-name with-MP ;
+: name ( quot name -- ) [ swap , uncount dup b,  _free-name [ dup getbyte b, 1 + ] times drop ] with-MP ;
 
 ! apply q to var's value and update var
 : change ( var q: ( old -- new ) -- ) [ [ get ] keep ] dip dip set ;
@@ -56,7 +56,7 @@
 : shift ( x n -- y ) dup 0 > [ asl ] [ neg asr ] if ;
 
 ! temporarily different memory pointer
-: with-MP ( quot addr -- ) _MP get [ _MP set call ] dip _MP set ;
+: with-MP ( addr quot -- ) swap _MP get [ _MP set call ] dip _MP set ;
 
 ! compile reverse
 : b, ( byteval -- ) _MP [ get setbyte ] [ 1 swap +@ ] bi ;
@@ -136,13 +136,10 @@ SYNTAX: \ ( -- quot ) token drop find [ nop ] [ bad-input ] if ;
 
 : qstacksize ( type -- size )  dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup 2 = [ drop cell 1 + ] [ dup 3 = [ drop cell 1 + ] [ 4 = [ 2 ] [ error ] if ] if ] if ] if ] if ;
 
-! increment DP by size of word type
-! : DP+q ( type -- ) qstacksize dup '+' emit . _DP +@ ;
-
 : -q, ( item type -- ) dup 0 = [ drop -b, ] [ dup 1 = [ drop -s, oplit bcall inst -b, ] [ dup 2 = [ drop -, oplit acall inst -b, ] [ 3 = [ -, oplit lit inst -b, ] [ error ] if ] if ] if ] if ;
 
-! compile number of words to memory words: ( word type ), update _DP and _MP
-: _stack2code ( ..item/itype num size -- ) _MP +@ _MP get _DP set [ -q, ] times _DP get _MP set ;
+! compile number of words to memory words: ( word type ), update _MP
+: _stack2code ( ..item/itype num size -- ) _MP get + [ _MP set ] keep [ [ -q, ] times ] with-MP ;
 
 ! sequence head types: 1: string, 2: quotation, 3: vector, anything above INSTBASE is an extended type
 
@@ -162,7 +159,7 @@ SYNTAX: [ ( -- addr) _readq dup 255 > [ error ] [ dup qhead, ] if _MP get [ _sta
 
 ! accumulate bytes on stack (expensive, but hey)
 : _readstr ( -- ..bytes num ) 0 [ receive dup 34 = [ drop f ] [ swap 1 + t ] if ] loop ;
-: _stack2string ( ..bytes num ) dup _MP +@ _MP get _DP set [ -b, ] times _DP get _MP set ;
+: _stack2string ( ..bytes num ) dup _MP get + [ _MP set ] keep [ [ -b, ] times ] with-MP ;
 SYNTAX: " ( -- countedstring" )  _readstr [ strhead, ] keep _MP get [ _stack2string ] dip 1 - ;
 
 
