@@ -13,11 +13,11 @@
 : _test5 ( -- ) [ "tests done." print ] call nl ;
 
 ! listener
-: unknown-token ( tok -- ) parsenum [ nop ] [ bad-input ] if ;
+: unknown-token ( tok -- ) parsenum [ nop ] [ _bad-input ] if ;
 : listener ( -- ) prompt token drop find [ call ] [ unknown-token ] if listener ;
 : prompt ( -- ) psplevel pwrite '>' emit ' ' emit ;
 : nl ( -- nl ) 10 emit 13 emit ;
-: bad-input ( input -- ) drop 'X' dup '_' swap emit emit emit nl ;
+: _bad-input ( input -- ) drop 'X' dup '_' swap emit emit emit nl ;
 
 : and ( obj1 obj2 -- ? ) over ? ;
 : or ( obj1 obj2 -- - ) dupd ? ;
@@ -113,17 +113,17 @@
 ! : while ( pred:( ..a -- ..b ?) body:( ..b -- ..a) -- ..b) over [ call ] 2keep [ swap [ call ]] [] if
 
 ! parsing word
-SYNTAX: \ ( -- quot ) token drop find [ nop ] [ bad-input ] if ;
+SYNTAX: \ ( -- quot ) token drop find [ nop ] [ _bad-input ] if ;
 
 : . ( thing -- ) pwrite nl ;
 : .x ( thing -- ) pwritex nl ;
 
 ! compare first char of string
-: starts-with ( str char -- ? ) swap getbyte = ;
+: starts-with? ( str char -- ? ) swap getbyte = ;
 
 ! loop until token (char for now)
 ! TODO: support parsing words here!!!
-: until-token ( quot: ( tok -- ) char -- )  [ token drop swap 2dup starts-with [ drop f ] [ [ swap [ call ] keep ] dip t ] if ] loop 2drop ;
+: until-token ( quot: ( tok -- ) char -- )  [ token drop swap 2dup starts-with? [ drop f ] [ [ swap [ call ] keep ] dip t ] if ] loop 2drop ;
 
 ! convert tos to inst
 : inst ( inst -- ) cell 1 - 8 * neg shift 0xff bitand ;
@@ -146,7 +146,7 @@ SYNTAX: \ ( -- quot ) token drop find [ nop ] [ bad-input ] if ;
 ! sequence head types: 1: string, 2: quotation, 3: vector, anything above INSTBASE is an extended type
 
 ! put quotation head to memory TODO!!
-: qhead, ( blength -- ) 2 s, 0 b, b, ;
+: _qhead, ( blength -- ) 2 s, 0 b, b, ;
 
 ! find word for compilation in quotation, return type suitable for _qstacksize
 : _find_qword ( token -- item type ) find [ dup prim? [ inst 0 ] [ 2 ] if ] [ parsenum [ 3 ] [ error ] if ] if ;
@@ -155,14 +155,14 @@ SYNTAX: \ ( -- quot ) token drop find [ nop ] [ bad-input ] if ;
 : _readq ( -- ..item/types num size ) 0 0 [ _find_qword dup _qstacksize [ 2swap ] dip + [ 1 + ] dip ] ']' until-token [ oplit qend inst 0 ] 2dip [ 1 + ] dip 1 + ;
 
 ! return address of quotation, not header!
-SYNTAX: [ ( -- addr) _readq dup 255 > [ error ] [ dup qhead, ] if _MP get [ _stack2code ] dip ;
+SYNTAX: [ ( -- addr) _readq dup 255 > [ error ] [ dup _qhead, ] if _MP get [ _stack2code ] dip ;
 
-: strhead, ( blength -- ) 1 s, 1 b, b, ;
+: _strhead, ( blength -- ) 1 s, 1 b, b, ;
 
 ! accumulate bytes on stack (expensive, but hey)
 : _readstr ( -- ..bytes num ) 0 [ receive dup 34 = [ drop f ] [ swap 1 + t ] if ] loop ;
 : _stack2string ( ..bytes num ) dup _MP get + [ _MP set ] keep [ [ -b, ] times ] with-MP ;
-SYNTAX: " ( -- countedstring" )  _readstr [ strhead, ] keep _MP get [ _stack2string ] dip 1 - ;
+SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2string ] dip 1 - ;
 
 SYNTAX: \! ( -- ) [ receive 10 = [ f ] [ t ] if ] loop ;
 

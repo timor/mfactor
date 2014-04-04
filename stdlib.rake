@@ -145,7 +145,10 @@ class YAML_Mfactor
   def dict(out)
     @instruction_set.dict(out)
     @thread_index.keys.each do |mft|
-      out << self.class.dict_entry(mft.start, mft.name)
+      if mft.name[0] == '_' && !$noprivate
+      else
+        out << self.class.dict_entry(mft.start, mft.name)
+      end
     end
   end
 end
