@@ -247,6 +247,7 @@ void interpreter(inst * user_program)
 		i= (*pc++);
 
     dispatch:
+	#if (TRACE_LEVEL >= 1)
         IFTRACE2(printf("i:%#x\n",i));
         {
           char * name = find_by_address((inst*)((cell)i<<(8*(sizeof(inst *)-sizeof(inst)))));
@@ -255,6 +256,7 @@ void interpreter(inst * user_program)
             fflush(stdout);
           }
         }
+	#endif
         switch (i) {
 /* #ifdef NOTAILCALL */
 /* #define TAIL_CALL nested_call */
