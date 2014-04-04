@@ -136,7 +136,7 @@ SYNTAX: \ ( -- quot ) token drop find [ nop ] [ bad-input ] if ;
 ! deprecated
 ! : _q+ ( ..item/itype num item itype -- ..item/itype new-item new-itype num+1 ) rot 1 + ;
 
-: qstacksize ( type -- size )  dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup 2 = [ drop cell 1 + ] [ dup 3 = [ drop cell 1 + ] [ 4 = [ 2 ] [ error ] if ] if ] if ] if ] if ;
+: _qstacksize ( type -- size )  dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup 2 = [ drop cell 1 + ] [ dup 3 = [ drop cell 1 + ] [ 4 = [ 2 ] [ error ] if ] if ] if ] if ] if ;
 
 : -q, ( item type -- ) dup 0 = [ drop -b, ] [ dup 1 = [ drop -s, oplit bcall inst -b, ] [ dup 2 = [ drop -, oplit acall inst -b, ] [ 3 = [ -, oplit lit inst -b, ] [ error ] if ] if ] if ] if ;
 
@@ -148,11 +148,11 @@ SYNTAX: \ ( -- quot ) token drop find [ nop ] [ bad-input ] if ;
 ! put quotation head to memory TODO!!
 : qhead, ( blength -- ) 2 s, 0 b, b, ;
 
-! find word for compilation in quotation, return type suitable for qstacksize
+! find word for compilation in quotation, return type suitable for _qstacksize
 : _find_qword ( token -- item type ) find [ dup prim? [ inst 0 ] [ 2 ] if ] [ parsenum [ 3 ] [ error ] if ] if ;
 
 ! scan input stream until closing ']', accumulate item type pairs and total size in bytes on stack
-: _readq ( -- ..item/types num size ) 0 0 [ _find_qword dup qstacksize [ 2swap ] dip + [ 1 + ] dip ] ']' until-token [ oplit qend inst 0 ] 2dip [ 1 + ] dip 1 + ;
+: _readq ( -- ..item/types num size ) 0 0 [ _find_qword dup _qstacksize [ 2swap ] dip + [ 1 + ] dip ] ']' until-token [ oplit qend inst 0 ] 2dip [ 1 + ] dip 1 + ;
 
 ! return address of quotation, not header!
 SYNTAX: [ ( -- addr) _readq dup 255 > [ error ] [ dup qhead, ] if _MP get [ _stack2code ] dip ;
