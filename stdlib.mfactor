@@ -16,7 +16,7 @@
 : unknown-token ( tok -- ) parsenum [ nop ] [ bad-input ] if ;
 : listener ( -- ) prompt token drop find [ call ] [ unknown-token ] if listener ;
 : prompt ( -- ) psplevel pwrite '>' emit ' ' emit ;
-: nl ( -- nl ) 10 emit;
+: nl ( -- nl ) 10 emit 13 emit ;
 : bad-input ( input -- ) drop 'X' dup '_' swap emit emit emit nl ;
 
 : and ( obj1 obj2 -- ? ) over ? ;
