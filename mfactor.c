@@ -8,6 +8,12 @@ void SystemInit(void);
 void SystemInit(void)
 {}
 
+int reset_system()
+{
+  execve("mfactor",NULL,NULL);
+}
+
+
 int main(void)
 {
   printf("libc running\n");
