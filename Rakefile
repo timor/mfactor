@@ -3,7 +3,7 @@ require 'rake/clean'
 require 'tempfile'
 
 hostp=ENV['ONHOST']
-$noprivate=ENV['NOPRIVATE']
+$noprivate=ENV['NOPRIVATE'] && ( ENV['NOPRIVATE'] != '0' )
 notailcall=ENV['NOTAILCALL']
 
 PROG=hostp ? "mfactor" : "mfactor.elf"
