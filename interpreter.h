@@ -20,7 +20,7 @@ inst stdlib[STDLIB_SIZE];
 #endif
 /* dictionary size (affects number of named items)*/
 #ifndef VM_DICT
-#define VM_DICT 256
+#define VM_DICT 512
 #endif
 /* parameter stack size (affects transient data)*/
 #ifndef VM_PSTACK
