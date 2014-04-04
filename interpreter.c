@@ -333,7 +333,7 @@ void interpreter(inst * user_program)
           fflush(stdout);			/* TODO remove eventually */
           break;
         case receive:
-          ppush(getchar()); break;
+          ppush(read_char()); break;
         case quit:
           printf("bye!\n");
           return;
