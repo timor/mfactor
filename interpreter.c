@@ -281,7 +281,7 @@ void interpreter(inst * user_program)
         case bitnot: UNOP(~);
         case gt: BINOP(>);
         case lt: BINOP(<);
-        case dup:
+        case _dup:
           ppush(peek_n(psp,1)); break;
         case memstart:
           ppush((cell)memory);
@@ -320,7 +320,7 @@ void interpreter(inst * user_program)
           ppush((cell) (base + ((short_jump_target) x)));
           pc += sizeof(short_jump_target);
           break;
-        case pwrite:
+        case _pwrite:
           printf("%ld",ppop());
           break;
         case pwritex:

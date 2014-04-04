@@ -1,5 +1,5 @@
 # duplicate top element on stack
-dup:
+_dup: "dup"
 eql: "="
 gt: ">"
 lt: "<"
@@ -98,7 +98,7 @@ _setbyte: :private
 _get: :private
 _getbyte: :private
 # prettywrite ( value -- )
-pwrite:
+_pwrite: "pwrite"
 pwritex:
 # call quotation in code (absolute)
 acall: :private
