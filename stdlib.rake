@@ -34,6 +34,7 @@ class YAML_Mfactor
           @i_by_name[public_name || mnem.to_s]=mnem
         else
           if $noprivate
+            puts "including private word: #{mnem} in dict"
             @i_by_name[mnem.to_s] = mnem
           end
         end
