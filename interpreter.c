@@ -218,15 +218,16 @@ extern cell DATA_END;
 
 void interpreter(inst * user_program)
 {
+	static bool tailcall = true;
 	/* parameter stack */
 	static cell pstack[VM_PSTACK]={0};
-	static cell* psp = &pstack[0];
+	cell* psp = &pstack[0];
 	/* return stack, not preserved across calls */
 	return_entry returnstack[VM_RETURNSTACK]={{0}};
 	return_entry* returnsp = &returnstack[0];
 	/* retain stack */
 	static cell retainstack[VM_RETAINSTACK]={0};
-	static cell* retainsp =&retainstack[0];
+	cell* retainsp =&retainstack[0];
 	/* catch stack */
 	/* static cell cstack[VM_CSTACK]={0}; */
 	/* static cell* csp = &cstack[0]; */
@@ -258,11 +259,6 @@ void interpreter(inst * user_program)
         }
 	#endif
         switch (i) {
-/* #ifdef NOTAILCALL */
-/* #define TAIL_CALL nested_call */
-/* #else */
-/* #define TAIL_CALL tail_call */
-/* #endif */
 #define UNOP(op) { x=(op ((intptr_t) ppop())); ppush(x);} break
 #define BINOP(op) { x = ppop(); cell y = ppop(); ppush(((intptr_t)y) op ((intptr_t)x));} break
         case drop: ppop(); break;
@@ -386,10 +382,8 @@ void interpreter(inst * user_program)
           ppush(addr==NULL ? false : true);
         }
           break;
-#ifdef NOTAILCALL
-        case stcall:
-#endif
         case scall:
+	 _scall:
           /* check if call is primitive, if yes, substitute execution (tail call), since call only
              applies to quotations */
           x = ppop();
@@ -402,8 +396,8 @@ void interpreter(inst * user_program)
             IFTRACE2(printf("scall: inmem word\n"));
             goto nested_call;
           } break;
-#ifndef NOTAILCALL
         case stcall:            /* WARNING: copied code above */
+			  if (!tailcall) goto _scall;
           x = ppop();
           if (x >= INSTBASE_CELL) {
             IFTRACE2(printf("stcall: prim\n"));
@@ -414,7 +408,6 @@ void interpreter(inst * user_program)
             IFTRACE2(printf("stcall: inmem word\n"));
             goto tail_call;
           } break;
-#endif
         case stack_show:
           printf("\np");
           printstack(psp,pstack);
@@ -477,21 +470,18 @@ void interpreter(inst * user_program)
           pc=skip_to_instruction(pc,qend,qstart,base);
           pc+=1;
           break;
-#ifdef NOTAILCALL
-        case btcall:
-#endif
         case bcall: {
+			 _bcall:
           x= (cell)(base+*((short_jump_target *)pc));
           pc += sizeof(short_jump_target);
           goto nested_call;
         } break;
           /* base-relative tail-call, effectively a goto */
-#ifndef NOTAILCALL
         case btcall:
+			  if (!tailcall) goto _bcall;
           x=(cell)(base+*((short_jump_target *)pc));
           goto tail_call;
           break;
-#endif
         case acall: {
           x =(cell) *((jump_target *)pc);
           pc += sizeof(jump_target);
@@ -526,6 +516,10 @@ void interpreter(inst * user_program)
           ppush(usec);
           ppush(sec);
         } break;
+		  case tail:
+			  tailcall=true; break;
+		  case notail:
+			  tailcall=false; break;
         default:
           printf("unimplemented instruction %#x\n",i);
           BACKTRACE();

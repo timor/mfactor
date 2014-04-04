@@ -118,3 +118,7 @@ error:
 tstart:
 # end timer ( -- usecs secs )
 tend:
+# turn off tail calling ( -- )
+notail:
+# turn on tail calling ( -- )
+tail:
