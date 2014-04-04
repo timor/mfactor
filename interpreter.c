@@ -32,7 +32,9 @@
 #define IFTRACE2(expr)
 #endif
 
+/* target specific stuff */
 #include "runtime.h"
+#include "reset_system.h"
 
 /* entry in name dictionary */
 /* TODO: ensure correct scanning direction so that skipping over entries stays trivial */
@@ -520,6 +522,9 @@ void interpreter(inst * user_program)
 			  tailcall=true; break;
 		  case notail:
 			  tailcall=false; break;
+		  case reset:
+			  reset_system();
+			  break;
         default:
           printf("unimplemented instruction %#x\n",i);
           BACKTRACE();

@@ -46,7 +46,7 @@
 ! find next free dictionary entry (name length = 0)
 : _free-name ( -- addr ) dictstart [ cell + dup getbyte [ + 1 + ] keep 0 = not ] loop cell - 1 - ;
 ! save quotation in dictionary
-: name ( quot name -- ) [ swap , uncount dup b,  _free-name [ dup getbyte b, 1 + ] times drop ] with-MP ;
+: name ( quot name -- ) _free-name [ swap , uncount dup b, [ dup getbyte b, 1 + ] times drop ] with-MP ;
 
 ! apply q to var's value and update var
 : change ( var q: ( old -- new ) -- ) [ [ get ] keep ] dip dip set ;

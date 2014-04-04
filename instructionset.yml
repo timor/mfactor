@@ -122,3 +122,5 @@ tend:
 notail:
 # turn on tail calling ( -- )
 tail:
+# system reset (maybe nop or quit on hosts)
+reset:
