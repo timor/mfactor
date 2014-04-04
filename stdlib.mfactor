@@ -164,4 +164,6 @@ SYNTAX: [ ( -- addr) _readq dup 255 > [ error ] [ dup qhead, ] if _MP get [ _sta
 : _stack2string ( ..bytes num ) dup _MP get + [ _MP set ] keep [ [ -b, ] times ] with-MP ;
 SYNTAX: " ( -- countedstring" )  _readstr [ strhead, ] keep _MP get [ _stack2string ] dip 1 - ;
 
-: testloop ( -- ) [ 33 emit t ] loop ;
+SYNTAX: \! ( -- ) [ receive 10 = [ f ] [ t ] if ] loop ;
+
+: testloop ( -- ) [ '\!' emit t ] loop ;

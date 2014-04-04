@@ -174,7 +174,8 @@ def load_factor(filename,instructionset)
   # puts "reading instruction set from #{instructionset}"
   prims=load_instructions(instructionset)
   res={}
-  text=File.read(filename).gsub(/!.*\n/,"") # remove comments here
+  text=File.read(filename).gsub(/(?<!\\)!.*\n/,"") # remove comments here
+  text.gsub!('\!',"!");
   text.match_all(/(?<type>\S+)?:\s+(?<name>\S+)\s+(?<effect>\(.+\))\s+(?<words>.+);/).each do |match|
     name=match[:name]
     words=match[:words]
