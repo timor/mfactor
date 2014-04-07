@@ -41,7 +41,8 @@
 typedef struct dict_entry
 {
 	void * address;					/* pointer into memory */
-    unsigned char name_length;
+	unsigned char immediatep;		/* may include other flags later (inline, recursive, etc) */
+	unsigned char name_length;
 	char name[];
 }	__attribute__((packed)) dict_entry;
 /* TODO: doc quirk that primitive names are null-terminated */
@@ -60,7 +61,7 @@ static inst* find_by_name(char *fname)
   IFTRACE1(printf("looking for '%s' ", fname));
   for(char * ptr=(char*)dict;
 		(ptr < ((char*)dict+sizeof(dict)))&&(((dict_entry*)ptr)->name_length > 0);
-		ptr += (((dict_entry*)ptr)->name_length + sizeof(unsigned char) + sizeof(void*))) {
+		ptr += (((dict_entry*)ptr)->name_length + 2*sizeof(unsigned char) + sizeof(void*))) {
 	 dict_entry *dptr = (dict_entry*)ptr;
 	 IFTRACE1(printf("comparing to (%#lx): %s; ",(uintptr_t)dptr->name,dptr->name));
 	 if (strncmp(fname,dptr->name,dptr->name_length)==0) {
@@ -73,12 +74,12 @@ static inst* find_by_name(char *fname)
 }
 
 /* get the name of the word, only for debugging */
-static char* find_by_address( inst * word) 
+static char* find_by_address( inst * word)
 {
   static char notfound[] = "(internal or private)";
   for (char * ptr=(char*)dict;
        (ptr < ((char*)dict+sizeof(dict)))&&(((dict_entry*)ptr)->name_length > 0);
-       ptr += (((dict_entry*)ptr)->name_length + sizeof(unsigned char) + sizeof(void*))) {
+       ptr += (((dict_entry*)ptr)->name_length + 2*sizeof(unsigned char) + sizeof(void*))) {
     dict_entry *dptr = (dict_entry*)ptr;
     if (dptr->address == word)
       return dptr->name;
