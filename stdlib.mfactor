@@ -6,11 +6,12 @@
 : f ( -- f ) 0 ;
 
 ! some unit tests
-: _test1 ( -- ) [ [ 'a' emit ] 'b' emit call ] call _test2 _test3 nl _test4 _test5 ;
+: _test1 ( -- ) [ [ 'a' emit ] 'b' emit call ] call _test2 _test3 nl _test4 _test5 _testend ;
 : _test2 ( -- ) 'c' emit [ f ] loop ;
 : _test3 ( -- ) 5 [ dup '0' + emit 1 - dup ] loop drop ;
 : _test4 ( -- ) 254 memstart setbyte 175 memstart 1 + setbyte memstart get .x ;
-: _test5 ( -- ) [ "tests done." print ] call nl ;
+: _test5 ( -- ) 5 [ dup 0 = not ] [ [ . ] [ 1 - ] bi ] while ;
+: _testend ( -- ) [ "tests done." print ] call nl ;
 
 ! listener
 : unknown-token ( tok -- ) parsenum [ nop ] [ _bad-input ] if ;
@@ -122,7 +123,7 @@
 : loop ( ... pred: ( ... -- ... ? ) -- ... ) dup >r call [ r> loop ] [ r> drop ] if ;
 : times ( ... n quot: ( ... -- ... ) -- ... ) swap dup 0 = [ 2drop ] [ [ [ call ] keep ] dip 1 - swap times ] if ;
 : each-integer ( ... n quot: ( ... i -- ... ) -- ... ) swap 0 swap [ [ swap call ] 2keep 1 + ] times 2drop ;
-! : while ( pred:( ..a -- ..b ?) body:( ..b -- ..a) -- ..b) over [ call ] 2keep [ swap [ call ]] [] if
+: while ( pred:( ..a -- ..b ?) body:( ..b -- ..a) -- ..b) over [ call ] 2dip rot [ over [ call ] 2dip while ] [ 2drop ] if ;
 
 ! parsing word
 SYNTAX: \ ( -- quot ) token find [ nop ] [ _bad-input ] if ;
