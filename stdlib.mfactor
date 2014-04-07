@@ -147,9 +147,9 @@ SYNTAX: \ ( -- quot ) token find [ nop ] [ _bad-input ] if ;
 ! deprecated
 ! : _q+ ( ..item/itype num item itype -- ..item/itype new-item new-itype num+1 ) rot 1 + ;
 
-: _qstacksize ( type -- size )  dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup 2 = [ drop cell 1 + ] [ dup 3 = [ drop cell 1 + ] [ 4 = [ 2 ] [ error ] if ] if ] if ] if ] if ;
+: _qstacksize ( type -- size )  dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup 2 = [ drop cell 1 + ] [ dup 3 = [ drop cell 1 + ] [ 4 = [ 2 ] [ "size for item unknown" print error ] if ] if ] if ] if ] if ;
 
-: -q, ( item type -- ) dup 0 = [ drop -b, ] [ dup 1 = [ drop -s, oplit bcall inst -b, ] [ dup 2 = [ drop -, oplit acall inst -b, ] [ 3 = [ -, oplit lit inst -b, ] [ error ] if ] if ] if ] if ;
+: -q, ( item type -- ) dup 0 = [ drop -b, ] [ dup 1 = [ drop -s, oplit bcall inst -b, ] [ dup 2 = [ drop -, oplit acall inst -b, ] [ 3 = [ -, oplit lit inst -b, ] [ "compilation for item unknown" print error ] if ] if ] if ] if ;
 
 ! compile number of words to memory words: ( word type ), update _MP
 : _stack2code ( ..item/itype num size -- ) _MP get + [ _MP set ] keep [ [ -q, ] times ] with-MP ;
@@ -160,7 +160,7 @@ SYNTAX: \ ( -- quot ) token find [ nop ] [ _bad-input ] if ;
 : _qhead, ( blength -- ) 2 s, 0 b, b, ;
 
 ! find word for compilation in quotation, return type suitable for _qstacksize
-: _find_qword ( token -- item type ) find [ dup prim? [ inst 0 ] [ 2 ] if ] [ parsenum [ 3 ] [ error ] if ] if ;
+: _find_qword ( token -- item type ) find [ dup prim? [ inst 0 ] [ 2 ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if ;
 
 ! scan input stream until closing ']', accumulate item type pairs and total size in bytes on stack
 : _readq ( separator -- ..item/types num size ) 0 0 ']' [ _find_qword dup _qstacksize [ 2swap ] dip + [ 1 + ] dip ] until-token [ oplit qend inst 0 ] 2dip [ 1 + ] dip 1 + ;
