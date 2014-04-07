@@ -183,7 +183,7 @@ SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2st
 ! copy token to memory since it will be overridden by following parsing
 : _token2str ( token -- addr ) uncount dup _strhead, _MP get [ [ dup getbyte b, 1 + ] times drop ] dip 1 - ;
 
-! counting down to 0 means all matched
+! count reaching 0 means all matched
 : mem= ( a1 a2 n -- ? ) dup 0 = [ 3drop t ] [ -rot 2dup [ getbyte ] bi@ = [ [ 1 + ] bi@ rot 1 - mem= ] [ 3drop f ] if ] if ;
 : str= ( str1 str2 -- ? ) dup getbyte 1 + mem= ;
 
