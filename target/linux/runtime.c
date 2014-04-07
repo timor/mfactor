@@ -22,14 +22,14 @@ static struct timespec diff(struct timespec start, struct timespec end)
 void start_timer()
 {
   struct timespec t;
-  clock_gettime(CLOCK_REALTIME,&t);
+  clock_gettime(CLOCK_MONOTONIC,&t);
   saved_ts=t;
 }
 
 void end_timer(long int *sec, long int *usec)
 {
   struct timespec t,d;
-  clock_gettime(CLOCK_REALTIME,&t);
+  clock_gettime(CLOCK_MONOTONIC,&t);
   d=diff(saved_ts, t);
   *sec=d.tv_sec;
   *usec=d.tv_nsec/1000;
