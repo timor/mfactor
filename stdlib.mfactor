@@ -100,6 +100,8 @@
 : bi ( x p q -- ) [ keep ] dip call ;
 : tri ( x p q r -- ) [ [ keep ] dip keep ] dip call ;
 : pick ( x y z -- x y z x ) >r over r> swap ;
+: bi* ( x y p q -- ) [ dip ] dip call ;
+: bi@ ( x y quot -- ) dup bi* ;
 ! deprecated ones
 : rot ( x y z -- y z x ) >r swap r> swap ;
 : -rot ( x y z -- z x y ) swap >r swap r> ;
