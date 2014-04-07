@@ -155,7 +155,7 @@ SYNTAX: \ ( -- quot ) token find [ nop ] [ _bad-input ] if ;
 ! compile number of words to memory words: ( word type ), update _MP
 : _stack2code ( ..item/itype num size -- ) _MP get + [ _MP set ] keep [ [ -q, ] times ] with-MP ;
 
-! sequence head types: 1: string, 2: quotation, 3: vector, anything above INSTBASE is an extended type
+! box types: 1: string, 2: quotation, 3: vector, 4: variableanything above INSTBASE is an extended type
 
 ! put quotation head to memory TODO!!
 : _qhead, ( blength -- ) 2 s, 0 b, b, ;
