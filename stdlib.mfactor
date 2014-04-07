@@ -26,6 +26,14 @@
 : >= ( n1 n2 -- ? ) 2dup > [ 2drop t ] [ = ] if ;
 : in-range ( val start end -- ? ) [ over [ >= ] dip ] dip < and ;
 
+! unsafe access
+: getmem ( addr -- ) _get ;
+: getmem8 ( addr -- ) _getbyte ;
+
+: setmem ( val addr -- ) _set ;
+: setmem8 ( val addr -- ) _setbyte ;
+
+! safe access
 ! : _safeset ( value address setter: ( val addr -- ) -- ) [ dup memrange [ 2drop ] 2dip in-range ] dip swap  [ call ] [ 3drop "safe set failed" print error ] if ;
 ! use same memory range constraint as read for now
 : _safeset ( value address setter: ( val addr -- ) -- ) [ dup memrange 2drop in-range ] dip swap  [ call ] [ 3drop "safe set failed" print error ] if ;
