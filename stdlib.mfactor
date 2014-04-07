@@ -191,7 +191,7 @@ SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2st
 : _find ( name -- dictentry ) dictstart [ ] loop ;
 
 ! colon compiler
-: : ( -- ) token _token2str ';' _readq _saveq swap name ; 
+SYNTAX: : ( -- ) token _token2str ';' _readq _saveq swap name ; 
 
 SYNTAX: \! ( -- ) [ receive 10 = [ f ] [ t ] if ] loop ;
 SYNTAX: ( ( -- ) [ receive 41 = [ f ] [ t ] if ] loop ;
