@@ -26,6 +26,7 @@ class YAML_Mfactor
   end
   class ISet
     def initialize(yaml)
+      puts "noprivate set to #{$noprivate} " if $noprivate
       @i_by_name={}
       @icodes={}
       j=INSTBASE
@@ -145,7 +146,11 @@ class YAML_Mfactor
   def dict(out)
     @instruction_set.dict(out)
     @thread_index.keys.each do |mft|
-      if mft.name[0] == '_' && !$noprivate
+      if mft.name[0] == '_' 
+        if $noprivate 
+          puts "including private stdlib word: #{mft.name} in dict"
+          out << self.class.dict_entry(mft.start, mft.name)
+        end
       else
         out << self.class.dict_entry(mft.start, mft.name)
       end
