@@ -14,7 +14,7 @@
 
 ! listener
 : unknown-token ( tok -- ) parsenum [ nop ] [ _bad-input ] if ;
-: listener ( -- ) prompt token drop find [ call ] [ unknown-token ] if listener ;
+: listener ( -- ) prompt token find [ call ] [ unknown-token ] if listener ;
 : prompt ( -- ) psplevel pwrite '>' emit ' ' emit ;
 : nl ( -- ) 10 emit ;
 : _bad-input ( input -- ) drop 'X' dup '_' swap emit emit emit nl ;
@@ -116,17 +116,17 @@
 ! : while ( pred:( ..a -- ..b ?) body:( ..b -- ..a) -- ..b) over [ call ] 2keep [ swap [ call ]] [] if
 
 ! parsing word
-SYNTAX: \ ( -- quot ) token drop find [ nop ] [ _bad-input ] if ;
+SYNTAX: \ ( -- quot ) token find [ nop ] [ _bad-input ] if ;
 
 : . ( thing -- ) pwrite nl ;
 : .x ( thing -- ) pwritex nl ;
 
 ! compare first char of string
-: starts-with? ( str char -- ? ) swap getbyte = ;
+: starts-with? ( countedstr char -- ? ) swap 1 + getbyte = ;
 
 ! loop until token (char for now)
 ! TODO: support parsing words here!!!
-: until-token ( char quot: ( tok -- ) -- )  swap [ token drop swap 2dup starts-with? [ drop f ] [ [ swap [ call ] keep ] dip t ] if ] loop 2drop ;
+: until-token ( char quot: ( tok -- ) -- )  swap [ token swap 2dup starts-with? [ drop f ] [ [ swap [ call ] keep ] dip t ] if ] loop 2drop ;
 
 ! convert tos to inst
 : inst ( inst -- ) cell 1 - 8 * neg shift 0xff bitand ;

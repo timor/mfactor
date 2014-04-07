@@ -74,6 +74,7 @@ static inst* find_by_name(char *fname)
 }
 
 /* get the name of the word, only for debugging */
+/* probably fails for non-null-terminated strings */
 static char* find_by_address( inst * word)
 {
   static char notfound[] = "(internal or private)";
@@ -365,23 +366,21 @@ void interpreter(inst * user_program)
           cell cond = ppop();
           ppush(cond ? true_cons : false_cons);
         } break;
-        /* ( -- cstring length ) */
+        /* ( -- countedstring ) */
         case token: {
-          unsigned int len;
-          char *tok = read_token(&len);
-          IFTRACE1(printf("got token:%s\n",tok));
+          char *tok = read_token();
+          IFTRACE1(printf("got token:%s\n",tok+1));
           if (tok) {
             ppush((cell)tok);
-            ppush((cell)len);
           } else {
             print_error("token reader error");
             return;
           }} break;
-          /* (str -- quot/addr foundp) */
+          /* (countedstr -- quot/addr foundp) */
         case find: {
-          cell orig=ppop();
-          inst * addr=find_by_name((char*)orig);
-          ppush(addr==NULL ? orig : (cell)addr);
+          cell name_to_find=ppop();
+          inst * addr=find_by_name(((char*)name_to_find)+1); /* skip countbyte */
+          ppush(addr==NULL ? name_to_find : (cell)addr);
           ppush(addr==NULL ? false : true);
         }
           break;
@@ -423,7 +422,7 @@ void interpreter(inst * user_program)
           char *str = (char *)ppop();
           assert_memread((cell *)str);
           cell num = 0xa5a5a5a5;
-          bool success=parse_number(str,&num);
+          bool success=parse_number(str+1,&num);
           ppush(success ? num : (cell) str);
           ppush((cell)success);
         } break;

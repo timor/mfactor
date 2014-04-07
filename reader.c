@@ -88,12 +88,12 @@ static unsigned int skip_whitespace(void)
 }
 
 /* exception for double-quote */
-char * read_token(unsigned int * len)
+/* return countedstring, but also generate terminating zero */
+char * read_token()
 {
 	char c;
 	unsigned int i=0;
-	*len=0;
-	char *tokptr=token;
+	char *tokptr=token+1;
 	skip_whitespace();
 	bool nosep_token_found=false;
 	while (!whitespacep(c=read_char())) {
@@ -108,7 +108,7 @@ char * read_token(unsigned int * len)
 	if (!nosep_token_found)
 		if (!unread_char(c))
 			return NULL;
-	*len = i;
-	/* printf("got token: %s\n",token); */
+	token[0] = i;
+	/* printf("got token: %s\n",token+1); */
 	return token;
 }

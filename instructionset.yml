@@ -67,7 +67,7 @@ swap:
 # ( -- string length )
 token:
 # find a token by name in the dictionary
-# ( cstring -- quot/addr found? )
+# ( countedstring -- quot/addr found? )
 find:
 # memory bounds
 # code + data mem
