@@ -183,6 +183,13 @@ SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2st
 ! copy token to memory since it will be overridden by following parsing
 : _token2str ( token -- addr ) uncount dup _strhead, _MP get [ [ dup getbyte b, 1 + ] times drop ] dip 1 - ;
 
+: mem= ( a1 a2 n -- ? ) [ dup 0 = [ drop f f ] [ [ [ [ 1 + ] [ getbyte ] bi ] bi@ rot = ] dip 1 - t ] if ] loop [ 2drop ] dip ;
+: str= ( str1 str2 -- ? ) [ uncount ] bi@ rot [ = ] keep swap [ mem= ] [ 3drop f ] if ;
+
+! this version returns the header
+: _find ( name -- dictentry ) dictstart [ ] loop ;
+
+! colon compiler
 : : ( -- ) token _token2str ';' _readq _saveq swap name ; 
 
 SYNTAX: \! ( -- ) [ receive 10 = [ f ] [ t ] if ] loop ;
