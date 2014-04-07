@@ -534,12 +534,14 @@ void interpreter(inst * user_program)
     nested_call:
         {
           inst *next_word = (inst *) x;
+	#if (TRACE_LEVEL >= 1)
           IFTRACE2(printf("w:%#lx\n",(cell)next_word-(uintptr_t)base));
           char * name = find_by_address(next_word);
           if (name) {
             IFTRACE1(printf("-> %s\n",name));
             fflush(stdout);
           }
+	#endif
           return_entry e = {.return_address = pc, .current_call=next_word};
           returnpush(e);
           pc=next_word;
@@ -548,12 +550,14 @@ void interpreter(inst * user_program)
     tail_call:
         {
           inst *next_word = (inst *) x;
+	#if (TRACE_LEVEL >= 1)
           IFTRACE2(printf("w:%#lx\n",(cell)next_word-(uintptr_t)base));
           char * name = find_by_address(next_word);
           if (name) {
             IFTRACE1(printf("..-> %s\n",name));
             fflush(stdout);
           }
+	#endif
           /* dont update caller field to ease debugging */
           /* returnsp->current_call = next_word; */
           pc = next_word;
