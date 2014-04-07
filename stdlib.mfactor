@@ -186,6 +186,7 @@ SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2st
 : : ( -- ) token _token2str ';' _readq _saveq swap name ; 
 
 SYNTAX: \! ( -- ) [ receive 10 = [ f ] [ t ] if ] loop ;
+SYNTAX: ( ( -- ) [ receive 41 = [ f ] [ t ] if ] loop ;
 
 ! dictionary usage
 : dsize ( -- ) dictend dictstart - _free-name dictstart - ;
