@@ -45,10 +45,9 @@
 : get ( addr -- val ) [ _get ] _safeget ;
 
 ! memory pointers:
-! MP: make pointer for comma operations, also pointing into data memory for allocation
-! DP: data pointer pointing into empty data memory, for allocation
+! MP: make-pointer for comma operations,
+! lastname: last compiled name, used for setting flags (immediate, inline, recursive)
 : _init_storage ( -- ) memstart cell + _MP set ;
-! : _DP ( -- DP ) memstart cell + ;
 : _MP ( -- MP ) memstart ;
 
 : showmem ( -- ) memstart _MP get [ 2dup >= [ f ] [ [ dup getbyte .x 1 + ] dip t ] if ] loop 2drop ;
