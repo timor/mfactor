@@ -6,11 +6,11 @@
 : f ( -- f ) 0 ;
 
 ! some unit tests
-: _test1 ( -- ) [ [ 'a' emit ] 'b' emit call ] call _test2 _test3 nl _test4 _test5 _testend ;
+: _test1 ( -- ) [ [ 'b' emit ] 'a' emit call ] call _test2 nl _test3 _test4 _test5 _testend ;
 : _test2 ( -- ) 'c' emit [ f ] loop ;
-: _test3 ( -- ) 5 [ dup '0' + emit 1 - dup ] loop drop ;
+: _test3 ( -- ) 5 [ dup '0' + emit 1 - dup ] loop . ;
 : _test4 ( -- ) 254 memstart setbyte 175 memstart 1 + setbyte memstart get .x ;
-: _test5 ( -- ) 5 [ dup 0 = not ] [ [ . ] [ 1 - ] bi ] while ;
+: _test5 ( -- ) 5 [ dup 0 = not ] [ [ '0' + emit ] [ 1 - ] bi ] while . ;
 : _testend ( -- ) [ "tests done." print ] call nl ;
 
 ! listener
