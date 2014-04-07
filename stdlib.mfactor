@@ -126,7 +126,7 @@ SYNTAX: \ ( -- quot ) token drop find [ nop ] [ _bad-input ] if ;
 
 ! loop until token (char for now)
 ! TODO: support parsing words here!!!
-: until-token ( quot: ( tok -- ) char -- )  [ token drop swap 2dup starts-with? [ drop f ] [ [ swap [ call ] keep ] dip t ] if ] loop 2drop ;
+: until-token ( char quot: ( tok -- ) -- )  swap [ token drop swap 2dup starts-with? [ drop f ] [ [ swap [ call ] keep ] dip t ] if ] loop 2drop ;
 
 ! convert tos to inst
 : inst ( inst -- ) cell 1 - 8 * neg shift 0xff bitand ;
@@ -155,7 +155,7 @@ SYNTAX: \ ( -- quot ) token drop find [ nop ] [ _bad-input ] if ;
 : _find_qword ( token -- item type ) find [ dup prim? [ inst 0 ] [ 2 ] if ] [ parsenum [ 3 ] [ error ] if ] if ;
 
 ! scan input stream until closing ']', accumulate item type pairs and total size in bytes on stack
-: _readq ( -- ..item/types num size ) 0 0 [ _find_qword dup _qstacksize [ 2swap ] dip + [ 1 + ] dip ] ']' until-token [ oplit qend inst 0 ] 2dip [ 1 + ] dip 1 + ;
+: _readq ( separator -- ..item/types num size ) 0 0 ']' [ _find_qword dup _qstacksize [ 2swap ] dip + [ 1 + ] dip ] until-token [ oplit qend inst 0 ] 2dip [ 1 + ] dip 1 + ;
 
 ! return address of quotation, not header!
 SYNTAX: [ ( -- addr) _readq dup 255 > [ error ] [ dup _qhead, ] if _MP get [ _stack2code ] dip ;
