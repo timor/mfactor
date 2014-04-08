@@ -21,8 +21,8 @@ end
 
 
 class YAML_Mfactor
-  def self.dict_entry(address, name, prim=false)
-    "{ .address = (inst *)#{prim ? " " : "&stdlib+"}0x#{address.to_s(16)}, .name = #{name.inspect}, .name_length=#{name.length + 1}},\n"
+  def self.dict_entry(address, name, prim=false, flags=0)
+    "{ .address = (inst *)#{prim ? " " : "&stdlib+"}0x#{address.to_s(16)}, .flags = #{flags}, .name = #{name.inspect}, .name_length=#{name.length + 1}},\n"
   end
   class ISet
     def initialize(yaml)
@@ -51,7 +51,7 @@ class YAML_Mfactor
     def dict(out)
       # puts @i_by_name unless Rake.application.options.silent
       @i_by_name.each do |name, mnem|
-        out << YAML_Mfactor::dict_entry(@icodes[mnem] << (PTRSIZE-8),name,true)
+        out << YAML_Mfactor::dict_entry(@icodes[mnem] << (PTRSIZE-8),name,true,0)
       end
     end
   end
@@ -59,11 +59,13 @@ class YAML_Mfactor
     attr_accessor :instructions
     attr_accessor :name
     attr_accessor :start
+    attr_accessor :flags
     def initialize(name, instlist, iset, start)
       @instructions=instlist
       @name=name
       @instruction_set=iset
       @start=start
+      @flags = 0
     end
     def code
       thread=[]
@@ -104,10 +106,11 @@ class YAML_Mfactor
     @threads={}
     @instruction_set=ISet.new(isetyaml)
     codeptr=0
-    @yaml.each do |name, thread|
-      mft=MFThread.new(name,thread,@instruction_set,codeptr);
+    @yaml.each do |name, opts|
+      mft=MFThread.new(name,opts[:body],@instruction_set,codeptr);
       @threads[name]=mft;
       @thread_index[mft]=codeptr;
+      mft.flags = opts[:flags]
       codeptr += mft.length;
     end
     $stdlib_size=codeptr
@@ -149,10 +152,10 @@ class YAML_Mfactor
       if mft.name[0] == '_' 
         if $noprivate 
           puts "including private stdlib word: #{mft.name} in dict"
-          out << self.class.dict_entry(mft.start, mft.name)
+          out << self.class.dict_entry(mft.start, mft.name, false, mft.flags)
         end
       else
-        out << self.class.dict_entry(mft.start, mft.name)
+        out << self.class.dict_entry(mft.start, mft.name, false, mft.flags)
       end
     end
   end
@@ -233,7 +236,7 @@ def load_factor(filename,instructionset)
       end
       maybe_tailcall(body)
       body.push :qend
-      res[name] = body
+      res[name] = { body: body, flags: (type== "SYNTAX" ? 0x1 : 0x0 ) }
     end
   end
   res

@@ -198,7 +198,8 @@ SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2st
 : str= ( str1 str2 -- ? ) dup strlen 1 + mem= ;
 
 ! name of dict entry
-: _name>> ( dictentry -- name ) cell + 1 + ;
+: _name>> ( dictentry -- str ) cell + 1 + ;
+: parsing? ( dictentry -- ? ) cell + get 0x01 bitand ;
 : _dict-next ( dictentry -- dictentry ) _name>> dup strlen + 1 + ;
 
 ! this version returns the header
