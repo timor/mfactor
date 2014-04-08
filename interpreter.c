@@ -41,7 +41,7 @@
 typedef struct dict_entry
 {
 	void * address;					/* pointer into memory */
-	unsigned char immediatep;		/* may include other flags later (inline, recursive, etc) */
+	unsigned char flags;		/* may include other flags later (inline, recursive, etc) */
 	unsigned char name_length;
 	char name[];
 }	__attribute__((packed)) dict_entry;
