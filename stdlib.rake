@@ -196,6 +196,18 @@ def load_factor(filename,instructionset)
       words.gsub!(/'(.)'/) { |m| $1.ord.to_s }
       words.gsub!("[","qstart")
       words.gsub!("]","qend")
+      words.gsub!(/B{\s*(.+?)}/) do |m|
+        elts=$1.split("\s").map do |elt|
+          if /^\d+$/ =~ elt
+            elt.prepend "'"
+          elsif /^0[xX][[:xdigit:]]+$/ =~ elt
+            elt.prepend "'"
+          else
+            raise "not a valid byte array element: #{elt}"
+          end
+        end
+        " bastart '#{elts.length} " + elts.join(" ")+" "
+      end
       words.split("\s").each do |word|
         if prims[word]
           # possible proper tail call insertion
@@ -203,12 +215,12 @@ def load_factor(filename,instructionset)
             maybe_tailcall(body)
           end
           body.push prims[word].to_sym
-        elsif /^\d+$/ =~ word
-          body.push :litb
-          body.push word.to_i
-        elsif /^0[xX][[:xdigit:]]+$/ =~ word
-          body.push :litb
-          body.push word.hex
+        elsif /^(?<quote>')?(?<dec>\d+)$/ =~ word
+          body.push :litb unless quote
+          body.push dec.to_i
+        elsif /^(?<quote>')?(?<hexd>0[xX][[:xdigit:]]+)$/ =~ word
+          body.push :litb unless quote
+          body.push hexd.hex
         elsif /::"(.+)"::/ =~ word
           body.push :strstart
           outchars=$1.gsub("::SPACE::"," ").chars.to_a

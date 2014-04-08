@@ -6,11 +6,12 @@
 : f ( -- f ) 0 ;
 
 ! some unit tests
-: _test1 ( -- ) [ [ 'b' emit ] 'a' emit call ] call _test2 nl _test3 _test4 _test5 _testend ;
+: _test1 ( -- ) [ [ 'b' emit ] 'a' emit call ] call _test2 nl _test3 _test4 _test5 _test6 _testend ;
 : _test2 ( -- ) 'c' emit [ f ] loop ;
 : _test3 ( -- ) 5 [ dup '0' + emit 1 - dup ] loop . ;
 : _test4 ( -- ) 254 memstart setbyte 175 memstart 1 + setbyte memstart get .x ;
 : _test5 ( -- ) 5 [ dup 0 = not ] [ [ '0' + emit ] [ 1 - ] bi ] while . ;
+: _test6 ( -- ) B{ 5 4 3 2 1 } [ '0' + emit ] ba-each 0 . ;
 : _testend ( -- ) [ "tests done." print ] call nl ;
 
 ! listener
@@ -125,6 +126,9 @@
 : each-integer ( ... n quot: ( ... i -- ... ) -- ... ) swap 0 swap [ [ swap call ] 2keep 1 + ] times 2drop ;
 : while ( pred:( ..a -- ..b ?) body:( ..b -- ..a) -- ..b) over [ call ] 2dip rot [ over [ call ] 2dip while ] [ 2drop ] if ;
 
+! specialized version of each for byte arrays and strings
+: _each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+1 quot ) 2dup [ [ getbyte ] dip call ] 2dip [ 1 + ] dip ;
+: ba-each ( ... seq quot: ( ... x -- ... ) -- ... ) [ uncount ] dip swap [ _each-step ] times 2drop ;
 ! parsing word
 SYNTAX: \ ( -- quot ) token find [ nop ] [ _bad-input ] if ;
 
@@ -156,7 +160,7 @@ SYNTAX: \ ( -- quot ) token find [ nop ] [ _bad-input ] if ;
 ! compile number of words to memory words: ( word type ), update _MP
 : _stack2code ( ..item/itype num size -- ) _MP get + [ _MP set ] keep [ [ -q, ] times ] with-MP ;
 
-! box types: 1: string, 2: quotation, 3: vector, 4: variableanything above INSTBASE is an extended type
+! box types: 1: string/byte-array , 2: quotation, 3: vector, 4: variable, anything above INSTBASE is an extended type
 
 ! put quotation head to memory TODO!!
 : _qhead, ( blength -- ) 2 s, 0 b, b, ;
@@ -206,6 +210,7 @@ SYNTAX: : ( -- ) token _token2str ';' _readq _saveq swap name ;
 
 SYNTAX: \! ( -- ) [ receive 10 = [ f ] [ t ] if ] loop ;
 SYNTAX: ( ( -- ) [ receive 41 = [ f ] [ t ] if ] loop ;
+SYNTAX: B{ ( -- addr ) 0 '}' [ parsenum [ swap 1 + ] [ "not a byte literal: " print print error ] if ] until-token dup _strhead, _MP get [ _stack2string ] dip 1 - ;
 
 ! dictionary usage
 : dsize ( -- ) dictend dictstart - _free-name dictstart - ;
