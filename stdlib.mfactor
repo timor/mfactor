@@ -60,7 +60,7 @@
 : _free-name ( -- addr ) dictstart [ cell + 1 + dup getbyte [ + 1 + ] keep 0 = not ] loop cell - 2 - ;
 
 ! save quotation in dictionary, non-immediate, name is counted string, add terminating 0 for compatibility
-: name ( quot name -- ) _free-name [ swap , 0 b, uncount dup 1 + b, [ dup getbyte b, 1 + ] times drop 0 b, ] with-MP ;
+: name ( quot name -- ) _free-name [ swap , 0 b, dup strlen 1 + b, [ b, ] ba-each 0 b, ] with-MP ;
 
 ! apply q to var's value and update var
 : change ( var q: ( old -- new ) -- ) [ [ get ] keep ] dip dip set ;
