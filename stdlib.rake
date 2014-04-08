@@ -256,6 +256,7 @@ def load_factor(files, isetfile)
   load_factor1(file.path,isetfile)
 end  
 
+$mfactor_sources ||= []
 THISDIR=File.dirname(__FILE__)
 puts "looking for instruction set and stdlib code in #{THISDIR}"
 file "generated/mfactor.yml" => ["#{THISDIR}/instructionset.yml","#{THISDIR}/stdlib.mfactor","#{THISDIR}/stdlib.rake","generated"]+$mfactor_sources do
