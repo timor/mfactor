@@ -459,12 +459,16 @@ void interpreter(inst * user_program)
           x = (cell)(*(addr));
           ppush(x);
         } break;
+	 case bastart:
           /* ( -- countedstr ) */
         case strstart: {
           unsigned char len = *pc;
           ppush((cell)pc);
           pc += len+1;
         } break;
+	 case aend:
+		 goto _error ;
+		 break;
           /* skip over to end of quotation , leave starting address on parameter stack*/
         case qstart:
           IFTRACE1(printf("qstart saving %#lx\n",(uintptr_t)pc-(uintptr_t)base));
@@ -497,6 +501,7 @@ void interpreter(inst * user_program)
           ppush(x);
           break;
         case error:
+	 _error:
           printf("error!\n");
           printf("\np");
           printstack(psp,pstack);
