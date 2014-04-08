@@ -86,7 +86,7 @@ quit:
 stack_show: "st"
 # try to parse string on top of stack as number
 # ( str -- num/str success? )
-parsenum: :private
+parsenum:
 nop:
 # ( -- data-start data-end mem-start mem-end )
 memrange: :private
