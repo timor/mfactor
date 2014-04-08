@@ -45,10 +45,12 @@ blitq: :private
 qstart: :private
 # end of inline quotation
 qend: :private
-# start of inline list (vector)
-lstart: :private
-# end of inline list
-lend: :private
+# start of inline array
+astart: :private
+# inline byte arrays
+bastart: :private
+# end of inline array
+aend: :private
 # inline strings [ char.. strend ] ( -- str len )
 strstart: :private
 strend: :private
