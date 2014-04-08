@@ -181,7 +181,7 @@ def load_instructions(filename)
   iset
 end
 
-def load_factor(filename,instructionset)
+def load_factor1(filename,instructionset)
   # puts "reading instruction set from #{instructionset}"
   prims=load_instructions(instructionset)
   res={}
@@ -243,13 +243,25 @@ def load_factor(filename,instructionset)
   res
 end
 
+def load_factor(files, isetfile)
+  file=Tempfile.new('mfactor_code')
+  files.each do |f| 
+    puts "including code from #{f}"
+    file.puts "!#{f}"
+    file.write File.read(f)
+  end
+  file.sync
+  file.rewind
+  puts "combined code into #{file.path}"
+  load_factor1(file.path,isetfile)
+end  
+
 THISDIR=File.dirname(__FILE__)
 puts "looking for instruction set and stdlib code in #{THISDIR}"
-
-file "generated/stdlib.yml" => ["#{THISDIR}/instructionset.yml","#{THISDIR}/stdlib.mfactor","#{THISDIR}/stdlib.rake","generated"] do
+file "generated/mfactor.yml" => ["#{THISDIR}/instructionset.yml","#{THISDIR}/stdlib.mfactor","#{THISDIR}/stdlib.rake","generated"]+$mfactor_sources do
   puts "regenerating mfactor code"
-  File.open("generated/stdlib.yml","w") do |f|
-    code=load_factor("#{THISDIR}/stdlib.mfactor","#{THISDIR}/instructionset.yml")
+  File.open("generated/mfactor.yml","w") do |f|
+    code=load_factor(["#{THISDIR}/stdlib.mfactor"]+$mfactor_sources,"#{THISDIR}/instructionset.yml")
     # puts code
     f.write(code.to_yaml)
   end
@@ -260,7 +272,7 @@ directory "generated"
 def build_stdlib
   puts "rebuilding stdlib from generated sources"
   iset=YAML.load_file("#{THISDIR}/instructionset.yml")
-  stdlib=YAML_Mfactor.new("generated/stdlib.yml",iset)
+  stdlib=YAML_Mfactor.new("generated/mfactor.yml",iset)
   File.open("generated/stdlib_size.h","w") do |f|
     f.puts "#define STDLIB_SIZE #{$stdlib_size}"
   end
@@ -282,7 +294,7 @@ file "generated/_generated_" => STDLIB_FILES+["generated/inst_enum.h"] do
 end
 
 STDLIB_FILES.each do |f|
-  file f => ["generated/stdlib.yml", "#{THISDIR}/instructionset.yml"] do
+  file f => ["generated/mfactor.yml", "#{THISDIR}/instructionset.yml"] do
     build_stdlib
   end
 end
