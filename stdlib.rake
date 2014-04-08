@@ -187,10 +187,11 @@ def load_factor(filename,instructionset)
   res={}
   text=File.read(filename).gsub(/(?<!\\)!.*\n/,"") # remove comments here
   text.gsub!('\!',"!");
-  text.match_all(/(?<type>\S+)?:\s+(?<name>\S+)\s+(?<effect>\(.+\))\s+(?<words>.+);/).each do |match|
+  text.match_all(/(?<type>\S+)?:\s+(?<name>\S+)\s+(?<effect>\(.+\)\s+)?(?<words>.+);/).each do |match|
     name=match[:name]
     words=match[:words]
     type=match[:type]
+    puts "WARNING: no stack effect for '#{name}'" unless match[:effect]
     if match[:name]
       # puts "found word: #{name]}"
       puts "parsing word found: #{name}" if type == "SYNTAX"
