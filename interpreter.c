@@ -344,7 +344,6 @@ void interpreter(inst * user_program)
             IFTRACE1(printf("<- %s\n",name));
             fflush(stdout);
           }
-
           pc=e.return_address;
         } break;
         case eql: BINOP(==);
