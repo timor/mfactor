@@ -8,8 +8,9 @@
 - DONE sequence allocation
   - DONE: current scheme of directly increasing DP doesnt support
     nesting, replace with atomic allocation after read
-- DOING: dictionary extension, namestack
-- apply counted strings to token reader
+- DONE: dictionary extension, DEFERRED: namestack
+- DONE: apply counted strings to token reader
+- DOING: reader nesting
 - type checking and boxing/unboxing
 - graphical decompiler (should work on console, though)
 - stopworld mark-sweep gc (should only be triggered during user input,
