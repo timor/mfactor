@@ -205,6 +205,7 @@ SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2st
 : _name>> ( dictentry -- str ) cell + 1 + ;
 : parsing? ( dictentry -- ? ) cell + get 0x01 bitand ;
 : _dict-next ( dictentry -- dictentry ) _name>> dup strlen + 1 + ;
+: _word>> ( dictentry -- quot ) get ;
 
 ! this version returns the header
 : _find ( str dictionary -- dictentry/str ? ) swap over _name>> dup strlen 0 = [ drop swap drop f ] [ 1 + over cstr= [ drop t ] [ swap _dict-next _find ] if ] if ;
