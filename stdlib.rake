@@ -138,7 +138,7 @@ class YAML_Mfactor
       elsif value.is_a?(String)
         out << "/*#{value}*/ "
       else
-        raise "negative literals not supported right now" if value < 0
+        raise "negative literals not supported right now: #{value}" if value < 0
         out << "0x"+value.to_s(16)+","
         j += 1
       end
@@ -181,6 +181,15 @@ def load_instructions(filename)
   iset
 end
 
+# emit 
+def compile_number(num)
+  if (num != 0) && ((num & 0xff) == 0)
+    [num].pack("I").unpack("CCCC").unshift :lit
+  else
+    [:litb, num]
+  end
+end
+
 def load_factor1(filename,instructionset)
   # puts "reading instruction set from #{instructionset}"
   prims=load_instructions(instructionset)
@@ -220,11 +229,13 @@ def load_factor1(filename,instructionset)
           end
           body.push prims[word].to_sym
         elsif /^(?<quote>')?(?<dec>\d+)$/ =~ word
-          body.push :litb unless quote
-          body.push dec.to_i
+          inst,*nums=compile_number(dec.to_i)
+          body.push inst unless quote
+          body += nums
         elsif /^(?<quote>')?(?<hexd>0[xX][[:xdigit:]]+)$/ =~ word
-          body.push :litb unless quote
-          body.push hexd.hex
+          inst,*nums=compile_number(hexd.hex)
+          body.push inst unless quote
+          body += nums
         elsif /::"(.+)"::/ =~ word
           body.push :strstart
           outchars=$1.gsub("::SPACE::"," ").chars.to_a
