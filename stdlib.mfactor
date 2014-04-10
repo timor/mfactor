@@ -167,8 +167,8 @@ SYNTAX: \ ( -- quot ) token find [ nop ] [ _bad-input ] if ;
 ! put quotation head to memory TODO!!
 : _qhead, ( blength -- ) 2 s, 0 b, b, ;
 
-! find word for compilation in quotation, return type suitable for _qstacksize
-: _find_qword ( token -- item type ) find [ dup prim? [ inst 0 ] [ 2 ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if ;
+! find word for compilation in quotation, call immediate if parsing, return type suitable for _qstacksize
+: _find_qword ( token -- item type ) stdlib-find [ dup parsing? [ _word>> call token _find_qword ] [ _word>> dup prim? [ inst 0 ] [ 2 ] if ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if ;
 
 ! scan input stream until closing ']', accumulate item type pairs and total size in bytes on stack
 : _readq ( separator -- ..item/types num size )  [ 0 0 ] dip [ _find_qword dup _qstacksize [ 2swap ] dip + [ 1 + ] dip ] until-token [ oplit qend inst 0 ] 2dip [ 1 + ] dip 1 + ;
@@ -177,7 +177,7 @@ SYNTAX: \ ( -- quot ) token find [ nop ] [ _bad-input ] if ;
 : _saveq ( ..item/types num size -- addr ) dup 255 > [ error ] [ dup _qhead, ] if _MP get [ _stack2code ] dip ;
 
 ! read in quotation, return address !
-SYNTAX: [ ( -- addr) ']' _readq _saveq ;
+SYNTAX: [ ( -- addr type) ']' _readq _saveq 2 ;
 ! read in quotation, compile to memory, create dictionary entry
 
 : _strhead, ( blength -- ) 1 s, 1 b, b, ;
