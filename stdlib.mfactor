@@ -18,6 +18,7 @@
 ! listener
 : unknown-token ( tok -- ) parsenum [ nop ] [ _bad-input ] if ;
 : listener ( -- ) prompt token find [ call ] [ unknown-token ] if listener ;
+: listener2 ( -- ) prompt scan-word [ 2 = ] [ 0 = ] bi or [ call ] when listener2 ;
 : prompt ( -- ) psplevel pwrite '>' emit ' ' emit ;
 : nl ( -- ) 10 emit ;
 : _bad-input ( input -- ) drop 'X' dup '_' swap emit emit emit nl ;
@@ -132,13 +133,16 @@
 : _each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+1 quot ) 2dup [ [ getbyte ] dip call ] 2dip [ 1 + ] dip ;
 : ba-each ( ... seq quot: ( ... x -- ... ) -- ... ) [ uncount ] dip swap [ _each-step ] times 2drop ;
 ! parsing word
-SYNTAX: \ ( -- quot ) token find [ nop ] [ _bad-input ] if ;
+SYNTAX: \ ( -- quot type ) token find [ nop ] [ _bad-input ] if 2 ;
 
 : . ( thing -- ) pwrite nl ;
 : .x ( thing -- ) pwritex nl ;
 
 ! compare first char of string
 : starts-with? ( countedstr char -- ? ) swap 1 + getbyte = ;
+
+! scan single token, should only be used in parsing words! difference to factor: actually perform parsing word execution
+: scan-word ( -- item type ) token _find [ dup parsing? [ _word>> call ] [ _word>> dup prim? [ 0 ] [ 2 ] if ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if ;
 
 ! loop until token (char for now)
 ! TODO: support parsing words here!!!
@@ -150,25 +154,25 @@ SYNTAX: \ ( -- quot ) token find [ nop ] [ _bad-input ] if ;
 : prim? ( address -- ? ) inst instbase >= ;
 
 ! quotations on the stack
-! put element on the stack along with word type information: 0: instruction, 1: short jump, 2: long jump, 3: long literal, 4: byte literal
+! put element on the stack along with word type information: 0: instruction, 1: short jump, 2: long jump, 3: long literal, 4: byte literal, 5: ref
 
 ! deprecated
 ! : _q+ ( ..item/itype num item itype -- ..item/itype new-item new-itype num+1 ) rot 1 + ;
 
-: _qstacksize ( type -- size )  dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup 2 = [ drop cell 1 + ] [ dup 3 = [ drop cell 1 + ] [ 4 = [ 2 ] [ "size for item unknown" print error ] if ] if ] if ] if ] if ;
+: _qstacksize ( type -- size )  dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup [ 2 = ] [ 5 = ] bi or [ drop cell 1 + ] [ dup 3 = [ drop cell 1 + ] [ 4 = [ 2 ] [ "size for item unknown" print error ] if ] if ] if ] if ] if ;
 
-: -q, ( item type -- ) dup 0 = [ drop -b, ] [ dup 1 = [ drop -s, oplit bcall inst -b, ] [ dup 2 = [ drop -, oplit acall inst -b, ] [ 3 = [ -, oplit lit inst -b, ] [ "compilation for item unknown" print error ] if ] if ] if ] if ;
+: -q, ( item type -- ) dup 0 = [ drop -b, ] [ dup 1 = [ drop -s, oplit bcall inst -b, ] [ dup [ 2 = ] [ 5 = ] bi or [ drop -, oplit acall inst -b, ] [ 3 = [ -, oplit lit inst -b, ] [ "compilation for item unknown" print error ] if ] if ] if ] if ;
 
 ! compile number of words to memory words: ( word type ), update _MP
 : _stack2code ( ..item/itype num size -- ) _MP get + [ _MP set ] keep [ [ -q, ] times ] with-MP ;
 
-! box types: 1: string/byte-array , 2: quotation, 3: vector, 4: variable, anything above INSTBASE is an extended type
+! box types: 1: string/byte-array , 2: word, 3: vector, 4: variable, 5: ref
 
 ! put quotation head to memory TODO!!
 : _qhead, ( blength -- ) 2 s, 0 b, b, ;
 
 ! find word for compilation in quotation, call immediate if parsing, return type suitable for _qstacksize
-: _find_qword ( token -- item type ) stdlib-find [ dup parsing? [ _word>> call token _find_qword ] [ _word>> dup prim? [ inst 0 ] [ 2 ] if ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if ;
+: _find_qword ( token -- item type ) _find [ dup parsing? [ _word>> call token _find_qword ] [ _word>> dup prim? [ inst 0 ] [ 2 ] if ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if ;
 
 ! scan input stream until closing ']', accumulate item type pairs and total size in bytes on stack
 : _readq ( separator -- ..item/types num size )  [ 0 0 ] dip [ _find_qword dup _qstacksize [ 2swap ] dip + [ 1 + ] dip ] until-token [ oplit qend inst 0 ] 2dip [ 1 + ] dip 1 + ;
@@ -177,7 +181,7 @@ SYNTAX: \ ( -- quot ) token find [ nop ] [ _bad-input ] if ;
 : _saveq ( ..item/types num size -- addr ) dup 255 > [ error ] [ dup _qhead, ] if _MP get [ _stack2code ] dip ;
 
 ! read in quotation, return address !
-SYNTAX: [ ( -- addr type) ']' _readq _saveq 2 ;
+SYNTAX: [ ( -- addr type) ']' _readq _saveq 5 ;
 ! read in quotation, compile to memory, create dictionary entry
 
 : _strhead, ( blength -- ) 1 s, 1 b, b, ;
@@ -185,7 +189,7 @@ SYNTAX: [ ( -- addr type) ']' _readq _saveq 2 ;
 ! accumulate bytes on stack (expensive, but hey)
 : _readstr ( -- ..bytes num ) 0 [ receive dup 34 = [ drop f ] [ swap 1 + t ] if ] loop ;
 : _stack2string ( ..bytes num ) dup _MP get + [ _MP set ] keep [ [ -b, ] times ] with-MP ;
-SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2string ] dip 1 - ;
+SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2string ] dip 1 - 3 ;
 
 ! copy token to memory since it will be overridden by following parsing
 : _token2str ( token -- addr ) uncount dup _strhead, _MP get [ [ dup getbyte b, 1 + ] times drop ] dip 1 - ;
@@ -208,8 +212,8 @@ SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2st
 : _word>> ( dictentry -- quot ) get ;
 
 ! this version returns the header
-: _find ( str dictionary -- dictentry/str ? ) swap over _name>> dup strlen 0 = [ drop swap drop f ] [ 1 + over cstr= [ drop t ] [ swap _dict-next _find ] if ] if ;
-: stdlib-find ( str -- dictentry/str ? ) dictstart _find ;
+: _find_header ( str dictionary -- dictentry/str ? ) swap over _name>> dup strlen 0 = [ drop swap drop f ] [ 1 + over cstr= [ drop t ] [ swap _dict-next _find_header ] if ] if ;
+: _find ( str -- dictentry/str ? ) dictstart _find_header ;
 
 ! colon compiler
 SYNTAX: : ( -- ) token _token2str ';' _readq _saveq swap name ; 
