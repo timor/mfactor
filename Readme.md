@@ -34,6 +34,26 @@
   words, and after a closing bracket the corresponding "load address"
   remains on the stack.
 - boxed data includes size and type information.
+
+## parsing ##
+- parsing works by accumulating on the stack
+- command line is special use case, instead of compiling to memory, execution is done
+  immediately.  Nonetheless, all parsing words should adhere to common interface when
+  nesting, meaning to return item/type pairs on the stack, different situations will
+  handle these return values differently:
+  - command line will either discard type flag and leave word on stack, or use type flag
+    with type stack for subsequent word invocation, or change word invocation semantics to
+    include type checking with interleaved type flags on stack (doesnt need additional
+    type stack then)
+  - quotation accumulator will use type flag to compile correct primitive
+  - data structure accumulators will use type flag to check wether parser provided
+    compatible token
+- token/word types:
+  1. string, byte array
+  2. (inline) quotation
+  3. vector (not implemented yet)
+  4. scalar (useful unly if refs are explicit)
+
 ## boxing/sequences ##
 - sequences consist of header containing sequence type ( 2 bytes ),
   element length (1 byte) and sequence length (1 byte for now).

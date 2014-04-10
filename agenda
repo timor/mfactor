@@ -10,7 +10,7 @@
     nesting, replace with atomic allocation after read
 - DONE: dictionary extension, DEFERRED: namestack
 - DONE: apply counted strings to token reader
-- DOING: reader nesting
+- DOING: reader nesting, involves making parsing explicit
 - type checking and boxing/unboxing
 - graphical decompiler (should work on console, though)
 - stopworld mark-sweep gc (should only be triggered during user input,
