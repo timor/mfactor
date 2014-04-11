@@ -23,6 +23,7 @@ if hostp
   LDFLAGS << "-lrt -Wl,-Map=#{MAP}"
   PTRSIZE=64
   SIZE="size"
+  CFLAGS << " -DVM_RETURNSTACK=256 "
 else
   INSTBASE=0xa0
   PTRSIZE=32
