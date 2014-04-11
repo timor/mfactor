@@ -134,7 +134,7 @@
 : _each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+1 quot ) 2dup [ [ getbyte ] dip call ] 2dip [ 1 + ] dip ;
 : ba-each ( ... seq quot: ( ... x -- ... ) -- ... ) [ uncount ] dip swap [ _each-step ] times 2drop ;
 ! parsing word
-SYNTAX: \ ( -- quot type ) token _find [ _word>> ] [ _bad-input ] if 3 ;
+SYNTAX: \ ( -- quot type ) token find [ _word>> ] [ _bad-input ] if 3 ;
 
 : . ( thing -- ) pwrite nl ;
 : .x ( thing -- ) pwritex nl ;
@@ -143,7 +143,7 @@ SYNTAX: \ ( -- quot type ) token _find [ _word>> ] [ _bad-input ] if 3 ;
 : starts-with? ( countedstr char -- ? ) swap 1 + getbyte = ;
 
 ! parse single token, should only be used in parsing words! difference to factor: actually perform parsing word execution
-: parse-word ( token -- item type ) _find [ dup parsing? [ _word>> call ] [ _word>> dup prim? [ 0 ] [ 2 ] if ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if ;
+: parse-word ( token -- item type ) find [ dup parsing? [ _word>> call ] [ _word>> dup prim? [ 0 ] [ 2 ] if ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if ;
 : scan-word ( -- item type ) token parse-word ;
 ! TODO: parse-until, parse-until-char
 
@@ -175,7 +175,7 @@ SYNTAX: \ ( -- quot type ) token _find [ _word>> ] [ _bad-input ] if 3 ;
 : _qhead, ( blength -- ) 2 s, 0 b, b, ;
 
 ! find word for compilation in quotation, call immediate if parsing, return type suitable for _qstacksize
-! : _find_qword ( token -- item type ) _find [ dup parsing? [ _word>> call token _find_qword ] [ _word>> dup prim? [ inst 0 ] [ 2 ] if ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if ;
+! : _find_qword ( token -- item type ) find [ dup parsing? [ _word>> call token _find_qword ] [ _word>> dup prim? [ inst 0 ] [ 2 ] if ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if ;
 
 ! scan input stream until closing ']', accumulate item type pairs and total size in bytes on stack
 : _readq ( separator -- ..item/types num size )  [ 0 0 ] dip [ parse-word dup _qstacksize [ 2swap ] dip + [ 1 + ] dip ] scan-until-char [ oplit qend 0 ] 2dip [ 1 + ] dip 1 + ;
@@ -225,7 +225,7 @@ SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2st
 ! : _find_header ( str dictionary -- dictentry/str ? ) swap over _name>> dup strlen 0 = [ drop swap drop f ] [ over name= [ drop t ] [ swap _dict-next _find_header ] if ] if ;
 ! : _find_header ( str dictionary -- dictentry/str ? ) [ [ _name>> [ [ strlen 0 = ] [ ] is-both? ] keep
 : _find-header ( str dictionary -- dictentry/str ? ) dup _name>> dup strlen 0 = [ 2drop f ] [ pick name= [ nip t ] [ _dict-next _find-header ] if ] if ;
-: _find ( str -- dictentry/str ? ) dictstart _find-header ;
+: find ( str -- dictentry/str ? ) dictstart _find-header ;
 
 ! colon compiler
 SYNTAX: : ( -- ) token _token2str ';' _readq _saveq swap name 6 ;
