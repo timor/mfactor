@@ -18,7 +18,7 @@
 ! listener
 : unknown-token ( tok -- ) parsenum [ nop ] [ _bad-input ] if ;
 ! : listener ( -- ) prompt token find [ call ] [ unknown-token ] if listener ;
-: listener ( -- ) prompt scan-word [ 2 = ] [ 0 = ] bi or [ call ] when listener ;
+: listener ( -- ) prompt scan-word drop [ 2 = ] [ 0 = ] bi or [ call ] when listener ;
 : prompt ( -- ) psplevel pwrite '>' emit ' ' emit ;
 : nl ( -- ) 10 emit ;
 : _bad-input ( input -- ) drop 'X' dup '_' swap emit emit emit nl ;
@@ -142,9 +142,11 @@ SYNTAX: \ ( -- quot type ) token find [ _word>> ] [ _bad-input ] if 3 ;
 ! compare first char of string
 : starts-with? ( countedstr char -- ? ) swap 1 + getbyte = ;
 
+! acc in this context means reverse-vector on stack, consisting of item/type pairs and a count which always sits on top
+
 ! parse single token, should only be used in parsing words! difference to factor: actually perform parsing word execution
-: parse-word ( token -- item type ) find [ dup parsing? [ _word>> call ] [ _word>> dup prim? [ 0 ] [ 2 ] if ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if ;
-: scan-word ( -- item type ) token parse-word ;
+: parse-word ( acc token -- acc ) find [ dup parsing? [ _word>> call ] [ _word>> dup prim? [ 0 ] [ 2 ] if ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if suffix ;
+: scan-word ( acc -- acc ) token parse-word ;
 ! TODO: parse-until, parse-until-char
 
 ! loop until token (char for now)
@@ -156,15 +158,20 @@ SYNTAX: \ ( -- quot type ) token find [ _word>> ] [ _bad-input ] if 3 ;
 
 : prim? ( address -- ? ) inst instbase >= ;
 
+! "parse accumulator" on the stack
+
+! add element to parsed stuff on stack, name taken from factor, but not completely correct
+: suffix ( ..item/types count item type -- ..item/types item type newcount ) rot 1 + ;
+
 ! quotations on the stack
 ! put element on the stack along with word type information: 0: instruction, 1: short jump, 2: long jump, 3: long literal, 4: byte literal, 5: ref, 6: nop
 
 ! deprecated
 ! : _q+ ( ..item/itype num item itype -- ..item/itype new-item new-itype num+1 ) rot 1 + ;
 
-: _qstacksize ( type -- size )  dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup [ 2 = ] [ 5 = ] bi or [ drop cell 1 + ] [ dup 3 = [ drop cell 1 + ] [ 4 = [ 2 ] [ "size for item unknown" print error ] if ] if ] if ] if ] if ;
+: _qstacksize ( type -- size )  dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup [ 2 = ] [ 5 = ] bi or [ drop cell 1 + ] [ dup 3 = [ drop cell 1 + ] [ dup 4 = [ 2 ] [ 6 = [ 0 ] [ "size for item unknown" print error ] if ] if ] if ] if ] if ] if ;
 
-: -q, ( item type -- ) dup 0 = [ drop inst -b, ] [ dup 1 = [ drop -s, oplit bcall inst -b, ] [ dup 2 = [ drop -, oplit acall inst -b, ] [ [ 3 = ] [ 5 = ] bi or [ -, oplit lit inst -b, ] [ "compilation for item unknown" print error ] if ] if ] if ] if ;
+: -q, ( item type -- ) dup 0 = [ drop inst -b, ] [ dup 1 = [ drop -s, oplit bcall inst -b, ] [ dup 2 = [ drop -, oplit acall inst -b, ] [ dup [ 3 = ] [ 5 = ] bi or [ -, oplit lit inst -b, ] [ 6 = [ drop ] [ "compilation for item unknown" print error ] if ] if ] if ] if ] if ;
 
 ! compile number of words to memory words: ( word type ), update _MP
 : _stack2code ( ..item/itype num size -- ) _MP get + [ _MP set ] keep [ [ -q, ] times ] with-MP ;
@@ -178,13 +185,15 @@ SYNTAX: \ ( -- quot type ) token find [ _word>> ] [ _bad-input ] if 3 ;
 ! : _find_qword ( token -- item type ) find [ dup parsing? [ _word>> call token _find_qword ] [ _word>> dup prim? [ inst 0 ] [ 2 ] if ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if ;
 
 ! scan input stream until closing ']', accumulate item type pairs and total size in bytes on stack
-: _readq ( separator -- ..item/types num size )  [ 0 0 ] dip [ parse-word dup _qstacksize [ 2swap ] dip + [ 1 + ] dip ] scan-until-char [ oplit qend 0 ] 2dip [ 1 + ] dip 1 + ;
+: _readq ( acc separator -- acc..item/types num size )  [ 0 0 ] dip [ parse-word dup _qstacksize [ 2swap ] dip + [ 1 + ] dip ] scan-until-char [ oplit qend 0 ] 2dip [ 1 + ] dip 1 + ;
+: readq ( separator -- ..item/types num size )  [ 0 0 ] dip [ parse-word dup _qstacksize [ 2swap ] dip + [ 1 + ] dip ] scan-until-char [ oplit qend 0 ] 2dip [ 1 + ] dip 1 + ;
 
 ! check if quotation on stack is valid, if yes, save to memory and return saved address
 : _saveq ( ..item/types num size -- addr ) dup 255 > [ error ] [ dup _qhead, ] if _MP get [ _stack2code ] dip ;
+: saveq ( ..item/types num size -- addr ) dup 255 > [ error ] [ dup _qhead, ] if _MP get [ _stack2code ] dip ;
 
 ! read in quotation, return address !
-SYNTAX: [ ( -- addr type) ']' _readq _saveq 5 ;
+SYNTAX: [ ( -- ) ']' _readq _saveq 5 suffix ;
 ! read in quotation, compile to memory, create dictionary entry
 
 : _strhead, ( blength -- ) 1 s, 1 b, b, ;
@@ -192,7 +201,7 @@ SYNTAX: [ ( -- addr type) ']' _readq _saveq 5 ;
 ! accumulate bytes on stack (expensive, but hey)
 : _readstr ( -- ..bytes num ) 0 [ receive dup 34 = [ drop f ] [ swap 1 + t ] if ] loop ;
 : _stack2string ( ..bytes num ) dup _MP get + [ _MP set ] keep [ [ -b, ] times ] with-MP ;
-SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2string ] dip 1 - 3 ;
+SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2string ] dip 1 - 3 suffix ;
 
 ! copy token to memory since it will be overridden by following parsing
 : _token2str ( token -- addr ) uncount dup _strhead, _MP get [ [ dup getbyte b, 1 + ] times drop ] dip 1 - ;
@@ -228,11 +237,11 @@ SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2st
 : find ( str -- dictentry/str ? ) dictstart _find-header ;
 
 ! colon compiler
-SYNTAX: : ( -- ) token _token2str ';' _readq _saveq swap name 6 ;
+SYNTAX: : ( -- ) token _token2str ';' _readq _saveq swap name 6 suffix ;
 
-SYNTAX: \! ( -- ) [ receive 10 = [ f ] [ t ] if ] loop 6 ;
-SYNTAX: ( ( -- ) [ receive 41 = [ f ] [ t ] if ] loop 6 ;
-SYNTAX: B{ ( -- addr ) 0 '}' [ parsenum [ swap 1 + ] [ "not a byte literal: " print print error ] if ] scan-until-char dup _strhead, _MP get [ _stack2string ] dip 1 - 3 ;
+SYNTAX: \! ( -- ) [ receive 10 = [ f ] [ t ] if ] loop ;
+SYNTAX: ( ( -- ) [ receive 41 = [ f ] [ t ] if ] loop ;
+SYNTAX: B{ ( -- addr ) 0 '}' [ parsenum [ swap 1 + ] [ "not a byte literal: " print print error ] if ] scan-until-char dup _strhead, _MP get [ _stack2string ] dip 1 - 3 suffix ;
 
 ! dictionary usage
 : dsize ( -- ) dictend dictstart - _free-name dictstart - ;
