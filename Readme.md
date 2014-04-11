@@ -1,3 +1,8 @@
+# Intro #
+Mfactor is a small interpreter based on a simple VM with some Mfactor boot code.
+It is portable and currently has drivers for linux and Cortex-M.  Mfactor stands for
+Machine Factor, since it aims to be for Factor what Machine Forth is to Forth.
+
 # design notes
 - non-portable-byte-code interpreter, although mnemonics are portable
 - position-independent when using base-relative addressing (stdlib
@@ -6,7 +11,6 @@
   (inline quotation) starts at 4 primitive instructions on 32-bit
   machines, and 8 primitive instructions on 64 bit machines,
   respectively
-- cstrings are null-terminated (remove!)
 - big execution overhead, if anything has to be fast it should be
   specifically compiled
 
@@ -16,24 +20,19 @@
 - base-relative: short, holding an offset pointer relative to base
   address (like segment addressing)
 
-# code layout #
+## code layout ##
 - byte code, inline-data must be prefixed by corresponding literal
   preserving words (calls, lits, ...)
 - byte code words are distinguished from memory address by inspecting
   the highest bits when used on the stack, i.e. when address would
   point into inaccessible memory, it must be a primitive instruction
+- last call in a word should always be a tailcall instruction, but
+  this is the responsibility of the compiler
 
-# data memory #
+## data memory ##
 - The only memory handling available in the kernel is getting the
   start and end of readable and writable memory as well as reading and
   writing (unsafely) to arbitrary memory addresses
-- Sequence accumulation works by collecting items on the stack until
-  finished and exact size of data is known.  This should allow for
-  nesting data definitions (through parsing words).  Sequences and
-  boxed data are constructed on the stack between nested brace-like
-  words, and after a closing bracket the corresponding "load address"
-  remains on the stack.
-- boxed data includes size and type information.
 
 ## parsing ##
 - parsing works by accumulating on the stack
@@ -53,10 +52,19 @@
   2. (inline) quotation
   3. vector (not implemented yet)
   4. scalar (useful unly if refs are explicit)
+  5. words
+  6. primitives
 
 ## boxing/sequences ##
 - sequences consist of header containing sequence type ( 2 bytes ),
   element length (1 byte) and sequence length (1 byte for now).
+- Sequence accumulation works by collecting items on the stack until
+  finished and exact size of data is known.  This should allow for
+  nesting data definitions (through parsing words).  Sequences and
+  boxed data are constructed on the stack between nested brace-like
+  words, and after a closing bracket the corresponding "load address"
+  remains on the stack.
+- boxed data includes size and type information.
 - types of sequences
   - untyped arrays: one type field overhead per element
   - byte-arrays: for strings
@@ -67,17 +75,21 @@
     implemented generically that way (quotations have element size 0
     and cannot be randomly accessed)
 
-## garbage collection ##
+## garbage collection (tbd) ##
 - root set composed of
   - namestack assocs
   - ref instructions inside quotations
+  - refs in parser's accumulation vectors
 - mark & compact ensures linear memory scanning 
 - types of objects inform gc wether to follow references
   - untyped arrays hold only references to boxed types
   - variables (array length 1) can reference other objects
   - quotations can reference objects via ref instruction
+- no focus on performance, since correctly compiled code should not
+  rely on garbage collection in most cases, the interpreter itself
+  being a notable exception
 
-# types (TODO) #
+## types (TODO) ##
 - used in boxed data
 - for data on stack, type stack holds rtti
 - parser can unbox data on type checks when known at parse time, this
@@ -85,25 +97,27 @@
 - 2 strategies for inline data:
   - untyped, make sure compiler does all necessary checks (preferred)
   - typed, additional overhead needed since box must be stored
+- type system implemented as library instead of language feature
+  should allow generic compiler optimization on type checks
 
-# stacks #
+## stacks ##
 
-## data stack ##
+### data stack ###
 
-## catch stack ##
+### catch stack (tbd) ###
 - exception handling records (continuations, actually)
 - naiive implementation, copying all other stacks onto the catch stack
 
-## retain stack ##
+### retain stack ###
 - general purpose stack
 - must be empty after word exits (TODO: include balance checks in parser)
 
-## return stack ##
+### return stack ###
 - saves return information as well as beginning of word information
   for debugging
 
 
-## build notes ##
+# build notes #
 
 - build system: rake
 - several ENV vars influence compilation:
