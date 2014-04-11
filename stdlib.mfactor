@@ -17,8 +17,8 @@
 
 ! listener
 : unknown-token ( tok -- ) parsenum [ nop ] [ _bad-input ] if ;
-! : listener ( -- ) prompt token find [ call ] [ unknown-token ] if listener ;
-: listener ( -- ) prompt scan-word drop [ 2 = ] [ 0 = ] bi or [ call ] when listener ;
+: listener ( -- ) prompt token find [ _word>> call ] [ unknown-token ] if listener ;
+! : listener2 ( -- ) prompt scan-word drop [ 2 = ] [ 0 = ] bi or [ call ] when listener2 ;
 : prompt ( -- ) psplevel pwrite '>' emit ' ' emit ;
 : nl ( -- ) 10 emit ;
 : _bad-input ( input -- ) drop 'X' dup '_' swap emit emit emit nl ;
@@ -182,18 +182,18 @@ SYNTAX: \ ( -- quot type ) token find [ _word>> ] [ _bad-input ] if 3 ;
 : _qhead, ( blength -- ) 2 s, 0 b, b, ;
 
 ! find word for compilation in quotation, call immediate if parsing, return type suitable for _qstacksize
-! : _find_qword ( token -- item type ) find [ dup parsing? [ _word>> call token _find_qword ] [ _word>> dup prim? [ inst 0 ] [ 2 ] if ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if ;
+! : _find_qword ( token -- item type ) find [ dup parsing-word? [ _word>> call token _find_qword ] [ _word>> dup prim? [ inst 0 ] [ 2 ] if ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if ;
 
 ! scan input stream until closing ']', accumulate item type pairs and total size in bytes on stack
-: _readq ( acc separator -- acc..item/types num size )  [ 0 0 ] dip [ parse-word dup _qstacksize [ 2swap ] dip + [ 1 + ] dip ] scan-until-char [ oplit qend 0 ] 2dip [ 1 + ] dip 1 + ;
-: readq ( separator -- ..item/types num size )  [ 0 0 ] dip [ parse-word dup _qstacksize [ 2swap ] dip + [ 1 + ] dip ] scan-until-char [ oplit qend 0 ] 2dip [ 1 + ] dip 1 + ;
+! : _readq ( acc separator -- acc..item/types num size )  [ 0 0 ] dip [ parse-word dup _qstacksize [ 2swap ] dip + [ 1 + ] dip ] scan-until-char [ oplit qend 0 ] 2dip [ 1 + ] dip 1 + ;
+! : readq ( separator -- ..item/types num size )  [ 0 0 ] dip [ parse-word dup _qstacksize [ 2swap ] dip + [ 1 + ] dip ] scan-until-char [ oplit qend 0 ] 2dip [ 1 + ] dip 1 + ;
+: _readq ( -- ) nop ;
 
 ! check if quotation on stack is valid, if yes, save to memory and return saved address
-: _saveq ( ..item/types num size -- addr ) dup 255 > [ error ] [ dup _qhead, ] if _MP get [ _stack2code ] dip ;
-: saveq ( ..item/types num size -- addr ) dup 255 > [ error ] [ dup _qhead, ] if _MP get [ _stack2code ] dip ;
+: >quotation ( acc -- addr ) dup 255 > [ error ] [ dup _qhead, ] if _MP get [ _stack2code ] dip ;
 
 ! read in quotation, return address !
-SYNTAX: [ ( -- ) ']' _readq _saveq 5 suffix ;
+SYNTAX: [ ( -- ) ']' _readq >quotation 5 suffix ;
 ! read in quotation, compile to memory, create dictionary entry
 
 : _strhead, ( blength -- ) 1 s, 1 b, b, ;
@@ -237,7 +237,7 @@ SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2st
 : find ( str -- dictentry/str ? ) dictstart _find-header ;
 
 ! colon compiler
-SYNTAX: : ( -- ) token _token2str ';' _readq _saveq swap name 6 suffix ;
+SYNTAX: : ( -- ) token _token2str ';' _readq >quotation swap name 6 suffix ;
 
 SYNTAX: \! ( -- ) [ receive 10 = [ f ] [ t ] if ] loop ;
 SYNTAX: ( ( -- ) [ receive 41 = [ f ] [ t ] if ] loop ;
