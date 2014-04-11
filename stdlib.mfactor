@@ -17,8 +17,8 @@
 
 ! listener
 : unknown-token ( tok -- ) parsenum [ nop ] [ _bad-input ] if ;
-: listener ( -- ) prompt token find [ call ] [ unknown-token ] if listener ;
-: listener2 ( -- ) prompt scan-word [ 2 = ] [ 0 = ] bi or [ call ] when listener2 ;
+! : listener ( -- ) prompt token find [ call ] [ unknown-token ] if listener ;
+: listener ( -- ) prompt scan-word [ 2 = ] [ 0 = ] bi or [ call ] when listener2 ;
 : prompt ( -- ) psplevel pwrite '>' emit ' ' emit ;
 : nl ( -- ) 10 emit ;
 : _bad-input ( input -- ) drop 'X' dup '_' swap emit emit emit nl ;
@@ -134,7 +134,7 @@
 : _each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+1 quot ) 2dup [ [ getbyte ] dip call ] 2dip [ 1 + ] dip ;
 : ba-each ( ... seq quot: ( ... x -- ... ) -- ... ) [ uncount ] dip swap [ _each-step ] times 2drop ;
 ! parsing word
-SYNTAX: \ ( -- quot type ) token find [ nop ] [ _bad-input ] if 2 ;
+SYNTAX: \ ( -- quot type ) token _find [ _word>> ] [ _bad-input ] if 3 ;
 
 : . ( thing -- ) pwrite nl ;
 : .x ( thing -- ) pwritex nl ;
@@ -142,12 +142,14 @@ SYNTAX: \ ( -- quot type ) token find [ nop ] [ _bad-input ] if 2 ;
 ! compare first char of string
 : starts-with? ( countedstr char -- ? ) swap 1 + getbyte = ;
 
-! scan single token, should only be used in parsing words! difference to factor: actually perform parsing word execution
-: scan-word ( -- item type ) token _find [ dup parsing? [ _word>> call ] [ _word>> dup prim? [ 0 ] [ 2 ] if ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if ;
+! parse single token, should only be used in parsing words! difference to factor: actually perform parsing word execution
+: parse-word ( token -- item type ) _find [ dup parsing? [ _word>> call ] [ _word>> dup prim? [ 0 ] [ 2 ] if ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if ;
+: scan-word ( -- item type ) token parse-word ;
+! TODO: parse-until, parse-until-char
 
 ! loop until token (char for now)
-! TODO: support parsing words here!!!
-: until-token ( char quot: ( tok -- ) -- )  swap [ token swap 2dup starts-with? [ drop f ] [ [ swap [ call ] keep ] dip t ] if ] loop 2drop ;
+! caveat: eats up complete token!
+: scan-until-char ( char quot: ( tok -- ) -- )  swap [ token swap 2dup starts-with? [ drop f ] [ [ swap [ call ] keep ] dip t ] if ] loop 2drop ;
 
 ! convert tos to inst
 : inst ( inst -- ) cell 1 - 8 * neg shift 0xff bitand ;
@@ -155,14 +157,14 @@ SYNTAX: \ ( -- quot type ) token find [ nop ] [ _bad-input ] if 2 ;
 : prim? ( address -- ? ) inst instbase >= ;
 
 ! quotations on the stack
-! put element on the stack along with word type information: 0: instruction, 1: short jump, 2: long jump, 3: long literal, 4: byte literal, 5: ref
+! put element on the stack along with word type information: 0: instruction, 1: short jump, 2: long jump, 3: long literal, 4: byte literal, 5: ref, 6: nop
 
 ! deprecated
 ! : _q+ ( ..item/itype num item itype -- ..item/itype new-item new-itype num+1 ) rot 1 + ;
 
 : _qstacksize ( type -- size )  dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup [ 2 = ] [ 5 = ] bi or [ drop cell 1 + ] [ dup 3 = [ drop cell 1 + ] [ 4 = [ 2 ] [ "size for item unknown" print error ] if ] if ] if ] if ] if ;
 
-: -q, ( item type -- ) dup 0 = [ drop -b, ] [ dup 1 = [ drop -s, oplit bcall inst -b, ] [ dup [ 2 = ] [ 5 = ] bi or [ drop -, oplit acall inst -b, ] [ 3 = [ -, oplit lit inst -b, ] [ "compilation for item unknown" print error ] if ] if ] if ] if ;
+: -q, ( item type -- ) dup 0 = [ drop inst -b, ] [ dup 1 = [ drop -s, oplit bcall inst -b, ] [ dup 2 = [ drop -, oplit acall inst -b, ] [ [ 3 = ] [ 5 = ] bi or [ -, oplit lit inst -b, ] [ "compilation for item unknown" print error ] if ] if ] if ] if ;
 
 ! compile number of words to memory words: ( word type ), update _MP
 : _stack2code ( ..item/itype num size -- ) _MP get + [ _MP set ] keep [ [ -q, ] times ] with-MP ;
@@ -173,10 +175,10 @@ SYNTAX: \ ( -- quot type ) token find [ nop ] [ _bad-input ] if 2 ;
 : _qhead, ( blength -- ) 2 s, 0 b, b, ;
 
 ! find word for compilation in quotation, call immediate if parsing, return type suitable for _qstacksize
-: _find_qword ( token -- item type ) _find [ dup parsing? [ _word>> call token _find_qword ] [ _word>> dup prim? [ inst 0 ] [ 2 ] if ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if ;
+! : _find_qword ( token -- item type ) _find [ dup parsing? [ _word>> call token _find_qword ] [ _word>> dup prim? [ inst 0 ] [ 2 ] if ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if ;
 
 ! scan input stream until closing ']', accumulate item type pairs and total size in bytes on stack
-: _readq ( separator -- ..item/types num size )  [ 0 0 ] dip [ _find_qword dup _qstacksize [ 2swap ] dip + [ 1 + ] dip ] until-token [ oplit qend inst 0 ] 2dip [ 1 + ] dip 1 + ;
+: _readq ( separator -- ..item/types num size )  [ 0 0 ] dip [ parse-word dup _qstacksize [ 2swap ] dip + [ 1 + ] dip ] scan-until-char [ oplit qend 0 ] 2dip [ 1 + ] dip 1 + ;
 
 ! check if quotation on stack is valid, if yes, save to memory and return saved address
 : _saveq ( ..item/types num size -- addr ) dup 255 > [ error ] [ dup _qhead, ] if _MP get [ _stack2code ] dip ;
@@ -203,8 +205,10 @@ SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2st
 ! count reaching 0 means all matched
 : mem= ( a1 a2 n -- ? ) dup 0 = [ 3drop t ] [ -rot 2dup [ getbyte ] bi@ = [ [ 1 + ] bi@ rot 1 - mem= ] [ 3drop f ] if ] if ;
 : str= ( str1 str2 -- ? ) dup strlen 1 + mem= ;
-! compare counted string to in-memory cstring
-: cstr= ( cstr str -- ? ) uncount mem= ;
+: cstr-print ( cstr -- ) [ dup getbyte dup 0 = not ] [ emit 1 + ] while ;
+: cstr-dp ( cstr str -- ) "comparing str: '" print print "' to cstr: '" print cstr-print "'" print nl ;
+! compare read token to header name, problem: name has terminal 0 byte which must not be checked
+: name= ( name str -- ? ) swap [ uncount ] bi@ [ swap ] dip 1 - over = [ mem= ] [ 3drop f ] if ;
 
 ! name of dict entry
 : _name>> ( dictentry -- str ) cell + 1 + ;
@@ -212,16 +216,23 @@ SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2st
 : _dict-next ( dictentry -- dictentry ) _name>> dup strlen + 1 + ;
 : _word>> ( dictentry -- quot ) get ;
 
-! this version returns the header
-: _find_header ( str dictionary -- dictentry/str ? ) swap over _name>> dup strlen 0 = [ drop swap drop f ] [ 1 + over cstr= [ drop t ] [ swap _dict-next _find_header ] if ] if ;
-: _find ( str -- dictentry/str ? ) dictstart _find_header ;
+! check if both quotations return true
+! : is-both? ( x q1 q2 -- ? ) bi@ and ;
+! check if at lease one quotation returns true
+! : is-one? ( x q1 q2 -- ? ) bi@ or ;
+
+! this version returns the header!
+! : _find_header ( str dictionary -- dictentry/str ? ) swap over _name>> dup strlen 0 = [ drop swap drop f ] [ over name= [ drop t ] [ swap _dict-next _find_header ] if ] if ;
+! : _find_header ( str dictionary -- dictentry/str ? ) [ [ _name>> [ [ strlen 0 = ] [ ] is-both? ] keep
+: _find-header ( str dictionary -- dictentry/str ? ) dup _name>> dup strlen 0 = [ 2drop f ] [ pick name= [ nip t ] [ _dict-next _find-header ] if ] if ;
+: _find ( str -- dictentry/str ? ) dictstart _find-header ;
 
 ! colon compiler
-SYNTAX: : ( -- ) token _token2str ';' _readq _saveq swap name ; 
+SYNTAX: : ( -- ) token _token2str ';' _readq _saveq swap name 6 ;
 
-SYNTAX: \! ( -- ) [ receive 10 = [ f ] [ t ] if ] loop ;
-SYNTAX: ( ( -- ) [ receive 41 = [ f ] [ t ] if ] loop ;
-SYNTAX: B{ ( -- addr ) 0 '}' [ parsenum [ swap 1 + ] [ "not a byte literal: " print print error ] if ] until-token dup _strhead, _MP get [ _stack2string ] dip 1 - ;
+SYNTAX: \! ( -- ) [ receive 10 = [ f ] [ t ] if ] loop 6 ;
+SYNTAX: ( ( -- ) [ receive 41 = [ f ] [ t ] if ] loop 6 ;
+SYNTAX: B{ ( -- addr ) 0 '}' [ parsenum [ swap 1 + ] [ "not a byte literal: " print print error ] if ] scan-until-char dup _strhead, _MP get [ _stack2string ] dip 1 - 3 ;
 
 ! dictionary usage
 : dsize ( -- ) dictend dictstart - _free-name dictstart - ;

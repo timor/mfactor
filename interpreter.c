@@ -376,13 +376,13 @@ void interpreter(inst * user_program)
             return;
           }} break;
           /* (countedstr -- quot/addr foundp) */
-        case find: {
-          cell name_to_find=ppop();
-          inst * addr=find_by_name(((char*)name_to_find)+1); /* skip countbyte */
-          ppush(addr==NULL ? name_to_find : (cell)addr);
-          ppush(addr==NULL ? false : true);
-        }
-          break;
+        /* case find: { */
+        /*   cell name_to_find=ppop(); */
+        /*   inst * addr=find_by_name(((char*)name_to_find)+1); /\* skip countbyte *\/ */
+        /*   ppush(addr==NULL ? name_to_find : (cell)addr); */
+        /*   ppush(addr==NULL ? false : true); */
+        /* } */
+        /*   break; */
         case scall:
 	 _scall:
           /* check if call is primitive, if yes, substitute execution (tail call), since call only
