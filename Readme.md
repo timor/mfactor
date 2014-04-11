@@ -1,9 +1,12 @@
 # Intro #
-Mfactor is a small interpreter based on a simple VM with some Mfactor boot code.
-It is portable and currently has drivers for linux and Cortex-M.  Mfactor stands for
-Machine Factor, since it aims to be for Factor what Machine Forth is to Forth.
+
+Mfactor is a small interpreter based on a simple VM with some Mfactor
+boot code.  It is portable and currently has drivers for linux and
+Cortex-M.  Mfactor stands for Machine Factor, since it aims to be for
+Factor <http://factorcode.org> what Machine Forth is to Forth.
 
 # design notes
+
 - non-portable-byte-code interpreter, although mnemonics are portable
 - position-independent when using base-relative addressing (stdlib
   only supports base-relative)
@@ -36,14 +39,16 @@ Machine Factor, since it aims to be for Factor what Machine Forth is to Forth.
 
 ## parsing ##
 - parsing works by accumulating on the stack
-- command line is special use case, instead of compiling to memory, execution is done
-  immediately.  Nonetheless, all parsing words should adhere to common interface when
-  nesting, meaning to return item/type pairs on the stack, different situations will
-  handle these return values differently:
-  - command line will either discard type flag and leave word on stack, or use type flag
-    with type stack for subsequent word invocation, or change word invocation semantics to
-    include type checking with interleaved type flags on stack (doesnt need additional
-    type stack then)
+- command line is special use case, instead of compiling to memory,
+  execution is done immediately.  Nonetheless, all parsing words
+  should adhere to common interface when nesting, meaning to return
+  item/type pairs on the stack, different situations will handle these
+  return values differently:
+  - command line will either discard type flag and leave word on
+    stack, or use type flag with type stack for subsequent word
+    invocation, or change word invocation semantics to include type
+    checking with interleaved type flags on stack (doesnt need
+    additional type stack then)
   - quotation accumulator will use type flag to compile correct primitive
   - data structure accumulators will use type flag to check wether parser provided
     compatible token
@@ -51,7 +56,7 @@ Machine Factor, since it aims to be for Factor what Machine Forth is to Forth.
   1. string, byte array
   2. (inline) quotation
   3. vector (not implemented yet)
-  4. scalar (useful unly if refs are explicit)
+  4. scalar (useful only if refs are explicit)
   5. words
   6. primitives
 
@@ -124,8 +129,6 @@ Machine Factor, since it aims to be for Factor what Machine Forth is to Forth.
   - ONHOST: if set, will be compiled for host system
   - NOPRIVATE: if set, dictionary entries will be generated even for
     words only used internally, useful for tracing (see below)
-  - NOTAILCALL: if set, don't use tail calls at all.  Useful for debugging,
-    but limits operations massively since all loops are implemented recursively
 - compile time switches:
   - TRACE_LEVEL: controls execution trace information on standard output
     - 0: no trace output
@@ -136,3 +139,18 @@ Machine Factor, since it aims to be for Factor what Machine Forth is to Forth.
         rake ONHOST=1 NOPRIVATE=1
         ./mfactor
 
+# debugging #
+
+- current tools include: using TRACE_LEVEL
+- incorporate 'st' calls to print current stack status
+- "message" print debugging
+- calling `notail` which disables tail calls, thus leaving the return
+  stack completely intact
+  - NOTE: if necessary, increase VM_RETURNSTACK (either on command
+    line or in interpreter.h", since currently all looping constructs
+    including the top level listener are implemented with tail recursion
+  - tail calling can be reactivated with `tail`
+
+# caveats #
+- new words can be defined, but currently not overriden, but calling
+  `reset` also resets the dictionary
