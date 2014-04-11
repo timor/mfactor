@@ -183,10 +183,13 @@ end
 
 # emit 
 def compile_number(num)
-  if (num != 0) && ((num & 0xff) == 0)
-    [num].pack("I").unpack("CCCC").unshift :lit
+  puts "compiling number: #{num}"
+  bytes=[num].pack("I").unpack("CCCC")
+  lsb=bytes.shift
+  if bytes.any? { |b| b != 0 }
+    [:lit, lsb, *bytes ]
   else
-    [:litb, num]
+    [:litb, lsb]
   end
 end
 
