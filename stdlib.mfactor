@@ -12,7 +12,7 @@
 : _test4 ( -- ) 254 memstart setbyte 175 memstart 1 + setbyte memstart get .x ;
 : _test5 ( -- ) 5 [ dup 0 = not ] [ [ '0' + emit ] [ 1 - ] bi ] while . ;
 : _test6 ( -- ) B{ 5 4 3 2 1 } [ '0' + emit ] ba-each 0 . ;
-: _test7 ( -- ) 5 [ dup 0 = ] [ [ '0' + emit ] [ 1 - ] bi ] until . ;
+: _test7 ( -- ) 5 [ dup 0 = ] [ [ '0' + emit ] [ 1 - ] bi ] do until . ;
 : _testend ( -- ) [ "tests done." print ] call nl ;
 
 ! listener
@@ -126,8 +126,9 @@
 : loop ( ... pred: ( ... -- ... ? ) -- ... ) dup >r call [ r> loop ] [ r> drop ] if ;
 : times ( ... n quot: ( ... -- ... ) -- ... ) swap dup 0 = [ 2drop ] [ [ [ call ] keep ] dip 1 - swap times ] if ;
 : each-integer ( ... n quot: ( ... i -- ... ) -- ... ) swap 0 swap [ [ swap call ] 2keep 1 + ] times 2drop ;
+: do ( pred body -- pred body ) dup 2dip ;
 : while ( ..a pred: ( ..a -- ..b ? ) body: ( ..b -- ..a ) -- ..b ) over [ call ] 2dip rot [ over [ call ] 2dip while ] [ 2drop ] if ;
-: until ( ..a pred: ( ..a -- ..b ? ) body: ( ..b -- ..a ) -- ..b ) swap over [ call ] 2dip over [ call ] 2dip rot [ 2drop ] [ swap until ] if ;
+: until ( ..a pred: ( ..a -- ..b ? ) body: ( ..b -- ..a ) -- ..b ) over [ call ] 2dip rot [ 2drop ] [ over [ call ] 2dip until ] if ;
 
 ! specialized version of each for byte arrays and strings
 : _each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+1 quot ) 2dup [ [ getbyte ] dip call ] 2dip [ 1 + ] dip ;
