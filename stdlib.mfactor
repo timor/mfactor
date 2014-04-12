@@ -145,11 +145,11 @@ SYNTAX: \ ( -- quot type ) token find [ _word>> ] [ _bad-input ] if 3 ;
 ! acc in this context means reverse-vector on stack, consisting of item/type pairs and a count which always sits on top
 
 ! If string is a valid number literal, it is converted to a number, otherwise search for a word named by the string.
-: parse-datum ( string  -- word/number type ) find [ dup _word>> prim? [ 0 ] [ 2 ] if ] [ parsenum [ 3 ] [ "parsing '" print print "' failed\! " error ] if ] if ;
+: parse-datum ( string  -- word/number type ) find [ dup _word>> prim? [ _word>> 0 ] [ 2 ] if ] [ parsenum [ 3 ] [ "parsing '" print print "' failed\! " print error ] if ] if ;
 : scan-datum ( -- item type ) token parse-datum ;
 
 : execute ( word -- effect ) _word>> call ;
-: parse-until-step ( acc end -- acc ? ) scan-datum dup 2 = [ over _name>> rot starts-with? [ drop f ] [ over parsing-word? [ nip execute t ] [ suffix t ] if ] if ] [ [ drop ] 2dip suffix t ] if ; 
+: parse-until-step ( acc end -- acc ? ) scan-datum dup 2 = [ rot pick _name>> swap starts-with? [ 2drop f ] [ over parsing-word? [ drop execute t ] [ [ _word>> ] dip suffix t ] if ] if ] [ [ drop ] 2dip suffix t ] if ; 
 : parse-until ( acc end -- acc ) [ parse-until-step ] keep swap [ parse-until ] [ drop ] if ;
 
 ! loop until token (char for now)
