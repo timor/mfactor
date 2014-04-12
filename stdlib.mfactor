@@ -17,8 +17,7 @@
 
 ! listener
 : unknown-token ( tok -- ) parsenum [ nop ] [ _bad-input ] if ;
-: listener ( -- ) prompt token find [ _quot>> call ] [ unknown-token ] if listener ;
-! : listener2 ( -- ) prompt scan-word drop [ 2 = ] [ 0 = ] bi or [ call ] when listener2 ;
+: listener ( -- ) prompt token find [ dup parsing-word? [ _quot>> 0 swap call [ drop ] times ] [ _quot>> call ] if ] [ unknown-token ] if listener ;
 : prompt ( -- ) psplevel pwrite '>' emit ' ' emit ;
 : nl ( -- ) 10 emit ;
 : _bad-input ( input -- ) drop 'X' dup '_' swap emit emit emit nl ;
