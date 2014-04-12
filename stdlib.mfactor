@@ -175,7 +175,7 @@ SYNTAX: \ ( -- quot type ) token find [ _word>> ] [ _bad-input ] if 3 ;
 ! return size of word when stored in quotation
 : _wordsize ( type -- size ) dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup [ 2 = ] [ 5 = ] bi or [ drop cell 1 + ] [ dup 3 = [ drop cell 1 + ] [ dup 4 = [ 2 ] [ 6 = [ 0 ] [ "size for item unknown" print error ] if ] if ] if ] if ] if ] if ;
 
-: -q, ( item type -- ) dup 0 = [ drop inst -b, ] [ dup 1 = [ drop -s, oplit bcall inst -b, ] [ dup 2 = [ drop -, oplit acall inst -b, ] [ dup [ 3 = ] [ 5 = ] bi or [ -, oplit lit inst -b, ] [ 6 = [ drop ] [ "compilation for item unknown" print error ] if ] if ] if ] if ] if ;
+: -q, ( item type -- ) dup 0 = [ drop inst -b, ] [ dup 1 = [ drop -s, oplit bcall inst -b, ] [ dup 2 = [ drop -, oplit acall inst -b, ] [ dup [ 3 = ] [ 5 = ] bi or [ drop -, oplit lit inst -b, ] [ 6 = [ drop ] [ "compilation for item unknown" print error ] if ] if ] if ] if ] if ;
 
 ! compile number of words to memory words: ( word type ), update _MP
 : _stack2code ( ..item/itype num size -- ) _MP get + [ _MP set ] keep [ [ -q, ] times ] with-MP ;
