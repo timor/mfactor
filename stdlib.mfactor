@@ -144,10 +144,13 @@ SYNTAX: \ ( -- quot type ) token find [ _word>> ] [ _bad-input ] if 3 ;
 
 ! acc in this context means reverse-vector on stack, consisting of item/type pairs and a count which always sits on top
 
-! parse single token, should only be used in parsing words! difference to factor: actually perform parsing word execution
-: parse-word ( acc token -- acc ) find [ dup parsing? [ _word>> call ] [ _word>> dup prim? [ 0 ] [ 2 ] if ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if suffix ;
-: scan-word ( acc -- acc ) token parse-word ;
-! TODO: parse-until, parse-until-char
+! If string is a valid number literal, it is converted to a number, otherwise search for a word named by the string.
+: parse-datum ( string  -- word/number type ) find [ dup _word>> prim? [ 0 ] [ 2 ] if ] [ parsenum [ 3 ] [ "parsing '" print print "' failed\! " error ] if ] if ;
+: scan-datum ( -- item type ) token parse-datum ;
+
+: execute ( word -- effect ) _word>> call ;
+: parse-until-step ( acc end -- acc ? ) scan-datum dup 2 = [ over _name>> rot starts-with? [ drop f ] [ over parsing-word? [ nip execute t ] [ suffix t ] if ] if ] [ [ drop ] 2dip suffix t ] if ; 
+: parse-until ( acc end -- acc ) [ parse-until-step ] keep swap [ parse-until ] [ drop ] if ;
 
 ! loop until token (char for now)
 ! caveat: eats up complete token!
@@ -221,7 +224,7 @@ SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2st
 
 ! name of dict entry
 : _name>> ( dictentry -- str ) cell + 1 + ;
-: parsing? ( dictentry -- ? ) cell + get 0x01 bitand ;
+: parsing-word? ( dictentry -- ? ) cell + get 0x01 bitand ;
 : _dict-next ( dictentry -- dictentry ) _name>> dup strlen + 1 + ;
 : _word>> ( dictentry -- quot ) get ;
 
