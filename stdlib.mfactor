@@ -198,12 +198,12 @@ SYNTAX: \ ( -- quot type ) token find [ _word>> ] [ _bad-input ] if 3 ;
 : _accum-quotation-size ( acc -- acc x ) 0 _accum-quotation-size-worker ;
 
 ! check if quotation on stack is valid, if yes, save to memory and return saved address
-: >quotation ( acc -- addr ) dup 255 > [ error ] [ dup _qhead, ] if _MP get [ _stack2code ] dip ;
+: >quotation ( acc -- addr ) [ oplit qend 0 ] dip 1 + _accum-quotation-size dup 255 > [ error ] [ dup _qhead, ] if _MP get [ _stack2code ] dip ;
 
 : ] ( -- ) "unmatched ] " print error ;
 
 ! read in quotation, return address !
-SYNTAX: [ ( -- ) ']' _readq >quotation 5 suffix ;
+SYNTAX: [ ( -- ) 0 ']' parse-until >quotation 5 suffix ;
 ! read in quotation, compile to memory, create dictionary entry
 
 : _strhead, ( blength -- ) 1 s, 1 b, b, ;
