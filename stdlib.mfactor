@@ -88,6 +88,7 @@
 
 : if ( cond true false -- true/false ) ? call ;
 : when ( ..a ? true: ( ..a -- ..a ) -- ..a ) [ nop ] if ;
+: unless ( ..a ? false: ( ..a -- ..a ) -- ..a ) [ nop ] swap if ;
 
 ! some stack shufflers and combinators
 : nip ( x y - y ) swap drop ;
