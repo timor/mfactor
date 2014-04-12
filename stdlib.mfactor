@@ -134,7 +134,7 @@
 : _each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+1 quot ) 2dup [ [ getbyte ] dip call ] 2dip [ 1 + ] dip ;
 : ba-each ( ... seq quot: ( ... x -- ... ) -- ... ) [ uncount ] dip swap [ _each-step ] times 2drop ;
 ! parsing word
-SYNTAX: \ ( -- quot type ) token find [ _quot>> ] [ _bad-input ] if 3 suffix ;
+SYNTAX: \ ( -- quot type ) token find [ 3 suffix ] [ _bad-input ] if ;
 
 : . ( thing -- ) pwrite nl ;
 : .x ( thing -- ) pwritex nl ;
