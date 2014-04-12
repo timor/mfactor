@@ -74,7 +74,7 @@
 ! temporarily different memory pointer
 : with-MP ( addr quot -- ) swap _MP get [ _MP set call ] dip _MP set ;
 
-! compile reverse
+! compilation, forward and reverse
 : b, ( byteval -- ) _MP [ get setbyte ] [ 1 swap +@ ] bi ;
 : -b, ( byteval -- ) _MP [ 1 neg swap +@ ] [ get setbyte ] bi ;
 ! ! compile short to mem, little endian
