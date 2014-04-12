@@ -169,29 +169,19 @@ SYNTAX: \ ( -- quot type ) token find [ _quot>> ] [ _bad-input ] if 3 suffix ;
 ! quotations on the stack
 ! put element on the stack along with word type information: 0: instruction, 1: short jump, 2: long jump, 3: long literal, 4: byte literal, 5: ref, 6: nop
 
-! deprecated
-! : _q+ ( ..item/itype num item itype -- ..item/itype new-item new-itype num+1 ) rot 1 + ;
-
 ! return size of word when stored in quotation
 : _wordsize ( type -- size ) dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup [ 2 = ] [ 5 = ] bi or [ drop cell 1 + ] [ dup 3 = [ drop cell 1 + ] [ dup 4 = [ 2 ] [ 6 = [ 0 ] [ "size for item unknown" print error ] if ] if ] if ] if ] if ] if ;
 
 : -q, ( item type -- ) dup 0 = [ drop inst -b, ] [ dup 1 = [ drop -s, oplit bcall inst -b, ] [ dup 2 = [ drop -, oplit acall inst -b, ] [ dup [ 3 = ] [ 5 = ] bi or [ drop -, oplit lit inst -b, ] [ 6 = [ drop ] [ "compilation for item unknown" print error ] if ] if ] if ] if ] if ;
 
-! compile number of words to memory words: ( word type ), update _MP
-: _stack2code ( ..item/itype num size -- ) _MP get + [ _MP set ] keep [ [ -q, ] times ] with-MP ;
+! compile parser accumulator to memory
+: _stack2code ( acc -- ) _MP get + [ _MP set ] keep [ [ -q, ] times ] with-MP ;
 
 ! box types: 1: string/byte-array , 2: word, 3: vector, 4: variable, 5: ref
 
-! put quotation head to memory TODO!!
+! put quotation head to memory
 : _qhead, ( blength -- ) 2 s, 0 b, b, ;
 
-! find word for compilation in quotation, call immediate if parsing, return type suitable for _qstacksize
-! : _find_qword ( token -- item type ) find [ dup parsing-word? [ _word>> call token _find_qword ] [ _word>> dup prim? [ inst 0 ] [ 2 ] if ] if ] [ parsenum [ 3 ] [ "cannot find: " print print error ] if ] if ;
-
-! scan input stream until closing ']', accumulate item type pairs and total size in bytes on stack
-! : _readq ( acc separator -- acc..item/types num size )  [ 0 0 ] dip [ parse-word dup _qstacksize [ 2swap ] dip + [ 1 + ] dip ] scan-until-char [ oplit qend 0 ] 2dip [ 1 + ] dip 1 + ;
-! : readq ( separator -- ..item/types num size )  [ 0 0 ] dip [ parse-word dup _qstacksize [ 2swap ] dip + [ 1 + ] dip ] scan-until-char [ oplit qend 0 ] 2dip [ 1 + ] dip 1 + ;
-: _readq ( -- ) nop ;
 ! determine size of quotation accumulated, careful: not tail recursive, return stack must be able to hold number of elements, retain stack must hold twice the number of elements in accumulator
 ! reminder: acc === .. item type n
 : _accum-quotation-size-worker ( acc x -- acc x ) over 0 = not [ pick _wordsize + rot >r rot >r [ 1 - ] dip _accum-quotation-size-worker [ 1 + ] dip r> -rot r> -rot ] when ;
