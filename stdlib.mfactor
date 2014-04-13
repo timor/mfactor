@@ -27,6 +27,7 @@
 : not ( ? -- \? ) 0 1 ? ;
 
 : >= ( n1 n2 -- ? ) 2dup > [ 2drop t ] [ = ] if ;
+! start inclusive length exclusive
 : in-range ( val start end -- ? ) [ over [ >= ] dip ] dip < and ;
 
 ! unsafe access
