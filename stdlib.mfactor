@@ -135,8 +135,7 @@
 : until ( ..a pred: ( ..a -- ..b ? ) body: ( ..b -- ..a ) -- ..b ) over [ call ] 2dip rot [ 2drop ] [ over [ call ] 2dip until ] if ;
 
 ! random access into byte-array or string, seq is assumed to point to the count byte of the sequence, and one byte before that the element size
-: ba-nth ( n seq -- elt ) [ strlen 0 swap in-range ] 2keep pick [ [ 1 - getbyte * ] keep + 1 + getbyte ] [ "index out of bound " print error ] if ;
-
+: ba-nth ( n seq -- elt ) [ strlen 0 swap in-range ] 2keep rot [ [ 1 - getbyte * ] keep + 1 + getbyte ] [ "index out of bound " print error ] if ;
 ! specialized version of each for byte arrays and strings
 : _each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+1 quot ) 2dup [ [ getbyte ] dip call ] 2dip [ 1 + ] dip ;
 : ba-each ( ... seq quot: ( ... x -- ... ) -- ... ) [ uncount ] dip swap [ _each-step ] times 2drop ;
