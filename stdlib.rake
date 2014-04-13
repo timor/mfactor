@@ -199,7 +199,7 @@ def load_factor1(filename,instructionset)
   res={}
   text=File.read(filename).gsub(/(?<!\\)!.*\n/,"") # remove comments here
   text.gsub!('\!',"!");
-  text.match_all(/(?<type>\S+)?:\s+(?<name>\S+)\s+(?<effect>\(.+\)\s+)?(?<words>.+);/).each do |match|
+  text.match_all(/(?<type>\S+)?:\s+(?<name>\S+)\s+(?<effect>\(.+\)\s+)?(?<words>[^;]+);/).each do |match|
     name=match[:name]
     words=match[:words]
     type=match[:type]
