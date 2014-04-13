@@ -376,7 +376,7 @@ void interpreter(inst * user_program)
             return;
           }} break;
           /* (countedstr -- quot/addr foundp) */
-        case find: {
+        case search: {
           cell name_to_find=ppop();
           dict_entry * addr=find_by_name(((char*)name_to_find)+1); /* skip countbyte */
           ppush(addr==NULL ? name_to_find : (cell)addr);

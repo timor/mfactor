@@ -70,7 +70,7 @@ swap:
 token:
 # find a token by name in the dictionary
 # ( countedstring -- quot/addr found? )
-find:
+search:
 # memory bounds
 # code + data mem
 memstart:
