@@ -55,7 +55,6 @@
 
 : showmem ( -- ) memstart _MP get [ 2dup >= [ f ] [ [ dup getbyte .x 1 + ] dip t ] if ] loop 2drop ;
 
-: _dprint ( c name -- c ) print ": " print dup .x ;
 ! find next free dictionary entry (check for first name byte = 0)
 ! dict_entry layout: addr(4)|flag(1)|namelength(1)|name(namelength)
 : _free-name ( -- addr ) dictstart [ cell + 1 + dup getbyte [ + 1 + ] keep 0 = not ] loop cell - 2 - ;
@@ -139,9 +138,6 @@ SYNTAX: \ ( -- quot type ) token find [ 3 suffix ] [ _bad-input ] if ;
 : . ( thing -- ) pwrite nl ;
 : .x ( thing -- ) pwritex nl ;
 
-! compare first char of string
-: starts-with? ( countedstr char -- ? ) swap 1 + getbyte = ;
-
 ! acc in this context means reverse-vector on stack, consisting of item/type pairs and a count which always sits on top
 
 ! If string is a valid number literal, it is converted to a number, otherwise search for a word named by the string.
@@ -149,12 +145,8 @@ SYNTAX: \ ( -- quot type ) token find [ 3 suffix ] [ _bad-input ] if ;
 : scan-datum ( -- item type ) token parse-datum ;
 
 : execute ( word -- effect ) _quot>> call ;
-: parse-until-step ( acc end -- acc ? ) scan-datum dup 2 = [ rot pick _name>> swap starts-with? [ 2drop f ] [ over parsing-word? [ drop execute t ] [ [ _quot>> ] dip suffix t ] if ] if ] [ [ drop ] 2dip suffix t ] if ; 
+: parse-until-step ( acc end -- acc ? ) scan-datum dup 2 = [ rot pick _name>> name= [ 2drop f ] [ over parsing-word? [ drop execute t ] [ [ _quot>> ] dip suffix t ] if ] if ] [ [ drop ] 2dip suffix t ] if ;
 : parse-until ( acc end -- acc ) [ parse-until-step ] keep swap [ parse-until ] [ drop ] if ;
-
-! loop until token (char for now)
-! caveat: eats up complete token!
-: scan-until-char ( char quot: ( tok -- ) -- )  swap [ token swap 2dup starts-with? [ drop f ] [ [ swap [ call ] keep ] dip t ] if ] loop 2drop ;
 
 ! convert tos to inst
 : inst ( inst -- ) cell 1 - 8 * neg shift 0xff bitand ;
@@ -172,12 +164,12 @@ SYNTAX: \ ( -- quot type ) token find [ 3 suffix ] [ _bad-input ] if ;
 ! return size of word when stored in quotation
 : _wordsize ( type -- size ) dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup [ 2 = ] [ 5 = ] bi or [ drop cell 1 + ] [ dup 3 = [ drop cell 1 + ] [ dup 4 = [ 2 ] [ 6 = [ 0 ] [ "size for item unknown" print error ] if ] if ] if ] if ] if ] if ;
 
-: -q, ( item type -- ) dup 0 = [ drop inst -b, ] [ dup 1 = [ drop -s, oplit bcall inst -b, ] [ dup 2 = [ drop -, oplit acall inst -b, ] [ dup [ 3 = ] [ 5 = ] bi or [ drop -, oplit lit inst -b, ] [ 6 = [ drop ] [ "compilation for item unknown" print error ] if ] if ] if ] if ] if ;
+: _-q, ( item type -- ) dup 0 = [ drop inst -b, ] [ dup 1 = [ drop -s, oplit bcall inst -b, ] [ dup 2 = [ drop -, oplit acall inst -b, ] [ dup [ 3 = ] [ 5 = ] bi or [ drop -, oplit lit inst -b, ] [ 6 = [ drop ] [ "compilation for item unknown" print error ] if ] if ] if ] if ] if ;
 
 ! compile parser accumulator to memory
-: _stack2code ( acc -- ) _MP get + [ _MP set ] keep [ [ -q, ] times ] with-MP ;
+: _stack2code ( acc -- ) _MP get + [ _MP set ] keep [ [ _-q, ] times ] with-MP ;
 
-! box types: 1: string/byte-array , 2: word, 3: vector, 4: variable, 5: ref
+! memory cell types: 1: string/byte-array , 2: word
 
 ! put quotation head to memory
 : _qhead, ( blength -- ) 2 s, 0 b, b, ;
@@ -193,7 +185,7 @@ SYNTAX: \ ( -- quot type ) token find [ 3 suffix ] [ _bad-input ] if ;
 : ] ( -- ) "unmatched ] " print error ;
 
 ! read in quotation, return address !
-SYNTAX: [ ( -- ) 0 ']' parse-until >quotation 5 suffix ;
+SYNTAX: [ ( -- ) 0 "]" parse-until >quotation 5 suffix ;
 ! read in quotation, compile to memory, create dictionary entry
 
 : _strhead, ( blength -- ) 1 s, 1 b, b, ;
@@ -201,7 +193,7 @@ SYNTAX: [ ( -- ) 0 ']' parse-until >quotation 5 suffix ;
 ! accumulate bytes on stack (expensive, but hey)
 : _readstr ( -- ..bytes num ) 0 [ receive dup 34 = [ drop f ] [ swap 1 + t ] if ] loop ;
 : _stack2string ( ..bytes num ) dup _MP get + [ _MP set ] keep [ [ -b, ] times ] with-MP ;
-SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2string ] dip 1 - 3 suffix ;
+SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2string ] dip 1 - 5 suffix ;
 
 ! copy token to memory since it will be overridden by following parsing
 : _token2str ( token -- addr ) uncount dup _strhead, _MP get [ [ dup getbyte b, 1 + ] times drop ] dip 1 - ;
@@ -214,36 +206,24 @@ SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2st
 ! count reaching 0 means all matched
 : mem= ( a1 a2 n -- ? ) dup 0 = [ 3drop t ] [ -rot 2dup [ getbyte ] bi@ = [ [ 1 + ] bi@ rot 1 - mem= ] [ 3drop f ] if ] if ;
 : str= ( str1 str2 -- ? ) dup strlen 1 + mem= ;
-: cstr-print ( cstr -- ) [ dup getbyte dup 0 = not ] [ emit 1 + ] while ;
-: cstr-dp ( cstr str -- ) "comparing str: '" print print "' to cstr: '" print cstr-print "'" print nl ;
 ! compare read token to header name, problem: name has terminal 0 byte which must not be checked
-: name= ( name str -- ? ) swap [ uncount ] bi@ [ swap ] dip 1 - over = [ mem= ] [ 3drop f ] if ;
+: name= ( str name -- ? ) [ uncount ] bi@ [ swap ] dip 1 - over = [ mem= ] [ 3drop f ] if ;
 
 ! name of dict entry
 : _name>> ( dictentry -- str ) cell + 1 + ;
 : parsing-word? ( dictentry -- ? ) cell + get 0x01 bitand ;
-: _dict-next ( dictentry -- dictentry ) _name>> dup strlen + 1 + ;
 : _quot>> ( dictentry -- quot ) get ;
-
-! check if both quotations return true
-! : is-both? ( x q1 q2 -- ? ) bi@ and ;
-! check if at lease one quotation returns true
-! : is-one? ( x q1 q2 -- ? ) bi@ or ;
-
-! this version returns the header!
-! : _find_header ( str dictionary -- dictentry/str ? ) swap over _name>> dup strlen 0 = [ drop swap drop f ] [ over name= [ drop t ] [ swap _dict-next _find_header ] if ] if ;
-! : _find_header ( str dictionary -- dictentry/str ? ) [ [ _name>> [ [ strlen 0 = ] [ ] is-both? ] keep
-: _find-header ( str dictionary -- dictentry/str ? ) dup _name>> dup strlen 0 = [ 2drop f ] [ pick name= [ nip t ] [ _dict-next _find-header ] if ] if ;
-: find ( str -- dictentry/str ? ) dictstart _find-header ;
 
 : ; ( -- ) "unexpected semicolon " print error ;
 
 ! colon compiler
-SYNTAX: : ( -- ) token _token2str 0 ';' parse-until >quotation swap name ;
+SYNTAX: : ( -- ) token _token2str 0 ";" parse-until >quotation swap name ;
 
 SYNTAX: \! ( -- ) [ receive 10 = [ f ] [ t ] if ] loop ;
 SYNTAX: ( ( -- ) [ receive 41 = [ f ] [ t ] if ] loop ;
-SYNTAX: B{ ( -- addr ) 0 '}' [ parsenum [ swap 1 + ] [ "not a byte literal: " print print error ] if ] scan-until-char dup _strhead, _MP get [ _stack2string ] dip 1 - 3 suffix ;
+! loop until token matches str
+: scan-until-str ( str quot: ( tok -- ) -- )  swap [ token swap 2dup str= [ drop f ] [ [ swap [ call ] keep ] dip t ] if ] loop 2drop ;
+SYNTAX: B{ ( -- addr ) 0 "}" [ parsenum [ swap 1 + ] [ "not a byte literal: " print print error ] if ] scan-until-str dup _strhead, _MP get [ _stack2string ] dip 1 - 5 suffix ;
 
 ! dictionary usage
 : dsize ( -- ) dictend dictstart - _free-name dictstart - ;
