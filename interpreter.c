@@ -55,8 +55,8 @@ typedef struct return_entry {
 /* dictionary grows up*/
 #include "generated/stdlib.dict.h"
 
-/* returns NULL if not found*/
-static inst* find_by_name(char *fname)
+/* returns NULL if not found, otherwise points to dictionary entry */
+static dict_entry * find_by_name(char *fname)
 {
   IFTRACE1(printf("looking for '%s' ", fname));
   for(char * ptr=(char*)dict;
@@ -66,11 +66,11 @@ static inst* find_by_name(char *fname)
 	 IFTRACE1(printf("comparing to (%#lx): %s; ",(uintptr_t)dptr->name,dptr->name));
 	 if (strncmp(fname,dptr->name,dptr->name_length)==0) {
 		IFTRACE1(printf("found at: %#lx\n",(cell)dptr->address));
-		return dptr->address;
+		return dptr;
 	 }
   }
   IFTRACE1(printf("not found\n"));
-  return (inst *) NULL;
+  return (dict_entry *) NULL;
 }
 
 /* get the name of the word, only for debugging */
@@ -376,13 +376,13 @@ void interpreter(inst * user_program)
             return;
           }} break;
           /* (countedstr -- quot/addr foundp) */
-        /* case find: { */
-        /*   cell name_to_find=ppop(); */
-        /*   inst * addr=find_by_name(((char*)name_to_find)+1); /\* skip countbyte *\/ */
-        /*   ppush(addr==NULL ? name_to_find : (cell)addr); */
-        /*   ppush(addr==NULL ? false : true); */
-        /* } */
-        /*   break; */
+        case find: {
+          cell name_to_find=ppop();
+          dict_entry * addr=find_by_name(((char*)name_to_find)+1); /* skip countbyte */
+          ppush(addr==NULL ? name_to_find : (cell)addr);
+          ppush(addr==NULL ? false : true);
+        }
+          break;
         case scall:
 	 _scall:
           /* check if call is primitive, if yes, substitute execution (tail call), since call only
