@@ -208,10 +208,10 @@ def load_factor1(filename,instructionset)
       # puts "found word: #{name]}"
       puts "parsing word found: #{name}" if type == "SYNTAX"
       body=[]
+      words.gsub!(/(?<=^|\s)\[(?=\s|$)/,"qstart")
+      words.gsub!(/(?<=^|\s)\](?=\s|$)/,"qend")
       words.gsub!(/".+?"/) { |m| '::'+m.gsub(/\s/,'::SPACE::')+'::' }
       words.gsub!(/'(.)'/) { |m| $1.ord.to_s }
-      words.gsub!("[","qstart")
-      words.gsub!("]","qend")
       words.gsub!(/B{\s*(.+?)}/) do |m|
         elts=$1.split("\s").map do |elt|
           if /^\d+$/ =~ elt
