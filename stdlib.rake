@@ -282,16 +282,49 @@ file "generated/mfactor.yml" => ["#{THISDIR}/instructionset.yml","#{THISDIR}/std
   end
 end
 
+def ff_dict (yaml,out)
+  yaml.each do |cname,opts|
+    mfname= opts["name"]
+    out << <<END
+{ .address = (inst *)&#{cname}_MFWRAPPER, .flags = 0, .name = "#{mfname}",.name_length=#{mfname.length+1}},
+END
+  end
+end
+
+def ff_code (yaml,out)
+  puts yaml.inspect
+  out << <<END
+typedef struct foreign_sym {
+  inst _lit;
+  void * ptr;
+  inst call;
+  inst _qend;
+} __attribute((packed)) foreign_sym;
+END
+  yaml.each do |cname,opts|
+    call = opts["call"] ? "ccall_"+opts["call"] : "qend"
+    mfname = opts["name"] || cname
+    out << <<END
+extern void (*#{cname})() ;
+foreign_sym #{cname}_MFWRAPPER = {lit, &#{cname}, #{call}, qend};
+END
+  end
+end
+
 directory "generated"
 
 def build_stdlib
   puts "rebuilding stdlib from generated sources"
+  if defined? $mfactor_ff
+    ffyaml=YAML.load_file($mfactor_ff)
+  end
   iset=YAML.load_file("#{THISDIR}/instructionset.yml")
   stdlib=YAML_Mfactor.new("generated/mfactor.yml",iset)
   File.open("generated/stdlib_size.h","w") do |f|
     f.puts "#define STDLIB_SIZE #{$stdlib_size}"
   end
   File.open("generated/stdlib.code.h","w") do |f|
+    ff_code(ffyaml,f)
     f.write "inst stdlib[#{$stdlib_size}]= {\n"
     stdlib.code(f)
     f.write "};\n"
@@ -299,6 +332,7 @@ def build_stdlib
   File.open("generated/stdlib.dict.h","w") do |f|
     f.write "dict_entry dict[VM_DICT] __attribute((aligned(1))) = {\n"
     stdlib.dict(f)
+    ff_dict(ffyaml,f)
     f.write "};\n"
   end
 end
