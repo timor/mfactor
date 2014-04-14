@@ -529,7 +529,22 @@ void interpreter(inst * user_program)
 		  case reset:
 			  reset_system();
 			  break;
-        default:
+		  case ccall_iis:
+			  {
+				  int(*fun)(int,int,short) = (int (*)(int,int,short))ppop();
+				  short s3 = (short)ppop();
+				  int i2 = (int)ppop();
+				  int i1 = (int)ppop();
+				  int res = fun(i1,i2,s3);
+				  ppush((cell)res);
+			  } break;
+		  case ccall_v:
+			  {
+			  int(*fun)(void) = (int (*)(void))ppop();
+			  int res = fun();
+				  ppush((cell)res);
+			  } break;
+		  default:
           printf("unimplemented instruction %#x\n",i);
           BACKTRACE();
           return;
