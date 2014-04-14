@@ -52,6 +52,7 @@ typedef struct return_entry {
 	inst * current_call;
 } return_entry;
 
+#include "generated/stdlib.code.h"
 /* dictionary grows up*/
 #include "generated/stdlib.dict.h"
 
@@ -195,7 +196,6 @@ static void print_error(char * str)
 
 #define peek_n(sp,nth) (*(sp-nth))
 
-#include "generated/stdlib.code.h"
 
 static cell memory[VM_MEM];
 /* writes are only allowed into dedicated memory area for now */
