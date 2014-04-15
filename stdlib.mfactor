@@ -241,7 +241,7 @@ SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2st
 : ; ( -- ) "unexpected semicolon " print error ;
 
 ! colon compiler
-SYNTAX: : ( -- ) token _token2str 0 ";" parse-until >quotation swap name ;
+SYNTAX: : ( -- ) token _token2str 0 B{ 59 } parse-until >quotation swap [ "defining: " print print nl ] keep name ;
 
 SYNTAX: \! ( -- ) [ receive 10 = [ f ] [ t ] if ] loop ;
 SYNTAX: ( ( -- ) [ receive 41 = [ f ] [ t ] if ] loop ;
