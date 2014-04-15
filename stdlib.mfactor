@@ -159,6 +159,8 @@ SYNTAX: \ ( -- quot type ) token search [ 3 suffix ] [ _bad-input ] if ;
 
 : . ( thing -- ) pwrite nl ;
 : .x ( thing -- ) pwritex nl ;
+: bits ( -- const ) cell 8 * ;
+: .b ( n -- ) bits [ [ 8 mod 0 = [ 32 emit ] when ] keep bits swap - 1 - neg over swap shift 0x1 bitand 0x30 + emit ] each-integer nl drop ;
 
 ! acc in this context means reverse-vector on stack, consisting of item/type pairs and a count which always sits on top
 
