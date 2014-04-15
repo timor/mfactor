@@ -529,6 +529,13 @@ void interpreter(inst * user_program)
 		  case reset:
 			  reset_system();
 			  break;
+		  case ccall_i:
+			  {
+			  int(*fun)(int) = (int (*)(int))ppop();
+			  int i1 = (int)ppop();
+			  int res = fun(i1);
+			  ppush((cell)res);
+			  } break;
 		  case ccall_iis:
 			  {
 				  int(*fun)(int,int,short) = (int (*)(int,int,short))ppop();

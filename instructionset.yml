@@ -127,6 +127,8 @@ tail:
 # system reset (maybe nop or quit on hosts)
 reset:
 # c function calling primitives
+# call with one int
+ccall_i:
 # call with two ints and 1 short
 ccall_iis:
 # call with nothing
