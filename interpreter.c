@@ -515,8 +515,8 @@ void interpreter(inst * user_program)
           start_timer();
           break;
           /* end timer ( -- usecs secs ) */
-        case tend: 
-        { 
+        case tend:
+        {
           long int sec,usec;
           end_timer(&sec,&usec);
           ppush(usec);
