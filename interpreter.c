@@ -56,8 +56,17 @@ typedef struct return_entry {
 /* dictionary grows up*/
 #include "generated/stdlib.dict.h"
 
+/* check if name in dictionary entry is a null-terminated string */
+static unsigned char dict_entry_real_length( dict_entry * e) 
+{
+  if (e->name[e->name_length - 1] == 0)
+    return e->name_length - 1;
+  else
+    return e->name_length;
+}
+
 /* returns NULL if not found, otherwise points to dictionary entry */
-static dict_entry * find_by_name(char *fname)
+static dict_entry * find_by_name(char *fname, unsigned char length)
 {
   IFTRACE1(printf("looking for '%s'(%d) ", fname,length));
   for(char * ptr=(char*)dict;
@@ -66,6 +75,8 @@ static dict_entry * find_by_name(char *fname)
 	 dict_entry *dptr = (dict_entry*)ptr;
      unsigned char rl = dict_entry_real_length(dptr);
 	 IFTRACE1(printf("comparing to (%#lx): %s(%d); ",(uintptr_t)dptr->name,dptr->name,rl));
+     if (length != rl) continue;
+	 if (strncmp(fname,dptr->name,length)==0) {
 		IFTRACE1(printf("found at: %#lx\n",(cell)dptr->address));
 		return dptr;
 	 }
@@ -378,7 +389,7 @@ void interpreter(inst * user_program)
           /* (countedstr -- quot/addr foundp) */
         case search: {
           cell name_to_find=ppop();
-          dict_entry * addr=find_by_name(((char*)name_to_find)+1); /* skip countbyte */
+          dict_entry * addr=find_by_name(((char*)name_to_find)+1,*((char *) name_to_find)); /* skip countbyte */
           ppush(addr==NULL ? name_to_find : (cell)addr);
           ppush(addr==NULL ? false : true);
         }
