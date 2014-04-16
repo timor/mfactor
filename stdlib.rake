@@ -183,7 +183,7 @@ end
 
 # emit 
 def compile_number(num)
-  puts "compiling number: #{num}"
+  # puts "compiling number: #{num}"
   bytes=[num].pack("I").unpack("CCCC")
   lsb=bytes.shift
   if bytes.any? { |b| b != 0 }
@@ -266,7 +266,7 @@ def load_factor(files, isetfile)
   end
   file.sync
   file.rewind
-  puts "combined code into #{file.path}"
+  # puts "combined code into #{file.path}"
   load_factor1(file.path,isetfile)
 end  
 
@@ -292,7 +292,7 @@ END
 end
 
 def ff_code (yaml,out)
-  puts yaml.inspect
+  # puts yaml.inspect
   out << <<END
 typedef struct foreign_sym {
   inst _lit;
@@ -324,7 +324,7 @@ def build_stdlib
     f.puts "#define STDLIB_SIZE #{$stdlib_size}"
   end
   File.open("generated/stdlib.code.h","w") do |f|
-    ff_code(ffyaml,f)
+    ff_code(ffyaml,f) if ffyaml
     f.write "inst stdlib[#{$stdlib_size}]= {\n"
     stdlib.code(f)
     f.write "};\n"
@@ -332,7 +332,7 @@ def build_stdlib
   File.open("generated/stdlib.dict.h","w") do |f|
     f.write "dict_entry dict[VM_DICT] __attribute((aligned(1))) = {\n"
     stdlib.dict(f)
-    ff_dict(ffyaml,f)
+    ff_dict(ffyaml,f) if ffyaml
     f.write "};\n"
   end
 end
