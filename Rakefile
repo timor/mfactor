@@ -130,6 +130,8 @@ end
 
 import "stdlib.rake"
 
+$mfactor_sources=FileList["lib/*.mfactor"]
+
 require 'yaml'
 
 CLEAN.include "generated"
