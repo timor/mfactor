@@ -252,5 +252,7 @@ SYNTAX: B{ ( -- addr ) 0 "}" [ parsenum [ swap 1 + ] [ "not a byte literal: " pr
 
 ! dictionary usage
 : dsize ( -- ) dictend dictstart - _free-name dictstart - ;
+! memory usage
+: usage ( -- ) memrange _MP get pick - . swap - . 2drop ;
 
 : testloop ( -- ) [ '\!' emit t ] loop ;

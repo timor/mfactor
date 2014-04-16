@@ -443,7 +443,7 @@ void interpreter(inst * user_program)
           ppush((cell) &DATA_START);
           ppush((cell) &DATA_END);
           ppush((cell) memory);
-          ppush((cell) memory+VM_MEM);
+          ppush((cell) memory+VM_MEM*sizeof(cell));
           break;
           /* ( value address -- ) */
         case _set:
