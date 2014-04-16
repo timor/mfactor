@@ -155,6 +155,7 @@
 ! specialized version of each for byte arrays and strings
 : _each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+1 quot ) 2dup [ [ getbyte ] dip call ] 2dip [ 1 + ] dip ;
 : ba-each ( ... seq quot: ( ... x -- ... ) -- ... ) [ uncount ] dip swap [ _each-step ] times 2drop ;
+: ba-reduce ( ... seq identity quot: ( ... prev elt -- ... next ) -- ... result ) [ swap ] dip ba-each ;
 ! parsing word
 SYNTAX: \ ( -- quot type ) token search [ 3 suffix ] [ _bad-input ] if ;
 
