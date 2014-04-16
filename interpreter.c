@@ -59,13 +59,13 @@ typedef struct return_entry {
 /* returns NULL if not found, otherwise points to dictionary entry */
 static dict_entry * find_by_name(char *fname)
 {
-  IFTRACE1(printf("looking for '%s' ", fname));
+  IFTRACE1(printf("looking for '%s'(%d) ", fname,length));
   for(char * ptr=(char*)dict;
 		(ptr < ((char*)dict+sizeof(dict)))&&(((dict_entry*)ptr)->name_length > 0);
 		ptr += (((dict_entry*)ptr)->name_length + 2*sizeof(unsigned char) + sizeof(void*))) {
 	 dict_entry *dptr = (dict_entry*)ptr;
-	 IFTRACE1(printf("comparing to (%#lx): %s; ",(uintptr_t)dptr->name,dptr->name));
-	 if (strncmp(fname,dptr->name,dptr->name_length)==0) {
+     unsigned char rl = dict_entry_real_length(dptr);
+	 IFTRACE1(printf("comparing to (%#lx): %s(%d); ",(uintptr_t)dptr->name,dptr->name,rl));
 		IFTRACE1(printf("found at: %#lx\n",(cell)dptr->address));
 		return dptr;
 	 }
@@ -245,8 +245,8 @@ void interpreter(inst * user_program)
 		inst i;
 	next:
 		__attribute__((unused))
-        IFTRACE1(printf("\n"));
-		IFTRACE1(printstack(psp,pstack));
+        IFTRACE2(printf("\n"));
+		IFTRACE2(printstack(psp,pstack));
 		IFTRACE2(printstack(retainsp,retainstack));
 		/* IFTRACE2(print_return_stack(returnsp,returnstack)); */
 		i= (*pc++);
@@ -257,7 +257,7 @@ void interpreter(inst * user_program)
         {
           char * name = find_by_address((inst*)((cell)i<<(8*(sizeof(inst *)-sizeof(inst)))));
           if (name) {
-            IFTRACE1(printf("%s\n",name));
+            IFTRACE2(printf("%s\n",name));
             fflush(stdout);
           }
         }
@@ -341,7 +341,7 @@ void interpreter(inst * user_program)
           return_entry e = returnpop();
           char * name = find_by_address(e.current_call);
           if (name) {
-            IFTRACE1(printf("<- %s\n",name));
+            IFTRACE2(printf("<- %s\n",name));
             fflush(stdout);
           }
           pc=e.return_address;
@@ -470,7 +470,7 @@ void interpreter(inst * user_program)
 		 break;
           /* skip over to end of quotation , leave starting address on parameter stack*/
         case qstart:
-          IFTRACE1(printf("qstart saving %#lx\n",(uintptr_t)pc-(uintptr_t)base));
+          IFTRACE2(printf("qstart saving %#lx\n",(uintptr_t)pc-(uintptr_t)base));
           ppush((cell)pc);
           pc=skip_to_instruction(pc,qend,qstart,base);
           pc+=1;
@@ -580,7 +580,7 @@ void interpreter(inst * user_program)
           IFTRACE2(printf("w:%#lx\n",(cell)next_word-(uintptr_t)base));
           char * name = find_by_address(next_word);
           if (name) {
-            IFTRACE1(printf("..-> %s\n",name));
+            IFTRACE2(printf("..-> %s\n",name));
             fflush(stdout);
           }
 	#endif
