@@ -61,7 +61,8 @@
 : _free-name ( -- addr ) dictstart [ cell + 1 + dup getbyte [ + 1 + ] keep 0 = not ] loop cell - 2 - ;
 
 ! save quotation in dictionary, non-immediate, name is counted string, add terminating 0 for compatibility
-: name ( quot name -- ) _free-name [ swap , 0 b, dup strlen 1 + b, [ b, ] ba-each 0 b, ] with-MP ;
+: rename ( quot dictentry ) set ;
+: name ( quot name -- ) search [ rename ] [ _free-name [ swap , 0 b, dup strlen 1 + b, [ b, ] ba-each 0 b, ] with-MP ] if ;
 
 ! apply q to var's value and update var
 : change ( var q: ( old -- new ) -- ) [ [ get ] keep ] dip dip set ;
@@ -241,7 +242,7 @@ SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2st
 : ; ( -- ) "unexpected semicolon " print error ;
 
 ! colon compiler
-SYNTAX: : ( -- ) token _token2str 0 B{ 59 } parse-until >quotation swap [ "defining: " print print nl ] keep name ;
+SYNTAX: : ( -- ) read-token 0 B{ 59 } parse-until >quotation swap [ dup search nip [ "re" print ] when "defining: " print print nl ] keep name ;
 
 SYNTAX: \! ( -- ) [ receive 10 = [ f ] [ t ] if ] loop ;
 SYNTAX: ( ( -- ) [ receive 41 = [ f ] [ t ] if ] loop ;
