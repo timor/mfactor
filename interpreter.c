@@ -263,7 +263,7 @@ void interpreter(inst * user_program)
 		i= (*pc++);
 
     dispatch:
-	#if (TRACE_LEVEL >= 1)
+	#if (TRACE_INTERPRETER >= 1)
         IFTRACE2(printf("i:%#x\n",i));
         {
           char * name = find_by_address((inst*)((cell)i<<(8*(sizeof(inst *)-sizeof(inst)))));
@@ -571,7 +571,7 @@ void interpreter(inst * user_program)
     nested_call:
         {
           inst *next_word = (inst *) x;
-	#if (TRACE_LEVEL >= 1)
+	#if (TRACE_INTERPRETER >= 1)
           IFTRACE2(printf("w:%#lx\n",(cell)next_word-(uintptr_t)base));
           char * name = find_by_address(next_word);
           if (name) {
@@ -587,7 +587,7 @@ void interpreter(inst * user_program)
     tail_call:
         {
           inst *next_word = (inst *) x;
-	#if (TRACE_LEVEL >= 1)
+	#if (TRACE_INTERPRETER >= 1)
           IFTRACE2(printf("w:%#lx\n",(cell)next_word-(uintptr_t)base));
           char * name = find_by_address(next_word);
           if (name) {
