@@ -556,6 +556,15 @@ void interpreter(inst * user_program)
 				  int res = fun(i1,i2,s3);
 				  ppush((cell)res);
 			  } break;
+		  case ccall_iii:
+			  {
+				  int(*fun)(int,int,int) = (int (*)(int,int,int))ppop();
+				  int i3 = (int)ppop();
+				  int i2 = (int)ppop();
+				  int i1 = (int)ppop();
+				  int res = fun(i1,i2,i3);
+				  ppush((cell)res);
+			  } break;
 		  case ccall_v:
 			  {
 			  int(*fun)(void) = (int (*)(void))ppop();
