@@ -271,6 +271,14 @@ def load_factor(files, isetfile)
 end  
 
 $mfactor_sources ||= []
+if defined? $mfactor_ff
+  $mfactor_sources.push "generated/ff.mfactor" 
+  file "generated/ff.mfactor" => $mfactor_ff do
+    File.open("generated/ff.mfactor","w") do |f|
+      ff_mfactor(YAML.load_file($mfactor_ff),f)
+    end
+  end
+end
 THISDIR=File.dirname(__FILE__)
 puts "looking for instruction set and stdlib code in #{THISDIR}"
 file "generated/mfactor.yml" => ["#{THISDIR}/instructionset.yml","#{THISDIR}/stdlib.mfactor","#{THISDIR}/stdlib.rake","generated"]+$mfactor_sources do
@@ -282,33 +290,31 @@ file "generated/mfactor.yml" => ["#{THISDIR}/instructionset.yml","#{THISDIR}/std
   end
 end
 
-def ff_dict (yaml,out)
+# generate the mfactor side of the ff code
+def ff_mfactor (yaml,out)
+  i=0;
   yaml.each do |cname,opts|
     mfname= opts["name"]
+    call = opts["call"] ? "ccall_"+opts["call"] : "" ; # if no call, then taken as literal (e.g. variable access)
     out << <<END
-{ .address = (inst *)&#{cname}_MFWRAPPER, .flags = 0, .name = "#{mfname}",.name_length=#{mfname.length+1}},
+: #{mfname} ( -- ) #{i} ff #{call} ;
 END
+    i += 1;
   end
 end
 
+# generate c code for yaml
 def ff_code (yaml,out)
   # puts yaml.inspect
-  out << <<END
-typedef struct foreign_sym {
-  inst _lit;
-  void * ptr;
-  inst call;
-  inst _qend;
-} __attribute((packed)) foreign_sym;
-END
   yaml.each do |cname,opts|
-    call = opts["call"] ? "ccall_"+opts["call"] : "qend"
-    mfname = opts["name"] || cname
-    out << <<END
-extern void (*#{cname})() ;
-foreign_sym #{cname}_MFWRAPPER = {lit, &#{cname}, #{call}, qend};
-END
+    out << "extern void* #{cname};\n"
   end
+  out << "#define FF_LENGTH #{yaml.length}\n"
+  out << "cell FF_Table[#{yaml.length}] = {\n"
+  yaml.each do |cname,opts|
+    out << "(cell)&#{cname},\n"
+  end
+    out << "}\n;"
 end
 
 directory "generated"
@@ -332,7 +338,6 @@ def build_stdlib
   File.open("generated/stdlib.dict.h","w") do |f|
     f.write "dict_entry dict[VM_DICT] __attribute((aligned(1))) = {\n"
     stdlib.dict(f)
-    ff_dict(ffyaml,f) if ffyaml
     f.write "};\n"
   end
 end
@@ -346,8 +351,11 @@ STDLIB_FILES.each do |f|
   file f => ["generated/mfactor.yml", "#{THISDIR}/instructionset.yml"] do
     build_stdlib
   end
+  if defined? $mfactor_ff
+    file f => $mfactor_ff
+  end
 end
-    
+
 file "generated/inst_enum.h" => ["#{THISDIR}/instructionset.yml"] do
   puts "updating instruction set"
   iset=YAML.load_file("#{THISDIR}/instructionset.yml")

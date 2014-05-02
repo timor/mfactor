@@ -540,6 +540,21 @@ void interpreter(inst * user_program)
 		  case reset:
 			  reset_system();
 			  break;
+			  /* getting an address from the foreign-function lut ( i -- addr ) */
+		  case ff:
+			  {
+				  #ifndef FF_LENGTH
+					  #define FF_LENGTH 0
+				  #endif
+				  unsigned int i = ppop();
+				  if (i >= FF_LENGTH)
+					  {
+						  printf("no ff entry with index %f\n",i);
+						  BACKTRACE();
+						  return;
+					  }
+				  ppush((cell)FF_Table[i]);
+			  } break;
 		  case ccall_i:
 			  {
 			  int(*fun)(int) = (int (*)(int))ppop();
