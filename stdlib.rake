@@ -118,7 +118,7 @@ class YAML_Mfactor
   def length
     @thread_index.keys.map{|t| t.length}.reduce(:+)
   end
-  # output a c array with the stdlib bytecode
+  # output a c array with the bytecode
   def code(out)
     structured=@thread_index.keys.map{|mft| mft.code}
     # puts structured.inspect unless Rake.application.options.silent
@@ -330,7 +330,7 @@ def build_stdlib
     f.puts "#define STDLIB_SIZE #{$stdlib_size}"
   end
   File.open("generated/stdlib.code.h","w") do |f|
-    ff_code(ffyaml,f) if ffyaml
+    ff_code(ffyaml || [],f)
     f.write "inst stdlib[#{$stdlib_size}]= {\n"
     stdlib.code(f)
     f.write "};\n"
