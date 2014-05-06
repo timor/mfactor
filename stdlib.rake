@@ -281,10 +281,11 @@ if defined? $mfactor_ff
 end
 THISDIR=File.dirname(__FILE__)
 puts "looking for instruction set and stdlib code in #{THISDIR}"
-file "generated/mfactor.yml" => ["#{THISDIR}/instructionset.yml","#{THISDIR}/stdlib.mfactor","#{THISDIR}/stdlib.rake","generated"]+$mfactor_sources do
+mfactor_stdlib=FileList["#{THISDIR}/stdlib/*.mfactor"]
+file "generated/mfactor.yml" => ["#{THISDIR}/instructionset.yml","#{THISDIR}/stdlib.rake","generated"]+$mfactor_sources+mfactor_stdlib do
   puts "regenerating mfactor code"
   File.open("generated/mfactor.yml","w") do |f|
-    code=load_factor(["#{THISDIR}/stdlib.mfactor"]+$mfactor_sources,"#{THISDIR}/instructionset.yml")
+    code=load_factor(mfactor_stdlib+$mfactor_sources,"#{THISDIR}/instructionset.yml")
     # puts code
     f.write(code.to_yaml)
   end

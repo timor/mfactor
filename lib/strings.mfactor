@@ -1,0 +1,24 @@
+!-*- mode: factor -*-
+
+! string handling, which builds on byte-arrays, but counted
+
+: uncount ( countedstr -- str len ) dup getbyte [ 1 + ] dip ;
+
+! print byte array
+: _print_bytes ( str len -- ) [ dup getbyte emit 1 + ] times drop ;
+
+! print counted string
+: print ( countedstr -- ) uncount _print_bytes ;
+
+: strlen ( str -- n ) getbyte ;
+
+: str= ( str1 str2 -- ? ) dup strlen 1 + mem= ;
+
+! accumulate bytes on stack (expensive, but hey)
+: _readstr ( -- ..bytes num ) 0 [ receive dup 34 = [ drop f ] [ swap 1 + t ] if ] loop ;
+: _stack2string ( ..bytes num ) dup _MP get + [ _MP set ] keep [ [ -b, ] times ] with-MP ;
+SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2string ] dip 1 - 5 suffix ;
+SYNTAX: B{ ( -- addr ) 0 "}" [ parsenum [ swap 1 + ] [ "not a byte literal: " print print error ] if ] scan-until-str dup _strhead, _MP get [ _stack2string ] dip 1 - 5 suffix ;
+
+
+

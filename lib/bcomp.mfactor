@@ -1,0 +1,48 @@
+!-*- mode: factor -*-
+
+! byte code compiler
+
+! convert tos to inst
+: _inst ( inst -- ) cell 1 - 8 * neg shift 0xff bitand ;
+: prim? ( address -- ? ) _inst instbase >= ;
+
+! compilation, forward and reverse
+: b, ( byteval -- ) _MP [ get setbyte ] [ 1 swap +@ ] bi ;
+: -b, ( byteval -- ) _MP [ 1 neg swap +@ ] [ get setbyte ] bi ;
+! ! compile short to mem, little endian
+: s, ( short -- ) dup b, 8 neg shift b, ;
+: -s, ( short -- ) dup 8 neg shift -b, -b, ;
+! compile cell
+: , ( val -- ) cell [ dup b, 8 neg shift ] times drop ;
+: -, ( val -- ) cell [ cell 1 - neg + 8 * over swap shift -b, ] each-integer drop ;
+
+: _-q, ( item type -- ) dup 0 = [ drop _inst -b, ] [ dup 1 = [ drop -s, oplit bcall _inst -b, ] [ dup 2 = [ drop -, oplit acall _inst -b, ] [ dup [ 3 = ] [ 5 = ] bi or [ drop -, oplit lit _inst -b, ] [ 6 = [ drop ] [ "compilation for item unknown" print error ] if ] if ] if ] if ] if ;
+
+! compile parser accumulator to memory
+: _stack2code ( acc -- ) _MP get + [ _MP set ] keep [ [ _-q, ] times ] with-MP ;
+
+! memory cell types: 1: string/byte-array , 2: word
+
+! put quotation head to memory
+: _qhead, ( blength -- ) 2 s, 0 b, b, ;
+
+! return size of word when stored in quotation
+: _wordsize ( type -- size ) dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup [ 2 = ] [ 5 = ] bi or [ drop cell 1 + ] [ dup 3 = [ drop cell 1 + ] [ dup 4 = [ 2 ] [ 6 = [ 0 ] [ "size for item unknown" print error ] if ] if ] if ] if ] if ] if ;
+
+! determine size of quotation accumulated, careful: not tail recursive, return stack must be able to hold number of elements, retain stack must hold twice the number of elements in accumulator
+! reminder: acc === .. item type n
+: _accum-quotation-size-worker ( acc x -- acc x ) over 0 = not [ pick _wordsize + rot >r rot >r [ 1 - ] dip _accum-quotation-size-worker [ 1 + ] dip r> -rot r> -rot ] when ;
+: _accum-quotation-size ( acc -- acc x ) 0 _accum-quotation-size-worker ;
+
+! check if accumulator contains valid quotation, if yes, save to memory and return saved address
+: >quotation ( acc -- addr ) [ oplit qend 0 ] dip 1 + _accum-quotation-size dup 255 > [ error ] [ dup _qhead, ] if _MP get [ _stack2code ] dip ;
+
+! headers for memory elements
+
+: _strhead, ( blength -- ) 1 s, 1 b, b, ;
+
+: ; ( -- ) "unexpected semicolon " print error ;
+
+! colon compiler
+SYNTAX: : ( -- ) read-token 0 B{ 59 } parse-until >quotation swap [ dup search nip [ "re" print ] when "defining: " print print nl ] keep name ;
+

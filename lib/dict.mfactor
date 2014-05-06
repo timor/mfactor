@@ -1,0 +1,24 @@
+!-*- mode: factor -*-
+
+! dictionary handling
+
+! dict_entry layout: addr(4)|flag(1)|namelength(1)|name(namelength)
+! name of dict entry
+: _name>> ( dictentry -- str ) cell + 1 + ;
+: parsing-word? ( dictentry -- ? ) cell + get 0x01 bitand ;
+: _quot>> ( dictentry -- quot ) get ;
+! find next free dictionary entry (check for first name byte = 0)
+: _free-name ( -- addr ) dictstart [ cell + 1 + dup getbyte [ + 1 + ] keep 0 = not ] loop cell - 2 - ;
+: dict-next ( dict-entry -- dict-entry ) _name>> dup strlen + 1 + ;
+: dict-valid ( dict-entry -- ? ) _name>> strlen 0 = not ;
+: dict-map ( q: ( ... dict-entry -- ... ) -- ) dictstart [ dup dict-valid ] [ dict-next [ swap call ] 2keep ] while 2drop ;
+
+! save quotation in dictionary, non-immediate, name is counted string, add terminating 0 for compatibility
+: rename ( quot dictentry ) set ;
+: name ( quot name -- ) search [ rename ] [ _free-name [ swap , 0 b, dup strlen 1 + b, [ b, ] ba-each 0 b, ] with-MP ] if ;
+! compare read token to header name, problem: name has terminal 0 byte which must not be checked
+: name= ( str name -- ? ) [ uncount ] bi@ [ swap ] dip 1 - over = [ mem= ] [ 3drop f ] if ;
+
+! dictionary usage
+: dsize ( -- ) dictend dictstart - _free-name dictstart - ;
+

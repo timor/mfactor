@@ -1,0 +1,14 @@
+!-*- mode: factor -*-
+
+! WARNING: <byte-array> has runtime allocation!
+: <byte-array> ( n -- byte array ) [ _strhead, ] keep _MP get [ [ 0xa5 b, ] times ] dip 1 - ;
+: ba-find ( ... seq quot: ( ... elt -- ... ? ) -- ... i elt ? ) over strlen [ pick pick [ swap [ swap ba-nth ] dip call ] 2dip rot ] find-integer [ nip swap over swap ba-nth t ] [ 2nip f f ] if ;
+! random access into byte-array or string, seq is assumed to point to the count byte of the sequence, and one byte before that the element size
+: _ba-assert-index ( n seq -- n seq ) [ strlen 0 swap in-range not [ "byte-array index out of bound" print error ] when ] 2keep ;
+: ba-nth ( n seq -- elt ) _ba-assert-index [ 1 - getbyte * ] keep + 1 + getbyte ;
+: ba-set-nth ( elt n seq -- ) _ba-assert-index + 1 + setbyte ;
+! specialized version of each for byte arrays and strings
+: _each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+1 quot ) 2dup [ [ getbyte ] dip call ] 2dip [ 1 + ] dip ;
+: ba-each ( ... seq quot: ( ... x -- ... ) -- ... ) [ uncount ] dip swap [ _each-step ] times 2drop ;
+: ba-reduce ( ... seq identity quot: ( ... prev elt -- ... next ) -- ... result ) [ swap ] dip ba-each ;
+

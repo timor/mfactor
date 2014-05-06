@@ -1,0 +1,43 @@
+!-*- mode: factor -*-
+
+! memory access and information, also variables
+
+! unsafe access
+: getmem ( addr -- ) _get ;
+: getmem8 ( addr -- ) _getbyte ;
+
+: setmem ( val addr -- ) _set ;
+: setmem8 ( val addr -- ) _setbyte ;
+
+! safe access
+! : _safeset ( value address setter: ( val addr -- ) -- ) [ dup memrange [ 2drop ] 2dip in-range ] dip swap  [ call ] [ 3drop "safe set failed" print error ] if ;
+! use same memory range constraint as read for now
+: _safeset ( value address setter: ( val addr -- ) -- ) [ dup memrange 2drop in-range ] dip swap  [ call ] [ 3drop "safe set failed" print error ] if ;
+: setbyte ( byteval addr -- ) [ _setbyte ] _safeset ;
+: set ( val addr -- ) [ _set ] _safeset ;
+
+: _safeget ( address getter: (addr -- val ) -- val ) [ dup memrange 2drop in-range ] dip swap [ call ] [ 2drop "safe get failed" print error ] if ;
+: getbyte ( addr -- byteval ) [ _getbyte ] _safeget ;
+: get ( addr -- val ) [ _get ] _safeget ;
+
+! apply q to var's value and update var
+: change ( var q: ( old -- new ) -- ) [ [ get ] keep ] dip dip set ;
+! incf var
+: +@ ( n var -- ) [ + ] change ;
+
+! memory pointers:
+! MP: make-pointer for comma operations,
+! lastname: last compiled name, used for setting flags (immediate, inline, recursive)
+: _init_storage ( -- ) memstart cell + _MP set ;
+: _MP ( -- MP ) memstart ;
+! temporarily different memory pointer
+: with-MP ( addr quot -- ) swap _MP get [ _MP set call ] dip _MP set ;
+
+
+: showmem ( -- ) memstart _MP get [ 2dup >= [ f ] [ [ dup getbyte .x 1 + ] dip t ] if ] loop 2drop ;
+
+! memory usage
+: usage ( -- ) memrange _MP get pick - . swap - . 2drop ;
+
+! count reaching 0 means all matched
+: mem= ( a1 a2 n -- ? ) dup 0 = [ 3drop t ] [ -rot 2dup [ getbyte ] bi@ = [ [ 1 + ] bi@ rot 1 - mem= ] [ 3drop f ] if ] if ;
