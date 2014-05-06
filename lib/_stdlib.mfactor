@@ -3,13 +3,15 @@
 : top ( -- ) _test1 _init_storage listener ;
 
 ! some unit tests
-: _test1 ( -- ) [ [ 'b' emit ] 'a' emit call ] call _test2 nl _test3 _test4 _test5 _test6 _test7 _testend ;
+: _test1 ( -- ) [ [ 'b' emit ] 'a' emit call ] call _test2 nl _test3 _test4 _test5 _test6 _test7 _test8 _testend ;
 : _test2 ( -- ) 'c' emit [ f ] loop ;
 : _test3 ( -- ) 5 [ dup '0' + emit 1 - dup ] loop . ;
 : _test4 ( -- ) 254 memstart setbyte 175 memstart 1 + setbyte memstart get .x ;
 : _test5 ( -- ) 5 [ dup 0 = not ] [ [ '0' + emit ] [ 1 - ] bi ] while . ;
 : _test6 ( -- ) B{ 5 4 3 2 1 } [ '0' + emit ] ba-each 0 . ;
 : _test7 ( -- ) 5 [ dup 0 = ] [ [ '0' + emit ] [ 1 - ] bi ] do until . ;
+: _test8_helper ( n -- n ) dup '0' + emit 1 - dup 0 = [ throw ] [ _test8_helper ] if ;
+: _test8 ( -- ) [ "affe" print nl ] [ "nocatch" print ] catch [ 5 _test8_helper ] [ .x ] catch ;
 : _testend ( -- ) [ "tests done." print ] call nl ;
 
 ! listener

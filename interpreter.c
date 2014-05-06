@@ -204,6 +204,8 @@ static void print_error(char * str)
 #define returnpop() ({assert_pop(returnsp,returnstack);pop_(returnsp)})
 #define retainpush(val) ({assert_push(retainsp,retainstack,VM_RETAINSTACK);push_(retainsp,val)})
 #define retainpop() ({assert_pop(retainsp,retainstack);pop_(retainsp)})
+#define catchpush(val) ({assert_push(csp,cstack,VM_CSTACK);push_(csp,val)})
+#define catchpop() ({assert_pop(csp,cstack);pop_(csp)})
 
 #define peek_n(sp,nth) (*(sp-nth))
 
@@ -231,6 +233,13 @@ extern cell DATA_END;
 #define assert_memread(x) if ((x < &DATA_START)||(x >= &DATA_END)) {printf("prevented memory read at %#lx\n",x); BACKTRACE(); return;}
 
 
+typedef struct catch_entry 
+{
+  cell quotation;
+  cell * stackptr;
+} catch_entry;
+
+
 void interpreter(inst * user_program)
 {
 	static bool tailcall = true;
@@ -244,8 +253,8 @@ void interpreter(inst * user_program)
 	static cell retainstack[VM_RETAINSTACK]={0};
 	cell* retainsp =&retainstack[0];
 	/* catch stack */
-	/* static cell cstack[VM_CSTACK]={0}; */
-	/* static cell* csp = &cstack[0]; */
+ 	catch_entry cstack[VM_CSTACK]={0};
+	catch_entry* csp = &cstack[0];
 	/* TODO: name stack */
 	cell x;								/* temporary value for operations */
     static inst *base=stdlib;  /* base address for base-relative short calls */
@@ -409,7 +418,8 @@ void interpreter(inst * user_program)
             goto nested_call;
           } break;
         case stcall:            /* WARNING: copied code above */
-			  if (!tailcall) goto _scall;
+    _stcall:
+          if (!tailcall) goto _scall;
           x = ppop();
           if (x >= INSTBASE_CELL) {
             IFTRACE2(printf("stcall: prim\n"));
@@ -533,14 +543,14 @@ void interpreter(inst * user_program)
           ppush(usec);
           ppush(sec);
         } break;
-		  case tail:
-			  tailcall=true; break;
-		  case notail:
-			  tailcall=false; break;
-		  case reset:
-			  reset_system();
-			  break;
-			  /* getting an address from the foreign-function lut ( i -- addr ) */
+        case tail:
+          tailcall=true; break;
+        case notail:
+          tailcall=false; break;
+        case reset:
+          reset_system();
+          break;
+          /* getting an address from the foreign-function lut ( i -- addr ) */
 		  case ff:
 			  {
 				  #ifndef FF_LENGTH
@@ -586,7 +596,26 @@ void interpreter(inst * user_program)
 			  int res = fun();
 				  ppush((cell)res);
 			  } break;
-		  default:
+        case getsp: ppush((cell)psp); break;
+          /* ( quot sp -- ) */
+        case cpush: {
+          catch_entry c;
+          c.stackptr=ppop();
+          c.quotation=ppop();
+          catchpush(c);
+        } break;
+        case cdrop:
+          (void) catchpop(); break;
+          /* ( datum -- ) */
+        case throw: {
+          catch_entry c = catchpop();
+          cell saved=ppop();
+          psp=c.stackptr;
+          ppush(saved);
+          ppush(c.quotation);
+          goto _stcall; 
+        } break;
+        default:
           printf("unimplemented instruction %#x\n",i);
           BACKTRACE();
           return;
