@@ -11,7 +11,7 @@
 : _test6 ( -- ) B{ 5 4 3 2 1 } [ '0' + emit ] ba-each 0 . ;
 : _test7 ( -- ) 5 [ dup 0 = ] [ [ '0' + emit ] [ 1 - ] bi ] do until . ;
 : _test8_helper ( n -- n ) dup '0' + emit 1 - dup 0 = [ throw ] [ _test8_helper ] if ;
-: _test8 ( -- ) [ "affe" print nl ] [ "nocatch" print ] catch [ 5 _test8_helper ] [ .x ] catch ;
+: _test8 ( -- ) [ "affe" print " caught" throw ] [ print nl ] catch [ 5 _test8_helper ] [ .x ] catch ;
 : _testend ( -- ) [ "tests done." print ] call nl ;
 
 ! listener

@@ -12,6 +12,4 @@
 : while ( ..a pred: ( ..a -- ..b ? ) body: ( ..b -- ..a ) -- ..b ) over [ call ] 2dip rot [ over [ call ] 2dip while ] [ 2drop ] if ;
 : until ( ..a pred: ( ..a -- ..b ? ) body: ( ..b -- ..a ) -- ..b ) over [ call ] 2dip rot [ 2drop ] [ over [ call ] 2dip until ] if ;
 
-! exceptions
-: catch ( safequot handler: ( datum -- ... )  -- ) cpush call cdrop ;
 
