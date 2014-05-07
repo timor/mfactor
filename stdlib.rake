@@ -281,7 +281,7 @@ if defined? $mfactor_ff
 end
 THISDIR=File.dirname(__FILE__)
 puts "looking for instruction set and stdlib code in #{THISDIR}"
-mfactor_stdlib=FileList["#{THISDIR}/stdlib/*.mfactor"]
+mfactor_stdlib=FileList["#{THISDIR}/lib/*.mfactor"]
 file "generated/mfactor.yml" => ["#{THISDIR}/instructionset.yml","#{THISDIR}/stdlib.rake","generated"]+$mfactor_sources+mfactor_stdlib do
   puts "regenerating mfactor code"
   File.open("generated/mfactor.yml","w") do |f|
