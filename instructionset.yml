@@ -91,7 +91,7 @@ stack_show: "st"
 parsenum:
 nop:
 # ( -- data-start data-end mem-start mem-end )
-memrange: :private
+memrange:
 # unsafe memory operations
 # (value address -- )
 _set: :private
