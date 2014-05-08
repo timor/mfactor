@@ -137,12 +137,3 @@ ccall_iis:
 ccall_iii:
 # call with nothing
 ccall_v:
-# exception handling, values on the catchstack are quotations
-# ( -- sp )
-getsp: :private
-# ( quot sp -- ) */
-cpush: :private
-cdrop: :private
-# interrupt control and pass datum to quotation on catchstack
-# ( datum -- )
-throw:
