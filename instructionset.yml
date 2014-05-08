@@ -138,11 +138,11 @@ ccall_iii:
 # call with nothing
 ccall_v:
 # exception handling, values on the catchstack are quotations
-# ( safecode handler -- )
-catch:
-# interrupt control and pass datum to handler-quotation on catchstack
+# ( -- sp )
+getsp: :private
+# ( quot sp -- ) */
+cpush: :private
+cdrop: :private
+# interrupt control and pass datum to quotation on catchstack
 # ( datum -- )
 throw:
-# drop the catchstack entry on successful execution
-# ( -- )
-cdrop: :private

@@ -48,9 +48,7 @@ typedef struct dict_entry
 /* TODO: doc quirk that primitive names are null-terminated */
 
 typedef struct return_entry {
-	/* where to resume when qend is reached */
 	inst * return_address;
-	/* reference to currently executed thread for  */
 	inst * current_call;
 } return_entry;
 
@@ -235,13 +233,10 @@ extern cell DATA_END;
 #define assert_memread(x) if ((x < &DATA_START)||(x >= &DATA_END)) {printf("prevented memory read at %#lx\n",x); BACKTRACE(); return;}
 
 
-typedef struct catch_entry
+typedef struct catch_entry 
 {
-	inst * handler;
-	cell * pstackptr;
-	return_entry * returnstackptr;
-	cell * retainstackptr;
-   inst * throwreturn;
+  cell quotation;
+  cell * stackptr;
 } catch_entry;
 
 
@@ -258,10 +253,8 @@ void interpreter(inst * user_program)
 	static cell retainstack[VM_RETAINSTACK]={0};
 	cell* retainsp =&retainstack[0];
 	/* catch stack */
-	catch_entry cstack[VM_CSTACK]={0};
+ 	catch_entry cstack[VM_CSTACK]={0};
 	catch_entry* csp = &cstack[0];
-	/* catch cleanup */
-	static inst catch_cleanup[]= {cdrop, qend };
 	/* TODO: name stack */
 	cell x;								/* temporary value for operations */
     static inst *base=stdlib;  /* base address for base-relative short calls */
@@ -425,6 +418,7 @@ void interpreter(inst * user_program)
             goto nested_call;
           } break;
         case stcall:            /* WARNING: copied code above */
+    _stcall:
           if (!tailcall) goto _scall;
           x = ppop();
           if (x >= INSTBASE_CELL) {
@@ -565,7 +559,7 @@ void interpreter(inst * user_program)
 				  unsigned int i = ppop();
 				  if (i >= FF_LENGTH)
 					  {
-						  printf("no ff entry with index %d\n",i);
+						  printf("no ff entry with index %f\n",i);
 						  BACKTRACE();
 						  return;
 					  }
@@ -600,47 +594,27 @@ void interpreter(inst * user_program)
 			  {
 			  int(*fun)(void) = (int (*)(void))ppop();
 			  int res = fun();
-			  ppush((cell)res);
+				  ppush((cell)res);
 			  } break;
-        case catch:
-			  {
+        case getsp: ppush((cell)psp); break;
+          /* ( quot sp -- ) */
+        case cpush: {
           catch_entry c;
-          c.handler=(inst*)ppop();
-          inst *next_word = (inst *) ppop();
-			 /* retain stack unwound to that position */
-			 c.retainstackptr=retainsp;
-			 /* return stack unwound to that position */
-			 c.returnstackptr=returnsp;
-			 /* the return stack entry that throw returns to (the word following catch) */
-			 c.throwreturn=pc;
-			 c.pstackptr=psp;
+          c.stackptr=ppop();
+          c.quotation=ppop();
           catchpush(c);
-			 /* copied stuff from nested call */
-          return_entry e = {.return_address = pc, .current_call=next_word};
-          returnpush(e);
-			 /* insert redirection to cleanup after successful call */
-			 return_entry cleanup = {.return_address = catch_cleanup, .current_call=next_word};
-			 returnpush(cleanup);
-          pc=next_word;
-			 goto end_inst;
-
         } break;
+        case cdrop:
+          (void) catchpop(); break;
+          /* ( datum -- ) */
         case throw: {
           catch_entry c = catchpop();
           cell saved=ppop();
-          psp=c.pstackptr;
-			 retainsp=c.retainstackptr;
-			 returnsp=c.returnstackptr;
-			 ppush(saved);
-			 /* reconstruct return stack to point to after the catch*/
-			 return_entry throwret= {.current_call=c.handler, .return_address=c.throwreturn};
-			 returnpush(throwret);
-			 x=(cell)c.handler;
-          goto tail_call;
+          psp=c.stackptr;
+          ppush(saved);
+          ppush(c.quotation);
+          goto _stcall; 
         } break;
-		  case cdrop:
-			  (void) catchpop();
-			  break;
         default:
           printf("unimplemented instruction %#x\n",i);
           BACKTRACE();
