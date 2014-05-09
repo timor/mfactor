@@ -49,7 +49,7 @@ qend: :private
 astart: :private
 # inline byte arrays
 bastart: :private
-# end of inline array
+# end of inline array (TBR)
 aend: :private
 # inline strings [ char.. strend ] ( -- str len )
 strstart: :private
