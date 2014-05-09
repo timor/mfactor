@@ -12,3 +12,11 @@
 : ba-each ( ... seq quot: ( ... x -- ... ) -- ... ) [ uncount ] dip swap [ _ba-each-step ] times 2drop ;
 : ba-reduce ( ... seq identity quot: ( ... prev elt -- ... next ) -- ... result ) [ swap ] dip ba-each ;
 
+: iatest ( -- ia ) I{ 1 2 3 4 5 } ;
+
+: ia-length ( ia -- n ) strlen 2 asr ;
+: _ia-assert-index ( n seq -- n seq ) [ ia-length 0 swap in-range not [ "int-array index out of bound" print error ] when ] 2keep ;
+: ia-nth ( n seq -- elt ) _ia-assert-index 1 + swap 4 * + get ;
+: ia-set-nth ( elt n seq -- ) _ia-assert-index 1 + swap 4 * + set ;
+: _ia-each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+4 quot ) 2dup [ [ get ] dip call ] 2dip [ 4 + ] dip ;
+: ia-each ( ... seq quot: ( ... x -- ... ) -- ... ) [ uncount 2 asr ] dip swap [ _ia-each-step ] times 2drop ;

@@ -233,6 +233,12 @@ def load_factor1(filename,instructionset)
         end
         " bastart '#{elts.length} " + elts.join(" ")+" "
       end
+      words.gsub!(/I{\s*(.+?)}/) do |m|
+        elts=$1.split("\s").map do |elt|
+          split_number(read_num(elt)).map { |n| n.to_s.prepend "'"}.join " "
+        end
+        " bastart '#{4*elts.length} " + elts.join(" ")+" "
+      end
       words.split("\s").each do |word|
         if prims[word]
           # possible proper tail call insertion
