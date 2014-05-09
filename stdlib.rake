@@ -181,16 +181,31 @@ def load_instructions(filename)
   iset
 end
 
-# emit 
+def split_number(num)
+  [num].pack("I").unpack("CCCC")
+end
+
 def compile_number(num)
   # puts "compiling number: #{num}"
-  bytes=[num].pack("I").unpack("CCCC")
+  bytes=split_number(num)
   lsb=bytes.shift
   if bytes.any? { |b| b != 0 }
     [:lit, lsb, *bytes ]
   else
     [:litb, lsb]
   end
+end
+
+# reads dec and hex
+def read_num(elt)
+  if /^\d+$/ =~ elt
+    res = elt.to_i
+  elsif /^0[xX]([[:xdigit:]]+)$/ =~ elt
+    res = $1.hex
+  else
+    raise "not a valid number string: #{elt}"
+  end
+  res
 end
 
 def load_factor1(filename,instructionset)
@@ -214,13 +229,7 @@ def load_factor1(filename,instructionset)
       words.gsub!(/'(.)'/) { |m| $1.ord.to_s }
       words.gsub!(/B{\s*(.+?)}/) do |m|
         elts=$1.split("\s").map do |elt|
-          if /^\d+$/ =~ elt
-            elt.prepend "'"
-          elsif /^0[xX][[:xdigit:]]+$/ =~ elt
-            elt.prepend "'"
-          else
-            raise "not a valid byte array element: #{elt}"
-          end
+          read_num(elt).to_s.prepend "'"
         end
         " bastart '#{elts.length} " + elts.join(" ")+" "
       end
