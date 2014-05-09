@@ -562,6 +562,14 @@ void interpreter(inst * user_program)
 			  int res = fun(i1);
 			  ppush((cell)res);
 			  } break;
+		  case ccall_bi:
+			  {
+				  int(*fun)(char, int) = (int (*)(char,int))ppop();
+				  int i2 = (int)ppop();
+				  char b1 = (char)ppop();
+				  int res = fun(b1,i2);
+				  ppush((cell)res);
+			  } break;
 		  case ccall_iis:
 			  {
 				  int(*fun)(int,int,short) = (int (*)(int,int,short))ppop();
