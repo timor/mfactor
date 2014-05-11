@@ -26,11 +26,12 @@ Factor <http://factorcode.org> what Machine Forth is to Forth.
 ## code layout ##
 - byte code, inline-data must be prefixed by corresponding literal
   preserving words (calls, lits, ...)
-- byte code words are distinguished from memory address by inspecting
-  the highest bits when used on the stack, i.e. when address would
-  point into inaccessible memory, it must be a primitive instruction
-- last call in a word should always be a tailcall instruction, but
-  this is the responsibility of the compiler
+- byte code words, when used on the stack, are distinguished from
+  memory addresses by inspecting the highest bits, i.e. when address
+  would point into inaccessible memory, it must be a primitive
+  instruction
+- last call in a word should always be a tailcall instruction (btcall,
+  atcall, stcall), but this is the responsibility of the compiler
 
 ## data memory ##
 - The only memory handling available in the kernel is getting the
@@ -38,27 +39,24 @@ Factor <http://factorcode.org> what Machine Forth is to Forth.
   writing (unsafely) to arbitrary memory addresses
 
 ## parsing ##
-- parsing works by accumulating on the stack
+- parsing works by accumulating items on the stack (emulates factor's
+  accumulation vector)
+- parse items are represented by two items on the stack: ITEM TYPE
 - command line is special use case, instead of compiling to memory,
   execution is done immediately.  Nonetheless, all parsing words
   should adhere to common interface when nesting, meaning to return
   item/type pairs on the stack, different situations will handle these
   return values differently:
-  - command line will either discard type flag and leave word on
-    stack, or use type flag with type stack for subsequent word
-    invocation, or change word invocation semantics to include type
-    checking with interleaved type flags on stack (doesnt need
-    additional type stack then)
-  - quotation accumulator will use type flag to compile correct primitive
-  - data structure accumulators will use type flag to check wether parser provided
-    compatible token
+- quotation accumulator will use type flag to compile correct primitive
+- data structure accumulators will use type flag to check wether
+  parser provided compatible token
 - token/word types:
   1. string, byte array
   2. (inline) quotation
   3. vector (not implemented yet)
   4. scalar (useful only if refs are explicit)
   5. words
-  6. primitives
+  6. primitives (byte code instructions)
 
 ## boxing/sequences ##
 - sequences consist of header containing sequence type ( 2 bytes ),
@@ -108,19 +106,18 @@ Factor <http://factorcode.org> what Machine Forth is to Forth.
 ## stacks ##
 
 ### data stack ###
+- also called parameter stack, used for all operations
 
 ### catch stack (tbd) ###
-- exception handling records (continuations, actually)
-- naiive implementation, copying all other stacks onto the catch stack
+- exception handling records (place for capturing linear one-shot continuations)
 
 ### retain stack ###
 - general purpose stack
-- must be empty after word exits (TODO: include balance checks in parser)
+- _should_ be empty after word exits (TODO: include balance checks in parser)
 
 ### return stack ###
 - saves return information as well as beginning of word information
   for debugging
-
 
 # build notes #
 
@@ -129,15 +126,22 @@ Factor <http://factorcode.org> what Machine Forth is to Forth.
   - ONHOST: if set, will be compiled for host system
   - NOPRIVATE: if set, dictionary entries will be generated even for
     words only used internally, useful for tracing (see below)
+  - NOTAIL: disable tail calls at start, can be switched on and off
+    with `tail` and `notail` instructions nonetheless
 - compile time switches:
   - TRACE_LEVEL: controls execution trace information on standard output
     - 0: no trace output
-    - 1: basic word lookup tracing
+    - 1: word lookup and basic execution tracing
     - 2: full execution tracing
-- example:
+- example to build and run on linux host:
 
         rake ONHOST=1 NOPRIVATE=1
         ./mfactor
+
+- to build on embedded system (currently supported: cortex-m cores
+  either call rake from make, or include the stdlib task in existing
+  rake file, and make sure to compile at least `interpreter.c` and the
+  reader, as well as the target specific c sources into the final application
 
 # debugging #
 
@@ -152,5 +156,6 @@ Factor <http://factorcode.org> what Machine Forth is to Forth.
   - tail calling can be reactivated with `tail`
 
 # caveats #
-- new words can be defined, but currently not overriden, but calling
-  `reset` also resets the dictionary
+- at the moment the gc is not implemented yet, so you will eventually
+  run out of memory if not careful.  current memory usage can be
+  checked with the word `usage`
