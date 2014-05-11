@@ -1,6 +1,6 @@
 !-*- mode: factor -*-
 
-! byte code compiler
+! byte code compiler functions
 
 ! convert tos to inst
 : _inst ( inst -- ) cell 1 - 8 * neg shift 0xff bitand ;
@@ -21,10 +21,14 @@
 ! compile parser accumulator to memory
 : _stack2code ( acc -- ) _MP get + [ _MP set ] keep [ [ _-q, ] times ] with-MP ;
 
-! memory cell types: 1: string/byte-array , 2: word
+! headers for memory elements
+! put a sequence header into memory
+! sequence header layout: |type(2)|reserved(1)|number-of-elements(1)|
+! sequence types: 1: string/byte-array , 2: quotation, 3: integer array
+: _seqhead, ( length-in-bytes type ) s, 0 b, b, ;
 
 ! put quotation head to memory
-: _qhead, ( blength -- ) 2 s, 0 b, b, ;
+: _qhead, ( length-in-bytes -- ) 2 _seqhead, ;
 
 ! return size of word when stored in quotation
 : _wordsize ( type -- size ) dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup [ 2 = ] [ 5 = ] bi or [ drop cell 1 + ] [ dup 3 = [ drop cell 1 + ] [ dup 4 = [ 2 ] [ 6 = [ 0 ] [ "size for item unknown" print error ] if ] if ] if ] if ] if ] if ;
@@ -37,9 +41,7 @@
 ! check if accumulator contains valid quotation, if yes, save to memory and return saved address
 : >quotation ( acc -- addr ) [ oplit qend 0 ] dip 1 + _accum-quotation-size dup 255 > [ error ] [ dup _qhead, ] if _MP get [ _stack2code ] dip ;
 
-! headers for memory elements
-
-: _strhead, ( blength -- ) 1 s, 1 b, b, ;
+: _strhead, ( length -- ) 1 _seqhead, ;
 
 : ; ( -- ) "unexpected semicolon " print error ;
 
