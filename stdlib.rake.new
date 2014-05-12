@@ -1,0 +1,10 @@
+# -*- mode:ruby -*-
+
+require_relative 'mfactor'
+
+task :mftest do
+  FileList["lib/*.mfactor"].each do |f|
+    MFactor.new.load_file(f)
+  end
+end
+
