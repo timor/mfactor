@@ -20,3 +20,6 @@
 : ia-set-nth ( elt n seq -- ) _ia-assert-index 1 + swap 4 * + set ;
 : _ia-each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+4 quot ) 2dup [ [ get ] dip call ] 2dip [ 4 + ] dip ;
 : ia-each ( ... seq quot: ( ... x -- ... ) -- ... ) [ uncount 2 asr ] dip swap [ _ia-each-step ] times 2drop ;
+
+! case table:
+! big list composed of entries in the form 
