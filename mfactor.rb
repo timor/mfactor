@@ -52,21 +52,23 @@ end
 class MFQuotation < Struct.new(:body)
 end
 
+# tree transformation to output a structure that represents one file
 class MFTransform < Parslet::Transform
   rule(:unsigned => simple(:num)) { Integer(num) }
   rule(:char => simple(:c)) { c.ord }
   rule(:string => simple(:s)) { s }
   rule(:word => simple(:name)) { name.to_sym }
   rule(:quotation_body => sequence(:b)) {
-    MFQuotation.new(b)}
-  rule(:def => simple(:definer),
-       :name => simple(:name),
-       :effect => simple(:effect),
-       :definition_body => sequence(:b)) { 
-    MFDefinition.new(definer,name,b)}
+    b}
+  # rule(:def => simple(:definer),
+  #      :name => simple(:name),
+  #      :effect => simple(:effect),
+  #      :definition_body => sequence(:b)) {
+  #   MFDefinition.new(definer,name,b)}
 end
 
 
+# used to build up an application image composed of multiple source files
 class MFactor
   @@parser = MFP.new
   @@transform = MFTransform.new
