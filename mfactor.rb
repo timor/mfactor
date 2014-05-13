@@ -13,7 +13,7 @@ class MFP < Parslet::Parser
   rule(:unsigned_hex) { str('0') >> match['xX'] >> match['0-9a-f'].repeat(1) }
   rule(:unsigned) { unsigned_hex | unsigned_dec }
   rule(:normal_word_char) { match['^\s:{\[\]};'] }
-  rule(:normal_word) { normal_word_char.repeat(1) }
+  rule(:normal_word) { str(')').absent? >> normal_word_char.repeat(1) }
   rule(:sequence_opener_word) { normal_word_char.repeat(1) >> str('{') }
   rule(:definer_word) { normal_word_char.repeat(0) >> str(':') }
   rule(:def_end) { str(';') }
