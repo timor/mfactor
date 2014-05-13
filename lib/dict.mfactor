@@ -20,7 +20,7 @@
 : dict-enum ( -- ) [ [ _name>> print ": " print ] [ .x ] bi ] dict-map ;
 
 ! save quotation in dictionary, non-immediate, name is counted string, add terminating 0 for compatibility
-: rename ( quot dictentry ) set ;
+: rename ( quot dictentry -- ) set ;
 : name ( quot name -- ) search [ rename ] [ _free-name [ swap , 0 b, dup strlen 1 + b, [ b, ] ba-each 0 b, ] with-MP ] if ;
 ! compare read token to header name, problem: name has terminal 0 byte which must not be checked
 : name= ( str name -- ? ) [ uncount ] bi@ [ swap ] dip 1 - over = [ mem= ] [ 3drop f ] if ;

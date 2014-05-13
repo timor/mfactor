@@ -2,7 +2,7 @@
 
 ! stack shuffling and combinators
 
-: nip ( x y - y ) swap drop ;
+: nip ( x y -- y ) swap drop ;
 : 2nip ( x y z -- z ) >r drop drop r> ;
 : dip ( x quot -- x ) swap >r call r> ;
 : 2dip ( x y quot -- x y ) swap [ dip ] dip ;
