@@ -56,7 +56,7 @@ class MFTransform < Parslet::Transform
   rule(:unsigned => simple(:num)) { Integer(num) }
   rule(:char => simple(:c)) { c.ord }
   rule(:string => simple(:s)) { s }
-  rule(:word => simple(:name)) { MFactor.make_word(name) }
+  rule(:word => simple(:name)) { name.to_sym }
   rule(:quotation_body => sequence(:b)) {
     MFQuotation.new(b)}
   rule(:def => simple(:definer),
@@ -70,16 +70,9 @@ end
 class MFactor
   @@parser = MFP.new
   @@transform = MFTransform.new
-  @@iset = Hash[YAML.load_file("instructionset.yml").map{ |cname,name|
-                  [name==:private ? cname : name , cname ] }]
-  def self.make_word(name)
-    if @@iset[name] 
-      MFPrim.new(@@iset[name])
-    else
-      MFWord.new(name)
-    end
-  end
   def initialize
+    @iset = Hash[YAML.load_file("instructionset.yml").map{ |cname,name|
+                  [name==:private ? cname : name , cname ] }]
     @files={}
     @current_file=nil
   end
