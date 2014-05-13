@@ -86,8 +86,19 @@ class MFactor
   def parse(input)
     @@parser.parse(input)
   rescue Parslet::ParseFailed => failure
-    puts "error while parsing #{@current_file}:"
+    cause=failure.cause
+    def rec_print(cause)
+      if cause.children != []
+        cause.children.each do |c|
+          rec_print(c)
+        end
+      end
+      line,col=cause.source.line_and_column(cause.pos)      
+      puts "#{@current_file}:#{line}:#{col}: Error: #{cause.to_s}"
+    end
+    rec_print(cause)
     puts failure.cause.ascii_tree
+    raise
   end
   def load_file(file)
     @current_file=file
