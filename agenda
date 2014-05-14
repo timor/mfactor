@@ -13,7 +13,8 @@
 - DONE: reader nesting, involves making parsing explicit
 - DONE: > remove dict entries and substitute with offset number from known ff-pointer array
     to allow for quick runtime word lookup (constant time)
-- DOING:type checking and boxing/unboxing
+- DOING: revamp ruby compiler, with dictionary support and syntax error reporting
+- DEFERRED:type checking and boxing/unboxing
 - DEFERRED: graphical decompiler (should work on console, though)
 - stopworld mark-sweep gc (should only be triggered during user input,
   so not time critical)
