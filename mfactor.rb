@@ -142,6 +142,10 @@ class MFactor
                                 # of the defined words
   end
   # call the parser on an input object (file)
+  def format_linecol(file,linecol)
+    line,col=linecol
+    "#{file}:#{line}:#{col}"
+  end
   def parse(input)
     @@parser.parse(input)
   rescue Parslet::ParseFailed => failure
@@ -176,8 +180,8 @@ class MFactor
   # dependencies, building the index table
   def iterate_definitions
     counter = 0
-    @files.each do |name,defs|
-      puts "analyzing #{name}:"
+    @files.each do |fname,defs|
+      puts "analyzing #{fname}:"
       defs.each do |d|
         name = d[:name].to_s
         if existing=@defs[name]
@@ -186,7 +190,7 @@ class MFactor
           body = d[:definition_body]
           body.flatten.select{|e| e.is_a?(MFWord)}.each do |w|
             unless known_word? w
-              raise "unknown word: #{w} in #{name}"
+              raise "#{format_linecol(fname,w.name.line_and_column)}:unknown word: #{w.name} in #{name}"
             end
           end
           word=MFDefinition.new(name,d[:definer],counter,d[:effect],body)
