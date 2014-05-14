@@ -60,7 +60,7 @@ end
 # Classes that are output by the parser transformations
 class MFWord < Struct.new(:name)
   def size
-    5
+    3
   end
 end
 class MFPrim < Struct.new(:name)
