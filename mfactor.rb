@@ -11,6 +11,8 @@ if ISET["dup"]
   puts "yay"
 end
 
+# parser class, will parse one source file when parse() method is
+# called
 class MFP < Parslet::Parser
   rule(:newline) { str("\n") >> str("\r").maybe }
   rule(:line_comment) { str('!') >> (newline.absent? >> any).repeat }
@@ -50,6 +52,12 @@ class MFP < Parslet::Parser
   root(:program)
 end
 
+# Note on size:
+# used in compilation step to actually organize memory contents
+# size values actually need to depend on target architecture
+# maybe better to use hash instead of methods
+
+# Classes that are output by the parser transformations
 class MFWord < Struct.new(:name)
   def size
     5
@@ -83,6 +91,7 @@ class MFLitSequence
     end
   end
   def size
+    # todo: include size of header
     1 + content.map(:size).reduce(:+)
   end
 end
