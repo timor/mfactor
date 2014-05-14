@@ -1,4 +1,6 @@
 !-*- mode: factor -*-
+USING: ;
+IN: kernel
 
 ! stack shuffling and combinators
 

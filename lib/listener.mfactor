@@ -1,4 +1,6 @@
 !-*- mode: factor -*-
+USING: kernel ;
+IN: listener
 
 ! listener, the interactive frontend
 

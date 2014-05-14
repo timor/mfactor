@@ -1,5 +1,6 @@
 !-*- mode: factor -*-
-
+USING: ;
+IN: math
 
 ! basic arithmetic and logic operations
 

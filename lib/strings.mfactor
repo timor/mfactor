@@ -1,4 +1,6 @@
 !-*- mode: factor -*-
+USING: memory ;
+IN: strings
 
 ! string handling, which builds on byte-arrays, but counted
 

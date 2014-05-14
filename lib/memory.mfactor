@@ -1,4 +1,6 @@
 !-*- mode: factor -*-
+USING: ;
+IN: memory
 
 ! memory access and information, also variables
 

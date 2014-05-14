@@ -1,4 +1,7 @@
 !-*- mode: factor -*-
+USING: math ;
+IN: sequences
+
 
 ! WARNING: <byte-array> has runtime allocation!
 : <byte-array> ( n -- byte array ) [ _strhead, ] keep _MP get [ [ 0xa5 b, ] times ] dip 1 - ;

@@ -1,4 +1,6 @@
 !-*- mode: factor -*-
+USING: ;
+IN: kernel
 
 ! control flow
 : if ( cond true false -- true/false ) ? call ;

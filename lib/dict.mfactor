@@ -1,4 +1,7 @@
 !-*- mode: factor -*-
+USING: kernel ;
+IN: dictionary
+
 
 ! dictionary handling
 

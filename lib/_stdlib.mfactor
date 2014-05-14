@@ -1,4 +1,6 @@
 ! -*- mode: factor -*-
+USING: kernel sequences listener memory ;
+IN: toplevel
 
 ! some unit tests
 : _test2 ( -- ) 'c' emit [ f ] loop ;
