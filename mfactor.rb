@@ -4,6 +4,13 @@
 require 'parslet'
 require 'yaml'
 
+ISET=Hash[YAML.load_file("instructionset.yml").map{ |cname,name|
+            [name==:private ? cname : (name || cname) , cname ] }]
+puts ISET
+if ISET["dup"]
+  puts "yay"
+end
+
 class MFP < Parslet::Parser
   rule(:newline) { str("\n") >> str("\r").maybe }
   rule(:line_comment) { str('!') >> (newline.absent? >> any).repeat }
@@ -73,8 +80,6 @@ class MFactor
   @@parser = MFP.new
   @@transform = MFTransform.new
   def initialize
-    @iset = Hash[YAML.load_file("instructionset.yml").map{ |cname,name|
-                  [name==:private ? cname : name , cname ] }]
     @files={}
     @current_file=nil
   end
