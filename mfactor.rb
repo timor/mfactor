@@ -153,13 +153,13 @@ end
 
 # used to build up an application image composed of multiple source files
 class MFactor
+  attr_accessor :dictionaries
   @@parser = MFP.new
   @@transform = MFTransform.new
   def initialize
     @files={}
     @current_file=nil
-    @defs={}              # holds the actual processed instances
-                                # of the defined words
+    @dictionaries={}
   end
   # call the parser on an input object (file)
   def format_linecol(file,linecol)
@@ -186,40 +186,44 @@ class MFactor
   # parse file, store into internal hash
   def load_file(file)
     @current_file=file
-    puts "loading #{file}"
+    puts "parsing #{file}"
     STDOUT.flush
     result=@@transform.apply(parse(File.read(file)))
     @files[file] = result
+    build_dictionary(file,result)
     result
   end
-  # check if word is known by name
-  def known_word?(name)
-    @defs[name]
+  # check if word is known by name, return definition if found
+  def find(name)
+    @dictionaries.each do |dname,dict|
+      if found=dict.find(name)
+        puts "found word: #{found}"
+        return found
+      end
+    end
+    nil
+  end
+  # return existing or add
+  def get_dictionary_create(name)
+    unless @dictionaries[name.to_s]
+      @dictionaries[name.to_s] = MFDictionary.new(name.to_s)
+    end
+    @dictionaries[name.to_s]
   end
   # step through all the definitions of the files, checking
   # dependencies, building the index table
-  def iterate_definitions
-    counter = 0
-    @files.each do |fname,defs|
-      puts "analyzing #{fname}:"
-      defs.each do |d|
-        name = d[:name].to_s
-        if existing=@defs[name]
-          raise "word already exists: #{name}: #{existing[:body]}"
-        else
-          body = d[:definition_body]
-          body.flatten.select{|e| e.is_a?(MFWord)}.each do |w|
-            unless known_word? w
-              raise "#{format_linecol(fname,w.name.line_and_column)}:unknown word: #{w.name} in #{name}"
-            end
-          end
-          word=MFDefinition.new(name,d[:definer],counter,d[:effect],body)
-          @defs[name]=word
-          counter += word.size
-        end
-      end
+  def build_dictionary(fname,program)
+    puts "analyzing #{fname}"
+    dictname=program[:dict_header][:current_dict]
+    current_dict=get_dictionary_create(dictname)
+    defs = program[:definitions]
+    defs.each do |d|
+      d.file=fname
+      name = d.name.to_s
+      raise "#{d.err_loc}:Error: word already exists: #{name}" if find(name)
+      body = d.body
+      current_dict.add d
     end
-    @defs
   end
 end
 
