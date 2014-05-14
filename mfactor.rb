@@ -55,7 +55,7 @@ class MFWord < Struct.new(:name)
     5
   end
 end
-class MFPrim < MFWord
+class MFPrim < Struct.new(:name)
   def size
     1
   end
