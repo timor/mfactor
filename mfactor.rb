@@ -48,7 +48,12 @@ class MFP < Parslet::Parser
     match('\S').repeat(1).as(:name) >> space >>
     (stack_effect.as(:effect) >> space).maybe >>
     quotation_body.as(:definition_body) >> def_end }
-  rule(:program) { space? >> (definition >> space?).repeat }
+  rule(:in_declaration) { str('IN:') >> space >> normal_word.as(:current_dict) }
+  rule(:use_declaration) { str('USING:') >> space >>
+    (normal_word.as(:used_dict_name) >> space).repeat >> space >> str(';') }
+  rule(:dict_header) { use_declaration.as(:use_decl) >> space >> in_declaration }
+  rule(:program) { space? >> dict_header.as(:dict_header) >> space >> 
+    (definition >> space?).repeat.as(:definitions) }
   root(:program)
 end
 
@@ -96,6 +101,38 @@ class MFLitSequence
   end
 end
 
+# Definition object, which can be moved into dictionary
+class MFDefinition < Struct.new(:name,:definer,:effect,:body,:dictionary,:file)
+  def syntax_word?
+    definer == "SYNTAX:"
+  end
+  def normal_word?
+    definer == ":"
+  end
+  # return printed location of definition
+  def err_loc
+    line,col=definer.line_and_column
+    "#{file}:#{line}:#{col}"
+  end
+end
+
+# named container for definitions
+class MFDictionary < Struct.new(:name)
+  attr_accessor :index
+  def initialize(*args)
+    super *args
+    @index={}
+  end
+  def find(name)
+    @index[name]
+  end
+  def add(definition)
+    existing=@index[definition.name.to_s]
+    raise "#{definition.err_loc}: Error: trying to add duplicate word #{definition.name.to_s}" if existing
+    @index[definition.name.to_s]=definition
+    definition.dictionary=self
+  end
+end
 
 # tree transformation to output a structure that represents one file
 class MFTransform < Parslet::Transform
@@ -107,37 +144,11 @@ class MFTransform < Parslet::Transform
   rule(:string => simple(:s)) { s }
   rule(:word => simple(:name)) { (ISET[name.to_s] ? MFPrim : MFWord).new(name) }
   rule(:quotation_body => subtree(:b)) { b }
-  # rule(:def => simple(:definer),
-  #      :name => simple(:name),
-  #      :effect => simple(:effect),
-  #      :definition_body => sequence(:b)) {
-  #   MFDefinition.new(definer,name,b)}
-end
-
-class MFDefinition < Struct.new(:name,:definer,:address,:effect,:body)
-  def syntax_word?
-    definer == "SYNTAX:"
-  end
-  def normal_word?
-    definer == ":"
-  end
-  # determine word size in bytes
-  def size
-    def seqsize(seq)
-      if seq == []
-        0
-      else
-        elt = seq.shift
-        s = if elt.is_a?(Array)
-              2 + seqsize(elt)
-            else
-              elt.size
-            end
-        s + seqsize(seq)
-      end
-    end
-    seqsize(body)
-  end
+  rule(:def => simple(:definer),
+       :name => simple(:name),
+       :effect => simple(:effect),
+       :definition_body => subtree(:b)) { MFDefinition.new(name,definer,effect,b)}
+  rule(:used_dict_name => simple(:dname)) { dname }
 end
 
 # used to build up an application image composed of multiple source files
