@@ -85,24 +85,26 @@ class MFByteLit < MFIntLit
 end
 
 class MFLitSequence
+  attr_accessor :element_type
+  attr_accessor :content
   def initialize(type,content)
+    @content=content
     case type
     when "B{" then
       content.all? {|e| e.is_a?(MFByteLit) || raise( "not a byte literal: #{e}") } 
+      @element_type=MFByteLit
     when "I{" then
-      content.all? {|e| e.is_a?(MFIntLit) || raise("not a byte literal: #{e}") } 
+      content.all? {|e| e.is_a?(MFIntLit) || raise("not an int literal: #{e}") }
+      content.map{|e| MFIntLit.new(e.value)} # ensure int lit element class
+      @element_type=MFIntLit
     else
-      raise "unsupported literal sequence: '#{type} }"
+      raise "unsupported literal sequence: '#{type}' }"
     end
-  end
-  def size
-    # todo: include size of header
-    1 + content.map(:size).reduce(:+)
   end
 end
 
 # Definition object, which can be moved into dictionary
-class MFDefinition < Struct.new(:name,:definer,:effect,:body,:dictionary,:file)
+class MFDefinition < Struct.new(:name,:definer,:effect,:body,:dictionary,:file,:search_path)
   def syntax_word?
     definer == "SYNTAX:"
   end
@@ -119,9 +121,11 @@ end
 # named container for definitions
 class MFDictionary < Struct.new(:name)
   attr_accessor :index
+  attr_accessor :definitions
   def initialize(*args)
     super *args
     @index={}
+    @definitions=[]
   end
   def find(name)
     @index[name]
@@ -131,6 +135,7 @@ class MFDictionary < Struct.new(:name)
     raise "#{definition.err_loc}: Error: trying to add duplicate word #{definition.name.to_s}" if existing
     @index[definition.name.to_s]=definition
     definition.dictionary=self
+    @definitions.push(definition)
   end
 end
 
@@ -141,9 +146,11 @@ class MFTransform < Parslet::Transform
     (num > 255 ? MFIntLit : MFByteLit).new(num)
   }
   rule(:char => simple(:c)) { MFByteLit.new(c.to_s.ord) }
-  rule(:string => simple(:s)) { s }
+  rule(:string => simple(:s)) { s.to_s }
   rule(:word => simple(:name)) { (ISET[name.to_s] ? MFPrim : MFWord).new(name) }
   rule(:quotation_body => subtree(:b)) { b }
+  rule(:seq_start=>simple(:opener), :content => subtree(:content)) {
+    MFLitSequence.new(opener,content) }
   rule(:def => simple(:definer),
        :name => simple(:name),
        :effect => simple(:effect),
@@ -190,14 +197,18 @@ class MFactor
     STDOUT.flush
     result=@@transform.apply(parse(File.read(file)))
     @files[file] = result
+    pp result
     build_dictionary(file,result)
     result
   end
-  # check if word is known by name, return definition if found
-  def find(name)
-    @dictionaries.each do |dname,dict|
+  # check if word is known by name in search path, return definition if found
+  # TODO check search path search order
+  def find_on(name,searchpath)
+    dicts_to_search=@dictionaries.values_at(*searchpath.map{|s| s.to_s})
+    raise "not all dicts on searchpath loaded" unless dicts_to_search.all?
+    dicts_to_search.each do |dict|
       if found=dict.find(name)
-        puts "found word: #{found}"
+        # puts "found word: #{found}"
         return found
       end
     end
@@ -216,11 +227,16 @@ class MFactor
     puts "analyzing #{fname}"
     dictname=program[:dict_header][:current_dict]
     current_dict=get_dictionary_create(dictname)
+    search_path=program[:dict_header][:use_decl]
     defs = program[:definitions]
     defs.each do |d|
+      pp search_path
+      pp dictname
+      d.search_path=[dictname.to_s]+search_path
       d.file=fname
       name = d.name.to_s
-      raise "#{d.err_loc}:Error: word already exists: #{name}" if find(name)
+      # TODO: better handling of duplicates, remove check for now
+      # raise "#{d.err_loc}:Error: word already exists: #{name}" if find_on(name,search_path)
       body = d.body
       current_dict.add d
     end
