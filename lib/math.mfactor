@@ -2,21 +2,8 @@
 USING: ;
 IN: math
 
-! basic arithmetic and logic operations
-
-: shift ( x n -- y ) dup 0 > [ asl ] [ neg asr ] if ;
-
-: >= ( n1 n2 -- ? ) 2dup > [ 2drop t ] [ = ] if ;
-
 ! start inclusive, end exclusive
 : in-range ( val start end -- ? ) [ over [ >= ] dip ] dip < and ;
-
-: t ( -- t ) 1 ;
-: f ( -- f ) 0 ;
-
-: and ( obj1 obj2 -- ? ) over ? ;
-: or ( obj1 obj2 -- - ) dupd ? ;
-: not ( ? -- \? ) 0 1 ? ;
 
 : square ( x -- x² ) dup * ;
 

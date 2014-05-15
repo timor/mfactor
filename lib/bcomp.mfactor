@@ -1,5 +1,5 @@
 !-*- mode: factor -*-
-USING: ;
+USING: memory math io parser dict ;
 IN: kernel
 
 ! byte code compiler functions
