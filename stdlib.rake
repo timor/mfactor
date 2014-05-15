@@ -392,3 +392,16 @@ END
 end
 
 task :stdlib => ["generated/stdlib.code.h","generated/stdlib.dict.h","generated/stdlib_size.h",__FILE__]
+
+require_relative "mfactor"
+require_relative "mfactor_emitter"
+
+require 'pp'
+
+task :mftest do
+  mf=MFactor.new
+  mfactor_stdlib.each do |f|
+    mf.load_file(f)
+  end
+  pp MFEmitter_Cortex.new(mf).bytecode_image
+end
