@@ -49,9 +49,9 @@ class MFP < Parslet::Parser
     (stack_effect.as(:effect) >> space).maybe >>
     quotation_body.as(:definition_body) >> def_end }
   rule(:in_declaration) { str('IN:') >> space >> normal_word.as(:current_dict) }
-  rule(:use_declaration) { str('USING:') >> space >>
-    (normal_word.as(:used_dict_name) >> space).repeat >> space >> str(';') }
-  rule(:dict_header) { use_declaration.as(:use_decl) >> space >> in_declaration }
+  rule(:use_declarations) { (normal_word.as(:used_dict_name) >> space).repeat }
+  rule(:dict_header) { str('USING:') >> space >> use_declarations.as(:use_decl) >> str(';') >>
+    space >> in_declaration }
   rule(:program) { space? >> dict_header.as(:dict_header) >> space >> 
     (definition >> space?).repeat.as(:definitions) }
   root(:program)
