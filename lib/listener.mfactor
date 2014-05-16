@@ -14,11 +14,6 @@ IN: listener
 
 : listener ( -- ) prompt token search [ dup parsing-word? [ _quot>> 0 swap call [ drop ] times ] 
                                         [ _quot>> call ] if ] [ unknown-token ] if listener ;
-: . ( thing -- ) pwrite nl ;
-: .x ( thing -- ) pwritex nl ;
-: bits ( -- const ) cell 8 * ;
-: .b ( n -- ) bits [ [ 8 mod 0 = [ 32 emit ] when ] keep bits swap - 1 - neg over swap shift 0x1 bitand 0x30 + emit ] each-integer nl drop ;
-
 ! "parse accumulator" on the stack
 ! acc in this context means reverse-vector on stack, consisting of item/type pairs and a count which always sits on top
 
@@ -28,5 +23,10 @@ IN: listener
 SYNTAX: \ ( -- quot type ) token search [ 3 suffix ] [ _bad-input ] if ;
 
 : execute ( word -- effect ) _quot>> call ;
+
+: showmem ( -- ) memstart _MP get [ 2dup >= [ f ] [ [ dup getbyte .x 1 + ] dip t ] if ] loop 2drop ;
+
+! memory usage
+: usage ( -- ) memrange _MP get pick - . swap - . 2drop ;
 
 

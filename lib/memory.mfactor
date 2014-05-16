@@ -33,16 +33,11 @@ IN: memory
 ! memory pointers:
 ! MP: make-pointer for comma operations,
 ! lastname: last compiled name, used for setting flags (immediate, inline, recursive)
-: _init_storage ( -- ) memstart cell + _MP set ;
 : _MP ( -- MP ) memstart ;
+: _init_storage ( -- ) memstart cell + _MP set ;
 ! temporarily different memory pointer
 : with-MP ( addr quot -- ) swap _MP get [ _MP set call ] dip _MP set ;
 
-
-: showmem ( -- ) memstart _MP get [ 2dup >= [ f ] [ [ dup getbyte .x 1 + ] dip t ] if ] loop 2drop ;
-
-! memory usage
-: usage ( -- ) memrange _MP get pick - . swap - . 2drop ;
 
 ! count reaching 0 means all matched
 : mem= ( a1 a2 n -- ? ) dup 0 = [ 3drop t ] [ -rot 2dup [ getbyte ] bi@ = [ [ 1 + ] bi@ rot 1 - mem= ] [ 3drop f ] if ] if ;

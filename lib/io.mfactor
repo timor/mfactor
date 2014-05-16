@@ -1,5 +1,5 @@
 !-*- mode: factor -*-
-USING: ;
+USING: memory ;
 IN: io
 
 ! print byte array

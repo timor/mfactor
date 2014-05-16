@@ -2,15 +2,4 @@
 USING: ;
 IN: kernel
 
-! control flow
-: if ( cond true false -- true/false ) ? call ;
-: when ( ..a ? true: ( ..a -- ..a ) -- ..a ) [ nop ] if ;
-: unless ( ..a ? false: ( ..a -- ..a ) -- ..a ) [ nop ] swap if ;
-
-! call pred until it returns f
-: loop ( ... pred: ( ... -- ... ? ) -- ... ) dup >r call [ r> loop ] [ r> drop ] if ;
-: times ( ... n quot: ( ... -- ... ) -- ... ) swap dup 0 = [ 2drop ] [ [ [ call ] keep ] dip 1 - swap times ] if ;
-: do ( pred body -- pred body ) dup 2dip ;
-: while ( ..a pred: ( ..a -- ..b ? ) body: ( ..b -- ..a ) -- ..b ) over [ call ] 2dip rot [ over [ call ] 2dip while ] [ 2drop ] if ;
-: until ( ..a pred: ( ..a -- ..b ? ) body: ( ..b -- ..a ) -- ..b ) over [ call ] 2dip rot [ 2drop ] [ over [ call ] 2dip until ] if ;
 

@@ -1,5 +1,5 @@
 !-*- mode: factor -*-
-USING: ;
+USING: io ;
 IN: math
 
 ! start inclusive, end exclusive
