@@ -32,8 +32,8 @@ class MFP < Parslet::Parser
   rule(:string) { str('"') >>
     ((str('\\')>>any)|(str('"').absent? >> any)).repeat(0).as(:string) >>
     str('"') }
-  rule(:quotation_body) { ((quotation |
-      string | literal_sequence | atom) >> space).repeat }
+  rule(:quotation_body) {
+    ((quotation | string | literal_sequence | atom) >> space).repeat }
   rule(:literal_sequence) { sequence_opener_word.as(:seq_start) >> space >>
     quotation_body.as(:content) >> str('}') }
   rule(:quotation) { str('[') >> space >>
