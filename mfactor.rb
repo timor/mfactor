@@ -49,11 +49,10 @@ class MFP < Parslet::Parser
     (stack_effect.as(:effect) >> space).maybe >>
     quotation_body.as(:definition_body) >> def_end }
   rule(:in_declaration) { str('IN:') >> space >> normal_word.as(:current_dict) }
-  rule(:use_declarations) { (normal_word.as(:used_dict_name) >> space).repeat }
-  rule(:dict_header) { str('USING:') >> space >> use_declarations.as(:use_decl) >> str(';') >>
-    space >> in_declaration }
-  rule(:program) { space? >> dict_header.as(:dict_header) >> space >> 
-    (definition >> space?).repeat.as(:definitions) }
+  rule(:using_declaration) { str('USING:') >> space >> 
+    (normal_word.as(:used_dict_name) >> space).repeat >> str(';')}
+  rule(:statement) { in_declaration | using_declaration.as(:using) | definition }
+  rule(:program) { space? >> (statement >> space?).repeat.as(:program) }
   root(:program)
 end
 
@@ -104,7 +103,7 @@ class MFLitSequence
 end
 
 # Definition object, which can be moved into dictionary
-class MFDefinition < Struct.new(:name,:definer,:effect,:body,:dictionary,:file,:search_path)
+class MFDefinition < Struct.new(:name,:definer,:effect,:body,:vocabulary,:file)
   def syntax_word?
     definer == "SYNTAX:"
   end
@@ -118,12 +117,21 @@ class MFDefinition < Struct.new(:name,:definer,:effect,:body,:dictionary,:file,:
   end
 end
 
+# represents a USING: entry
+class MFSearchPath < Struct.new(:vocabs)
+end
+
+# represents a change in current vocabulary
+class MFCurrentVocab < Struct.new(:vocab)
+end
+
+require 'pp'
 # named container for definitions
-class MFDictionary < Struct.new(:name)
-  attr_accessor :index
+class MFVocabulary
+  attr_accessor :name
   attr_accessor :definitions
-  def initialize(*args)
-    super *args
+  def initialize(name)
+    @name=name
     @index={}
     @definitions=[]
   end
@@ -134,7 +142,7 @@ class MFDictionary < Struct.new(:name)
     existing=@index[definition.name.to_s]
     raise "#{definition.err_loc}: Error: trying to add duplicate word #{definition.name.to_s}" if existing
     @index[definition.name.to_s]=definition
-    definition.dictionary=self
+    definition.vocabulary = self  # doubly link
     @definitions.push(definition)
   end
 end
@@ -156,6 +164,10 @@ class MFTransform < Parslet::Transform
        :effect => simple(:effect),
        :definition_body => subtree(:b)) { MFDefinition.new(name,definer,effect,b)}
   rule(:used_dict_name => simple(:dname)) { dname }
+  rule(:using => simple(:junk)) { MFSearchPath.new([]) }
+  rule(:using => sequence(:vocabs)) {MFSearchPath.new(vocabs)}
+  rule(:current_dict => simple(:vocab)) {MFCurrentVocab.new(vocab)}
+  rule(:program => subtree(:p)) { p }
 end
 
 # used to build up an application image composed of multiple source files
@@ -164,9 +176,12 @@ class MFactor
   @@parser = MFP.new
   @@transform = MFTransform.new
   def initialize
-    @files={}
+    @files=[]                   # keep track of loaded files
     @current_file=nil
-    @dictionaries={}
+    @dictionary={}
+    @vocab_roots=[File.expand_path(File.dirname(__FILE__)+"/lib")]
+    @current_vocab=nil
+    @search_vocabs=[]
   end
   # call the parser on an input object (file)
   def format_linecol(file,linecol)
@@ -190,24 +205,20 @@ class MFactor
     puts failure.cause.ascii_tree
     raise
   end
-  # parse file, store into internal hash
-  def load_file(file)
+  def parse_file(file)
     @current_file=file
     puts "parsing #{file}"
     STDOUT.flush
     result=@@transform.apply(parse(File.read(file)))
-    @files[file] = result
-    pp result
-    build_dictionary(file,result)
+    # pp result
     result
   end
   # check if word is known by name in search path, return definition if found
   # TODO check search path search order
-  def find_on(name,searchpath)
-    dicts_to_search=@dictionaries.values_at(*searchpath.map{|s| s.to_s})
-    raise "not all dicts on searchpath loaded" unless dicts_to_search.all?
-    dicts_to_search.each do |dict|
-      if found=dict.find(name)
+  def find_name(name)
+    searchlist=@dictionary.values
+    searchlist.each do |vocab|
+      if found=vocab.find(name)
         # puts "found word: #{found}"
         return found
       end
@@ -215,33 +226,56 @@ class MFactor
     nil
   end
   # return existing or add
-  def get_dictionary_create(name)
-    unless @dictionaries[name.to_s]
-      @dictionaries[name.to_s] = MFDictionary.new(name.to_s)
+  def get_vocabulary_create(name)
+    unless @dictionary[name.to_s]
+      @dictionary[name.to_s] = MFVocabulary.new(name.to_s)
     end
-    @dictionaries[name.to_s]
+    @dictionary[name.to_s]
   end
-  # step through all the definitions of the files, checking
-  # dependencies, building the index table
-  def build_dictionary(fname,program)
-    puts "analyzing #{fname}"
-    dictname=program[:dict_header][:current_dict]
-    current_dict=get_dictionary_create(dictname)
-    search_path=program[:dict_header][:use_decl]
-    defs = program[:definitions]
-    defs.each do |d|
-      pp search_path
-      pp dictname
-      d.search_path=[dictname.to_s]+search_path
-      d.file=fname
-      name = d.name.to_s
-      # TODO: better handling of duplicates, remove check for now
-      # raise "#{d.err_loc}:Error: word already exists: #{name}" if find_on(name,search_path)
-      body = d.body
-      current_dict.add d
+  def find_vocab_file(vocab_name)
+    @vocab_roots.map{|path| Dir.glob("#{path}/#{vocab_name}.mfactor")}.flatten.first ||
+      raise("vocabulary not found: #{vocab_name} (in #{@current_file})")
+  end
+  # try to load one vocabulary
+  def load_vocab (vocab_name)
+    file=find_vocab_file(vocab_name)
+    if @files.member?(file)
+      return @dictionary[vocab_name]||raise("file '#{file}' loaded, but no vocabulary '#{vocab_name} found!")
+    end
+    puts "trying to load '#{vocab_name}.mfactor'"
+    program=parse_file(file)
+    program.each do |d|
+      case d
+      when MFCurrentVocab then
+        @current_vocab=get_vocabulary_create(d.vocab)
+        @dictionary[d.vocab]=@current_vocab
+      when MFSearchPath then
+        # TODO: save search path when diving into different file
+        @search_vocabs=[]
+        puts "reset search path"
+        d.vocabs.each do |v|
+          "puts maybe load #{v}"
+          load_vocab(v) unless @dictionary[v]
+          @search_vocabs.unshift(@dictionary[v])
+        end
+        puts "file:#{file} searchpath:"
+        pp @search_vocabs
+      when MFDefinition then
+        d.file=file
+        name = d.name.to_s
+        raise "#{d.err_loc}:Error: word already exists: #{name}" if @current_vocab.find(name)
+        d.body.select{|w| w.is_a?(MFWord)}.each do |word|
+          wname=word.name.to_s
+          raise "#{d.err_loc}:Error: word '#{wname}' not found on #{@search_vocabs.map{|s| s.name}}" unless find_name(wname)
+        end
+        @current_vocab.add d
+      else
+        raise "don't know how to load program item #{d}"
+      end
     end
   end
 end
+
 
 # def mfparse(str)
 #   p=MFP.new
