@@ -62,7 +62,7 @@ end
 # maybe better to use hash instead of methods
 
 # Classes that are output by the parser transformations
-class MFWord < Struct.new(:name)
+class MFWord < Struct.new(:name,:definition)
 end
 class MFPrim < Struct.new(:name)
 end
@@ -258,7 +258,10 @@ class MFactor
         @current_vocab.add d    # need to add here because of recursion
         d.body.select{|w| w.is_a?(MFWord)}.each do |word|
           wname=word.name.to_s
-          raise "#{d.err_loc}:Error: word '#{wname}' not found on #{@search_vocabs.map{|s| s.name}}" unless find_name(wname)
+          def_of_d = find_name(wname)
+          raise "#{d.err_loc}:Error: word '#{wname}' not found on #{@search_vocabs.map{|s| s.name}}" unless def_of_d
+          # puts "word #{word.name} has def in \nFile:#{def_of_d.err_loc}"
+          word.definition=def_of_d
         end
       else
         raise "don't know how to load program item #{d}"
