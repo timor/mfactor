@@ -63,24 +63,12 @@ end
 
 # Classes that are output by the parser transformations
 class MFWord < Struct.new(:name)
-  def size
-    3
-  end
 end
 class MFPrim < Struct.new(:name)
-  def size
-    1
-  end
 end
 class MFIntLit < Struct.new(:value)
-  def size
-    5
-  end
 end
 class MFByteLit < MFIntLit
-  def size
-    2
-  end
 end
 
 class MFLitSequence
