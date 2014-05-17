@@ -163,10 +163,10 @@ class MFTransform < Parslet::Transform
        :name => simple(:name),
        :effect => simple(:effect),
        :definition_body => subtree(:b)) { MFDefinition.new(name,definer,effect,b)}
-  rule(:used_dict_name => simple(:dname)) { dname }
+  rule(:used_dict_name => simple(:dname)) { dname.to_s }
   rule(:using => simple(:junk)) { MFSearchPath.new([]) }
   rule(:using => sequence(:vocabs)) {MFSearchPath.new(vocabs)}
-  rule(:current_dict => simple(:vocab)) {MFCurrentVocab.new(vocab)}
+  rule(:current_dict => simple(:vocab)) {MFCurrentVocab.new(vocab.to_s)}
   rule(:program => subtree(:p)) { p }
 end
 
@@ -244,31 +244,34 @@ class MFactor
     end
     puts "trying to load '#{vocab_name}.mfactor'"
     program=parse_file(file)
+    # step through every definition
     program.each do |d|
       case d
+        # IN: directive
       when MFCurrentVocab then
+        puts "define vocab: #{d.vocab}"
         @current_vocab=get_vocabulary_create(d.vocab)
         @dictionary[d.vocab]=@current_vocab
+        # USING: deirective
       when MFSearchPath then
         # TODO: save search path when diving into different file
-        @search_vocabs=[]
-        puts "reset search path"
         d.vocabs.each do |v|
-          "puts maybe load #{v}"
+          puts "maybe load #{v}"
           load_vocab(v) unless @dictionary[v]
-          @search_vocabs.unshift(@dictionary[v])
+          puts "done loading #{v}"
+          @search_vocabs.unshift(@dictionary[v]) unless @search_vocabs.member?(@dictionary[v])
         end
         puts "file:#{file} searchpath:"
-        pp @search_vocabs
+        pp @search_vocabs.map{|v| v.name}
       when MFDefinition then
         d.file=file
         name = d.name.to_s
-        raise "#{d.err_loc}:Error: word already exists: #{name}" if @current_vocab.find(name)
+        raise "#{d.err_loc}:Error: word already exists: #{name}" if find_name(name)
+        @current_vocab.add d    # need to add here because of recursion
         d.body.select{|w| w.is_a?(MFWord)}.each do |word|
           wname=word.name.to_s
           raise "#{d.err_loc}:Error: word '#{wname}' not found on #{@search_vocabs.map{|s| s.name}}" unless find_name(wname)
         end
-        @current_vocab.add d
       else
         raise "don't know how to load program item #{d}"
       end
