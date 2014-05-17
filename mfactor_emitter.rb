@@ -23,28 +23,24 @@ class MFEmitter
   def int_bytes() raise "subclass int_bytes!" end
   def inst_base() raise "subclass inst_base!" end
   # make sure everything is defined and reachable
-  def walk_dict(dictname,memloc)
-    dict=@mf.dictionaries[dictname] || raise("unknown dictionary: #{dictname}")
+  def walk_dict(dict,memloc)
+    puts "collecting locations of vocab '#{dict.name}'"
     dict.definitions.each do |d|
       defsize=0
-      pp d.body
       STDOUT.flush
       d.body.each do |word|
-        if word.is_a?(MFWord)
-          target_def=@mf.find_on(word.name.to_s,d.search_path)
-          raise "#{d.err_loc}:Error: word '#{word.name}' not found in dictionaries " unless target_def
-        end
         defsize += element_size(word)
       end
-      @locations[d.name.to_s]=memloc
+      @locations[d]=memloc
+      puts "#{d.name} is at #{memloc}"
       memloc += defsize
     end
     memloc
   end
   def walk_all_dicts
     mem=0
-    @mf.dictionaries.keys.each do |dictname|
-      mem = walk_dict(dictname,mem)
+    @mf.dictionary.values.each do |dict|
+      mem = walk_dict(dict,mem)
     end
     puts "total bytecode image size: #{mem}"
   end
@@ -59,6 +55,7 @@ class MFEmitter
   end
   # generate byte code for one word, append to image
   def bytecode(word,image)
+    puts "generating bcode for #{word}"
     case word
     when String then
       image << prim(:bastart)
@@ -74,7 +71,7 @@ class MFEmitter
     when MFByteLit then image << word.value
     when MFIntLit then image += int_bytes(value)
     when MFPrim then image << prim(word.name)
-    when MFWord then image += bcall_bytes(@locations[word.name.to_s])
+    when MFWord then image += bcall_bytes(@locations[word.definition])
     else raise "don't know how to compile #{word}"
     end
   end
@@ -83,8 +80,9 @@ class MFEmitter
     # TODO: include remove unused pass (mark don't sweep)!
     image=[]
     walk_all_dicts
-    @mf.dictionaries.values.each do |dict|
+    @mf.dictionary.values.each do |dict|
       dict.definitions.each do |d|
+        puts "compiling definition for #{d.name}"
         d.body.each do |word|
           bytecode(word,image)
         end
