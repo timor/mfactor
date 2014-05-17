@@ -47,6 +47,27 @@ IN: kernel
 
 : ; ( -- ) "unexpected semicolon " print error ;
 
+! copy token to memory since it will be overridden by following parsing
+: _token2str ( token -- addr ) uncount dup _strhead, _MP get [ [ dup getbyte b, 1 + ] times drop ] dip 1 - ;
+
+! helper
+: read-token ( -- string ) token _token2str ;
+
 ! colon compiler
 SYNTAX: : ( -- ) read-token 0 B{ 59 } parse-until >quotation swap [ dup search nip [ "re" print ] when "defining: " print print nl ] keep name ;
 
+! accumulate bytes on stack (expensive, but hey)
+: _readstr ( -- ..bytes num ) 0 [ receive dup 34 = [ drop f ] [ swap 1 + t ] if ] loop ;
+! allocate memory and copy bytes
+: _stack2string ( ..bytes num -- ) dup _MP get + [ _MP set ] keep [ [ -b, ] times ] with-MP ;
+SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2string ] dip 1 - 5 suffix ;
+SYNTAX: B{ ( -- addr ) 0 "}" [ parsenum [ swap 1 + ] [ "not a byte literal: " print print error ] if ] scan-until-str dup _strhead, _MP get [ _stack2string ] dip 1 - 5 suffix ;
+
+! quotations on the stack
+! put element on the stack along with word type information: 0: instruction, 1: short jump, 2: long jump, 3: long literal, 4: byte literal, 5: ref, 6: nop
+
+: ] ( -- ) "unmatched ] " print error ;
+
+! read in quotation, return address !
+SYNTAX: [ ( -- ) 0 "]" parse-until >quotation 5 suffix ;
+! read in quotation, compile to memory, create dictionary entry

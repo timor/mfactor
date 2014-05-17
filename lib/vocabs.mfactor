@@ -29,5 +29,5 @@ IN: vocabs
 : name= ( str name -- ? ) [ uncount ] bi@ [ swap ] dip 1 - over = [ mem= ] [ 3drop f ] if ;
 
 ! dictionary usage
-: dsize ( -- ) dictend dictstart - _free-name dictstart - ;
+: dsize ( -- ) dictend dict-start - _free-name dict-start - ;
 

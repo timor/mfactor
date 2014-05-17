@@ -23,21 +23,6 @@ IN: math
 : _iterate-prep ( n quot -- i n quot ) [ 0 ] 2dip ;
 : find-integer ( ... n quot: ( ... i -- ... ? ) -- ... i ? ) _iterate-prep _(find-integer) ;
 
-! quotations on the stack
-! put element on the stack along with word type information: 0: instruction, 1: short jump, 2: long jump, 3: long literal, 4: byte literal, 5: ref, 6: nop
-
-: ] ( -- ) "unmatched ] " print error ;
-
-! read in quotation, return address !
-SYNTAX: [ ( -- ) 0 "]" parse-until >quotation 5 suffix ;
-! read in quotation, compile to memory, create dictionary entry
-
-
-! copy token to memory since it will be overridden by following parsing
-: _token2str ( token -- addr ) uncount dup _strhead, _MP get [ [ dup getbyte b, 1 + ] times drop ] dip 1 - ;
-
-! helper
-: read-token ( -- string ) token _token2str ;
 
 ! comments
 SYNTAX: \! ( -- ) [ receive 10 = [ f ] [ t ] if ] loop ;
