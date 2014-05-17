@@ -2,8 +2,8 @@
 
 Mfactor is a small interpreter based on a simple VM with some Mfactor
 boot code.  It is portable and currently has drivers for linux and
-Cortex-M.  Mfactor stands for Machine Factor, since it aims to be for
-Factor <http://factorcode.org> what Machine Forth is to Forth.
+Cortex-M.  The name Mfactor hints at 'embedded Factor' since it aims to
+port Factor <http://factorcode.org> to embedded platforms.
 
 # design notes
 
