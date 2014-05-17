@@ -400,8 +400,6 @@ require 'pp'
 
 task :mftest do
   mf=MFactor.new
-  mfactor_stdlib.each do |f|
-    mf.load_file(f)
-  end
-  pp MFEmitter_Cortex.new(mf).bytecode_image
+  mf.load_vocab("_stdlib")
+  #pp MFEmitter_Cortex.new(mf).bytecode_image
 end
