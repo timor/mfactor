@@ -292,7 +292,10 @@ class MFactor
       when MFDefinition then
         d.file=file
         name = d.name.to_s
-        raise "#{d.err_loc}:Error: word already exists: #{name}" if find_name(name)
+        if old_def=find_name(name)
+          raise "#{d.err_loc}:Error: word already exists: #{name}
+#{old_def.err_loc}:Note: Location of previous definition"
+        end
         @current_vocab.add d    # need to add here because of recursion
         d.body.select{|w| w.is_a?(MFWord)}.each do |word|
           wname=word.name.to_s
