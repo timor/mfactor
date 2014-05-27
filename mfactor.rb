@@ -63,12 +63,24 @@ end
 
 # Classes that are output by the parser transformations
 class MFWord < Struct.new(:name,:definition)
+  def see
+    name.to_s.downcase
+  end
 end
 class MFPrim < Struct.new(:name)
+  def see
+    name.to_s.upcase
+  end
 end
 class MFIntLit < Struct.new(:value)
+  def see
+    "#I#{value}"
+  end
 end
 class MFByteLit < MFIntLit
+  def see
+    "#B#{value}"
+  end
 end
 
 class MFLitSequence
@@ -88,6 +100,11 @@ class MFLitSequence
       raise "unsupported literal sequence: '#{type}' }"
     end
   end
+  def see
+    lut={ MFByteLit => "#B{",
+      MFIntLit => "#I{" }
+    "#{lut[@element_type]} "+@content.map{|e| e.see}.join(" ") + " }"
+  end
 end
 
 # Definition object, which can be moved into dictionary
@@ -102,6 +119,18 @@ class MFDefinition < Struct.new(:name,:definer,:effect,:body,:vocabulary,:file)
   def err_loc
     line,col=definer.line_and_column
     "#{file}:#{line}:#{col}"
+  end
+  def see
+    ": #{name} #{effect} "+
+      body.map{ |elt| see_word(elt) }.join(" ")
+  end
+end
+
+def see_word(elt)
+  case elt
+  when Array then "[ "+ elt.map{|e| see_word(e)}.join(" ") + " ]"
+  when String then '"'+elt+'"'
+  else elt.see
   end
 end
 
@@ -122,6 +151,10 @@ class MFVocabulary
     @name=name
     @index={}
     @definitions=[]
+  end
+  def see
+    "IN: #{name}\n"+
+    @definitions.map{|d| d.see}.join("\n")
   end
   def find(name)
     @index[name]
@@ -175,6 +208,11 @@ class MFactor
   def format_linecol(file,linecol)
     line,col=linecol
     "#{file}:#{line}:#{col}"
+  end
+  def see
+    @dictionary.values.each do |vocab|
+      puts vocab.see
+    end
   end
   def parse(input)
     @@parser.parse(input)
@@ -249,7 +287,7 @@ class MFactor
           puts "done loading #{v}"
           @search_vocabs.unshift(@dictionary[v]) unless @search_vocabs.member?(@dictionary[v])
         end
-        puts "file:#{file} searchpath:"
+        puts "file:#{file}\n searchpath:"
         pp @search_vocabs.map{|v| v.name}
       when MFDefinition then
         d.file=file
