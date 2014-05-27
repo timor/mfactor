@@ -28,7 +28,7 @@ class MFP < Parslet::Parser
   rule(:def_end) { str(';') }
   rule(:word) { sequence_opener_word | definer_word | normal_word }
   rule(:char) { str("'") >> match["^'"].as(:char) >> str("'") }
-  rule(:atom) { char | unsigned.as(:unsigned) | normal_word.as(:word) }
+  rule(:atom) { char | unsigned.as(:unsigned) | str("'").absent? >> normal_word.as(:word) }
   rule(:string) { str('"') >>
     ((str('\\')>>any)|(str('"').absent? >> any)).repeat(0).as(:string) >>
     str('"') }
