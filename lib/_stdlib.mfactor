@@ -18,4 +18,4 @@ IN: toplevel
 : top ( -- ) _test1 _init_storage listener ;
 
 
-: testloop ( -- ) [ '\!' emit t ] loop ;
+: testloop ( -- ) [ '!' emit t ] loop ;
