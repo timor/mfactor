@@ -7,9 +7,6 @@ require 'yaml'
 ISET=Hash[YAML.load_file("instructionset.yml").map{ |cname,name|
             [name==:private ? cname : (name || cname) , cname ] }]
 puts ISET
-if ISET["dup"]
-  puts "yay"
-end
 
 # parser class, will parse one source file when parse() method is
 # called
