@@ -84,7 +84,12 @@ class MFPrim < Struct.new(:name)
     line,col=name.line_and_column
     "#{@file}:#{line}:#{col}"
   end
+  def change_name(newname)
+    old=name
+    name=Parslet::Slice.new(old.position,newname,old.line_cache)
+  end
 end
+
 class MFIntLit < Struct.new(:value)
   def see
     "#I#{value}"
@@ -125,6 +130,10 @@ end
 
 # Definition object, which can be moved into dictionary
 class MFDefinition < Struct.new(:name,:definer,:effect,:body,:vocabulary,:file)
+  def initialize(*args)
+    super(*args)
+    convert_tailcalls(body)
+  end
   def syntax_word?
     definer == "SYNTAX:"
   end
@@ -139,6 +148,20 @@ class MFDefinition < Struct.new(:name,:definer,:effect,:body,:vocabulary,:file)
   def see
     ": #{name} #{effect} "+
       body.map{ |elt| see_word(elt) }.join(" ")
+  end
+  def convert_tailcalls(b)
+    if b[-1].is_a?(MFPrim) && b[-1].name.to_s=="call"
+      b[-1].change_name("stcall")
+      # puts "#{b[-1].err_loc}:Info: scall -> stcall"
+    elsif b[-1].is_a?(MFWord)
+      b[-1].is_tail = true
+      # puts "#{b[-1].err_loc}:Info: tailcall"
+    end
+    b.each do |elt|
+      if elt.is_a?(Array)
+        convert_tailcalls(elt)
+      end
+    end
   end
 end
 

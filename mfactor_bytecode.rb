@@ -93,7 +93,6 @@ class MF_ByteCode < MFactor
     when Array then
       image << prim(:qstart)
       word.map{|w| word_bytecode(w,image)}
-      # TODO: adjust tail calls here!
       image << prim(:qend)      # maybe omit, check space savings
     when MFLitSequence then
       inline_seq_header(0,word.element_size,word.content.length,image)
@@ -103,7 +102,7 @@ class MF_ByteCode < MFactor
     when MFPrim then image << prim(word.name)
     when MFWord then
       # puts "referring to #{word.name}"
-      image << prim(:bcall)
+      image << ( word.is_tail ? prim(:btcall) : prim(:bcall) )
       image.concat bcall_bytes(@locations[word.definition])
     else raise "don't know how to compile #{word}"
     end
