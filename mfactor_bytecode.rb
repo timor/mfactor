@@ -41,22 +41,22 @@ class MF_ByteCode < MFactor
       code=[]
       @locations[d]=memloc
       defsize=0
-      puts "compiling definition for #{d.name}"
+      puts "compiling definition for #{d.name}" if Rake.verbose == true
       d.body.each do |word|
         defsize += element_size(word)
         word_bytecode(word,code)
       end
       code << prim(:qend)      # maybe omit, check space savings
-      puts "#{d.name} is at #{memloc}"
+      puts "#{d.name} is at #{memloc}" if Rake.verbose == true
       memloc += defsize+1
       @definition_code[d]=code
     end
-    puts "total bytecode size: #{memloc}"
+    puts "total bytecode size: #{memloc}" if Rake.verbose
     @locations.each do |d,loc|
       puts "@#{loc}: #{d.name} "
       print @definition_code[d]
       puts ";"
-    end
+    end if Rake.verbose == true
     check_locations
     @definition_code.values.flatten
   end
@@ -102,7 +102,7 @@ class MF_ByteCode < MFactor
     when MFIntLit then (image << prim(:liti)).concat int_bytes(value)
     when MFPrim then image << prim(word.name)
     when MFWord then
-      puts "referring to #{word.name}"
+      # puts "referring to #{word.name}"
       image << prim(:bcall)
       image.concat bcall_bytes(@locations[word.definition])
     else raise "don't know how to compile #{word}"

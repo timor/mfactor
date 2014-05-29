@@ -6,7 +6,7 @@ require 'yaml'
 
 ISET=Hash[YAML.load_file("instructionset.yml").map{ |cname,name|
             [name==:private ? cname : (name || cname) , cname ] }]
-puts ISET
+puts "Instruction Set: #{ISET}" if Rake.verbose==true
 
 # parser class, will parse one source file when parse() method is
 # called
@@ -233,7 +233,7 @@ class MFactor
   end
   def parse_file(file)
     @current_file=file
-    puts "parsing #{file}"
+    puts "parsing #{file}" if Rake.verbose
     STDOUT.flush
     result=@@transform.apply(parse(File.read(file)))
     # pp result
@@ -268,27 +268,27 @@ class MFactor
     if @files.member?(file)
       return @dictionary[vocab_name]||raise("file '#{file}' loaded, but no vocabulary '#{vocab_name} found!")
     end
-    puts "trying to load '#{vocab_name}.mfactor'"
+    puts "trying to load '#{vocab_name}.mfactor'" if Rake.verbose == true
     program=parse_file(file)
     # step through every definition
     program.each do |d|
       case d
         # IN: directive
       when MFCurrentVocab then
-        puts "define vocab: #{d.vocab}"
+        puts "define vocab: #{d.vocab}" if Rake.verbose == true
         @current_vocab=get_vocabulary_create(d.vocab)
         @dictionary[d.vocab]=@current_vocab
-        # USING: deirective
+        # USING: directive
       when MFSearchPath then
         # TODO: save search path when diving into different file
         d.vocabs.each do |v|
-          puts "maybe load #{v}"
+          puts "maybe load #{v}" if Rake.verbose == true
           load_vocab(v) unless @dictionary[v]
-          puts "done loading #{v}"
+          puts "done loading #{v}" if Rake.verbose == true
           @search_vocabs.unshift(@dictionary[v]) unless @search_vocabs.member?(@dictionary[v])
         end
-        puts "file:#{file}\n searchpath:"
-        pp @search_vocabs.map{|v| v.name}
+        puts "file:#{file}\n searchpath:" if Rake.verbose == true
+        pp @search_vocabs.map{|v| v.name} if Rake.verbose == true
       when MFDefinition then
         d.file=file
         name = d.name.to_s

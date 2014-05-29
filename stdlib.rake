@@ -295,7 +295,7 @@ if defined? $mfactor_ff
   end
 end
 THISDIR=File.dirname(__FILE__)
-puts "looking for instruction set and stdlib code in #{THISDIR}"
+puts "looking for instruction set and stdlib code in #{THISDIR}" if Rake.verbose
 mfactor_stdlib=FileList["#{THISDIR}/lib/*.mfactor"]
 file "generated/mfactor.yml" => ["#{THISDIR}/instructionset.yml","#{THISDIR}/stdlib.rake","generated"]+$mfactor_sources+mfactor_stdlib do
   puts "regenerating mfactor code"
