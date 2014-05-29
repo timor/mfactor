@@ -404,4 +404,31 @@ task :mftest do
   # mf.see
   mf.bytecode_image("top")
 end
+
+task :mfdeps do
+  require 'tempfile'
+  dotfile=Tempfile.new("_mfdeps_dot")
+  dotfile << "digraph deps {\n"
+  files=FileList["lib/*.mfactor"]
+  files.each do |f|
+    puts "file: #{f}"
+    cur=nil
+    using=[]
+    File.readlines(f).each do | line |
+      if line =~ /IN:\s+(\w+)/
+        cur=$1
+      end
+      if line =~ /USING:\s+((\w+\s+)+)/
+        using = $1.split("\s")
+      end
+    end
+    puts "IN: #{cur}\nUSING:#{using}"
+    using.each do |used|
+      dotfile << "#{used} -> #{cur}\n"
+    end
+  end
+  dotfile << "}\n"
+  dotfile.close
+  cp dotfile.path, "mfdeps.dot"
+  dotfile.unlink
 end
