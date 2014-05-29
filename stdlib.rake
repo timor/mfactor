@@ -394,12 +394,14 @@ end
 task :stdlib => ["generated/stdlib.code.h","generated/stdlib.dict.h","generated/stdlib_size.h",__FILE__]
 
 require_relative "mfactor"
-require_relative "mfactor_emitter"
+require_relative "mfactor_cortex"
 
 require 'pp'
 
 task :mftest do
-  mf=MFactor.new
+  mf=MF_Cortex.new
   mf.load_vocab("_stdlib")
-  #pp MFEmitter_Cortex.new(mf).bytecode_image
+  # mf.see
+  mf.bytecode_image("top")
+end
 end

@@ -86,15 +86,18 @@ end
 class MFLitSequence
   attr_accessor :element_type
   attr_accessor :content
+  attr_accessor :element_size
   def initialize(type,content)
     @content=content
     case type
     when "B{" then
       content.all? {|e| e.is_a?(MFByteLit) || raise( "not a byte literal: #{e}") } 
       @element_type=MFByteLit
+      @element_size=1
     when "I{" then
       content.all? {|e| e.is_a?(MFIntLit) || raise("not an int literal: #{e}") }
       content.map{|e| MFIntLit.new(e.value)} # ensure int lit element class
+      @element_size=4
       @element_type=MFIntLit
     else
       raise "unsupported literal sequence: '#{type}' }"
@@ -297,12 +300,13 @@ class MFactor
 #{old_def.err_loc}:Note: Location of previous definition"
         end
         @current_vocab.add d    # need to add here because of recursion
-        d.body.select{|w| w.is_a?(MFWord)}.each do |word|
+        # find all used words in vocabularies
+        d.body.flatten.select{|w| w.is_a?(MFWord)}.each do |word|
           wname=word.name.to_s
           def_of_d = find_name(wname)
           raise "#{d.err_loc}:Error: word '#{wname}' not found on #{@search_vocabs.map{|s| s.name}}" unless def_of_d
-          # puts "word #{word.name} has def in \nFile:#{def_of_d.err_loc}"
           word.definition=def_of_d
+          # puts "word #{word.name} has def in \nFile:#{word.definition.err_loc}"
         end
       else
         raise "don't know how to load program item #{d}"

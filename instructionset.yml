@@ -33,8 +33,10 @@ receive:
 to_r: ">r"
 # pop from retain to parameter stack
 r_from: "r>"
-# literal word
-lit: :private
+# literal sequence/complex type, followed by length, followed by content
+litc: :private
+# literal integer
+liti: :private
 # literal byte
 litb: :private
 # literal instruction
