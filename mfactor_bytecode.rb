@@ -57,6 +57,7 @@ class MF_ByteCode < MFactor
       print @definition_code[d]
       puts ";"
     end if Rake.verbose == true
+    print ISET.keys.map{ |name| [name,prim(name)] },"\n" if Rake.verbose == true
     check_locations
     @definition_code.values.flatten
   end
