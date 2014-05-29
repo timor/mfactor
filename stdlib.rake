@@ -394,7 +394,7 @@ end
 task :stdlib => ["generated/stdlib.code.h","generated/stdlib.dict.h","generated/stdlib_size.h",__FILE__]
 
 require_relative "mfactor"
-require_relative "mfactor_cortex"
+require_relative "mfactor_bytecode"
 
 require 'pp'
 
