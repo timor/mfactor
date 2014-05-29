@@ -4,26 +4,11 @@ IN: memory
 
 ! memory access and information, also variables
 
-! unsafe access
-: getmem ( addr -- ) _get ;
-: getmem8 ( addr -- ) _getbyte ;
+! : getmem ( addr -- ) _get ;
+! : getmem8 ( addr -- ) _getbyte ;
 
-: setmem ( val addr -- ) _set ;
-: setmem8 ( val addr -- ) _setbyte ;
-
-! safe access
-! : _safeset ( value address setter: ( val addr -- ) -- ) [ dup memrange [ 2drop ] 2dip in-range ] dip swap  [ call ] [ 3drop "safe set failed" print error ] if ;
-! use same memory range constraint as read for now
-: _safeset ( value address setter: ( val addr -- ) -- ) [ dup memrange 2drop in-range ] dip swap  [ call ] [ 3drop "safe set failed" print error ] if ;
-: setbyte ( byteval addr -- ) [ _setbyte ] _safeset ;
-: set ( val addr -- ) [ _set ] _safeset ;
-
-! check if in range before getting
-: _safeget ( address getter: (addr -- val ) -- val ) 
-    [ dup memrange 2drop in-range ] dip swap 
-    [ call ] [ drop "safe get failed at " print .x error ] if ;
-: getbyte ( addr -- byteval ) [ _getbyte ] _safeget ;
-: get ( addr -- val ) [ _get ] _safeget ;
+! : setmem ( val addr -- ) _set ;
+! : setmem8 ( val addr -- ) _setbyte ;
 
 ! apply q to var's value and update var
 : change ( var q: ( old -- new ) -- ) [ [ get ] keep ] dip dip set ;
@@ -37,7 +22,6 @@ IN: memory
 : _init_storage ( -- ) memstart cell + _MP set ;
 ! temporarily different memory pointer
 : with-MP ( addr quot -- ) swap _MP get [ _MP set call ] dip _MP set ;
-
 
 ! count reaching 0 means all matched
 : mem= ( a1 a2 n -- ? ) dup 0 = [ 3drop t ] [ -rot 2dup [ getbyte ] bi@ = [ [ 1 + ] bi@ rot 1 - mem= ] [ 3drop f ] if ] if ;

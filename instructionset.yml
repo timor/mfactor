@@ -92,13 +92,13 @@ parsenum:
 nop:
 # ( -- data-start data-end mem-start mem-end )
 memrange:
-# unsafe memory operations
+# memory operations
 # (value address -- )
-_set: :private
-_setbyte: :private
+set:
+setbyte:
 # (address -- value)
-_get: :private
-_getbyte: :private
+get:
+getbyte:
 # prettywrite ( value -- )
 _pwrite: "pwrite"
 pwritex:
