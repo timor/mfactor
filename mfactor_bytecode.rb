@@ -6,7 +6,7 @@ require_relative 'mfactor'
 
 
 # expect to be created with already loaded MFactor instance
-class MF_Cortex < MFactor
+class MF_ByteCode < MFactor
   SEQ_ELT_CELL=0
   SEQ_FIXED=1
   SEQ_QUOT=2
@@ -17,29 +17,20 @@ class MF_Cortex < MFactor
     @locations={}                 # stores memory locations of definitions
     @prims={}                     # set of primitives for this architecture
     ISET.each_with_index do |elt,i|
-      @prims[elt[0]]=inst_base()+i
+      @prims[elt[0]]=inst_base+i
     end
     @definition_code={}               # holds the actual byte code
   end
   # some architecture-specific definitions
   def atom_size(elt)
-    @sizes={
-      MFPrim => 1,
-      MFWord => 3,
-      MFByteLit => 2,
-      MFIntLit => 5 }
-    s=@sizes[elt.class]
-    raise "unknown element size: #{elt} of #{elt.class}" unless s
-    s
+    raise "overwrite atom_size in sub-class"
   end
-  def header_length() 3 end
-  def int_bytes(val)
-    [val].pack("I").unpack("CCCC")
+  def inst_base()
+    raise "overwrite inst_base in subclass"
   end
   def bcall_bytes(val)
     [val].pack("I").unpack("CC")
   end
-  def inst_base() 0x70 end
   # actual code generation routine
   def bytecode_image(start_word)
     raise "unknown entry point: '#{start_word}'" unless find_name(start_word)
@@ -89,6 +80,7 @@ class MF_Cortex < MFactor
     end
   end
   def inline_seq_header(elt_type, elt_size, count, image)
+    raise "inline sequences longer than 255 elements not supported!" if count >= 256
     image << prim(:litc) << ((SEQ_FIXED << 5) | (elt_type << 2) | elt_size) << count 
   end
   # generate byte code for one word, append to image
@@ -117,5 +109,41 @@ class MF_Cortex < MFactor
   end
   def prim(name)
     @prims[name.to_s]
+  end
+end
+
+class MF_Cortex < MF_ByteCode
+  def atom_size(elt)
+    @sizes={
+      MFPrim => 1,
+      MFWord => 3,
+      MFByteLit => 2,
+      MFIntLit => 5 }
+    s=@sizes[elt.class]
+    raise "unknown element size: #{elt} of #{elt.class}" unless s
+    s
+  end
+  def inst_base() 0xa0 end
+  def header_length() 3 end
+  def int_bytes(val)
+    [val].pack("I").unpack("CCCC")
+  end
+end
+
+class MF_Linux64 < MF_ByteCode
+  def atom_size
+    @sizes={
+      MFPrim => 1,
+      MFWord => 3,
+      MFByteLit => 2,
+      MFIntLit => 9 }
+    s=@sizes[elt.class]
+    raise "unknown element size: #{elt} of #{elt.class}" unless s
+    s
+  end
+  def inst_base() 0x70 end
+  def header_length() 3 end
+  def int_bytes(val)
+    [val].pack("I").unpack("CCCCCCCC")
   end
 end
