@@ -1,0 +1,17 @@
+!-*- mode: factor -*-
+USING: kernel ;
+IN: headers
+
+! functions for compiling headers into memory
+
+! headers for memory elements
+! put a sequence header into memory
+! sequence header layout: |type(2)|reserved(1)|number-of-elements(1)|
+! sequence types: 1: string/byte-array , 2: quotation, 3: integer array
+: _seqhead, ( length-in-bytes type -- ) s, 0 b, b, ;
+
+! put quotation head to memory
+: _qhead, ( length-in-bytes -- ) 2 _seqhead, ;
+
+: _strhead, ( length -- ) 1 _seqhead, ;
+

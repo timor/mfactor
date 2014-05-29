@@ -1,0 +1,28 @@
+!-*- mode: factor -*-
+USING: kernel vocabs ;
+IN: parser
+
+! "parse accumulator" on the stack
+! acc in this context means reverse-vector on stack, consisting of item/type pairs and a count which always sits on top
+
+! add element to parsed stuff on stack, name taken from factor, but not completely correct
+: suffix ( ..item/types count item type -- ..item/types item type newcount ) rot 1 + ;
+
+
+! If string is a valid number literal, it is converted to a number, otherwise search for a word named by the string.
+: parse-datum ( string  -- word/number type )
+    search [ dup _quot>> prim? [ _quot>> 0 ] [ 2 ] if ]
+    [ parsenum [ 3 ] [ "parsing '" print print "' failed\! " print error ] if ] if ;
+: scan-datum ( -- item type ) token parse-datum ;
+
+: parse-until-step ( acc end -- acc ? ) scan-datum dup 2 = [ rot pick _name>> name= [ 2drop f ] [ over parsing-word? [ drop execute t ] [ [ _quot>> ] dip suffix t ] if ] if ] [ [ drop ] 2dip suffix t ] if ;
+: parse-until ( acc end -- acc ) [ parse-until-step ] keep swap [ parse-until ] [ drop ] if ;
+
+! loop until token matches str
+: scan-until-str ( str quot: ( tok -- ) -- )  swap [ token swap 2dup str= [ drop f ] [ [ swap [ call ] keep ] dip t ] if ] loop 2drop ;
+
+
+
+
+
+

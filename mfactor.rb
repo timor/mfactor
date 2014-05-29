@@ -11,6 +11,8 @@ if ISET["dup"]
   puts "yay"
 end
 
+# parser class, will parse one source file when parse() method is
+# called
 class MFP < Parslet::Parser
   rule(:newline) { str("\n") >> str("\r").maybe }
   rule(:line_comment) { str('!') >> (newline.absent? >> any).repeat }
@@ -26,12 +28,12 @@ class MFP < Parslet::Parser
   rule(:def_end) { str(';') }
   rule(:word) { sequence_opener_word | definer_word | normal_word }
   rule(:char) { str("'") >> match["^'"].as(:char) >> str("'") }
-  rule(:atom) { char | unsigned.as(:unsigned) | normal_word.as(:word) }
+  rule(:atom) { char | unsigned.as(:unsigned) | str("'").absent? >> normal_word.as(:word) }
   rule(:string) { str('"') >>
     ((str('\\')>>any)|(str('"').absent? >> any)).repeat(0).as(:string) >>
     str('"') }
-  rule(:quotation_body) { ((quotation |
-      string | literal_sequence | atom) >> space).repeat }
+  rule(:quotation_body) {
+    ((quotation | string | literal_sequence | atom) >> space).repeat }
   rule(:literal_sequence) { sequence_opener_word.as(:seq_start) >> space >>
     quotation_body.as(:content) >> str('}') }
   rule(:quotation) { str('[') >> space >>
@@ -46,47 +48,128 @@ class MFP < Parslet::Parser
     match('\S').repeat(1).as(:name) >> space >>
     (stack_effect.as(:effect) >> space).maybe >>
     quotation_body.as(:definition_body) >> def_end }
-  rule(:program) { space? >> (definition >> space?).repeat }
+  rule(:in_declaration) { str('IN:') >> space >> normal_word.as(:current_dict) }
+  rule(:using_declaration) { str('USING:') >> space >> 
+    (normal_word.as(:used_dict_name) >> space).repeat >> str(';')}
+  rule(:statement) { in_declaration | using_declaration.as(:using) | definition }
+  rule(:program) { space? >> (statement >> space?).repeat.as(:program) }
   root(:program)
 end
 
-class MFWord < Struct.new(:name)
-  def size
-    5
+# Note on size:
+# used in compilation step to actually organize memory contents
+# size values actually need to depend on target architecture
+# maybe better to use hash instead of methods
+
+# Classes that are output by the parser transformations
+class MFWord < Struct.new(:name,:definition)
+  def see
+    name.to_s.downcase
   end
 end
 class MFPrim < Struct.new(:name)
-  def size
-    1
+  def see
+    name.to_s.upcase
   end
 end
 class MFIntLit < Struct.new(:value)
-  def size
-    5
+  def see
+    "#I#{value}"
   end
 end
 class MFByteLit < MFIntLit
-  def size
-    2
+  def see
+    "#B#{value}"
   end
 end
 
 class MFLitSequence
+  attr_accessor :element_type
+  attr_accessor :content
+  attr_accessor :element_size
   def initialize(type,content)
+    @content=content
     case type
     when "B{" then
       content.all? {|e| e.is_a?(MFByteLit) || raise( "not a byte literal: #{e}") } 
+      @element_type=MFByteLit
+      @element_size=1
     when "I{" then
-      content.all? {|e| e.is_a?(MFIntLit) || raise("not a byte literal: #{e}") } 
+      content.all? {|e| e.is_a?(MFIntLit) || raise("not an int literal: #{e}") }
+      content.map{|e| MFIntLit.new(e.value)} # ensure int lit element class
+      @element_size=4
+      @element_type=MFIntLit
     else
-      raise "unsupported literal sequence: '#{type} }"
+      raise "unsupported literal sequence: '#{type}' }"
     end
   end
-  def size
-    1 + content.map(:size).reduce(:+)
+  def see
+    lut={ MFByteLit => "#B{",
+      MFIntLit => "#I{" }
+    "#{lut[@element_type]} "+@content.map{|e| e.see}.join(" ") + " }"
   end
 end
 
+# Definition object, which can be moved into dictionary
+class MFDefinition < Struct.new(:name,:definer,:effect,:body,:vocabulary,:file)
+  def syntax_word?
+    definer == "SYNTAX:"
+  end
+  def normal_word?
+    definer == ":"
+  end
+  # return printed location of definition
+  def err_loc
+    line,col=definer.line_and_column
+    "#{file}:#{line}:#{col}"
+  end
+  def see
+    ": #{name} #{effect} "+
+      body.map{ |elt| see_word(elt) }.join(" ")
+  end
+end
+
+def see_word(elt)
+  case elt
+  when Array then "[ "+ elt.map{|e| see_word(e)}.join(" ") + " ]"
+  when String then '"'+elt+'"'
+  else elt.see
+  end
+end
+
+# represents a USING: entry
+class MFSearchPath < Struct.new(:vocabs)
+end
+
+# represents a change in current vocabulary
+class MFCurrentVocab < Struct.new(:vocab)
+end
+
+require 'pp'
+# named container for definitions
+class MFVocabulary
+  attr_accessor :name
+  attr_accessor :definitions
+  def initialize(name)
+    @name=name
+    @index={}
+    @definitions=[]
+  end
+  def see
+    "IN: #{name}\n"+
+    @definitions.map{|d| d.see}.join("\n")
+  end
+  def find(name)
+    @index[name]
+  end
+  def add(definition)
+    existing=@index[definition.name.to_s]
+    raise "#{definition.err_loc}: Error: trying to add duplicate word #{definition.name.to_s}" if existing
+    @index[definition.name.to_s]=definition
+    definition.vocabulary = self  # doubly link
+    @definitions.push(definition)
+  end
+end
 
 # tree transformation to output a structure that represents one file
 class MFTransform < Parslet::Transform
@@ -95,56 +178,44 @@ class MFTransform < Parslet::Transform
     (num > 255 ? MFIntLit : MFByteLit).new(num)
   }
   rule(:char => simple(:c)) { MFByteLit.new(c.to_s.ord) }
-  rule(:string => simple(:s)) { s }
+  rule(:string => simple(:s)) { s.to_s }
   rule(:word => simple(:name)) { (ISET[name.to_s] ? MFPrim : MFWord).new(name) }
   rule(:quotation_body => subtree(:b)) { b }
-  # rule(:def => simple(:definer),
-  #      :name => simple(:name),
-  #      :effect => simple(:effect),
-  #      :definition_body => sequence(:b)) {
-  #   MFDefinition.new(definer,name,b)}
-end
-
-class MFDefinition < Struct.new(:name,:definer,:address,:effect,:body)
-  def syntax_word?
-    definer == "SYNTAX:"
-  end
-  def normal_word?
-    definer == ":"
-  end
-  # determine word size in bytes
-  def size
-    def seqsize(seq)
-      if seq == []
-        0
-      else
-        elt = seq.shift
-        s = if elt.is_a?(Array)
-              2 + seqsize(elt)
-            else
-              elt.size
-            end
-        s + seqsize(seq)
-      end
-    end
-    seqsize(body)
-  end
+  rule(:seq_start=>simple(:opener), :content => subtree(:content)) {
+    MFLitSequence.new(opener,content) }
+  rule(:def => simple(:definer),
+       :name => simple(:name),
+       :effect => simple(:effect),
+       :definition_body => subtree(:b)) { MFDefinition.new(name,definer,effect,b)}
+  rule(:used_dict_name => simple(:dname)) { dname.to_s }
+  rule(:using => simple(:junk)) { MFSearchPath.new([]) }
+  rule(:using => sequence(:vocabs)) {MFSearchPath.new(vocabs)}
+  rule(:current_dict => simple(:vocab)) {MFCurrentVocab.new(vocab.to_s)}
+  rule(:program => subtree(:p)) { p }
 end
 
 # used to build up an application image composed of multiple source files
 class MFactor
+  attr_accessor :dictionary
   @@parser = MFP.new
   @@transform = MFTransform.new
   def initialize
-    @files={}
+    @files=[]                   # keep track of loaded files
     @current_file=nil
-    @defs={}              # holds the actual processed instances
-                                # of the defined words
+    @dictionary={}
+    @vocab_roots=[File.expand_path(File.dirname(__FILE__)+"/lib")]
+    @current_vocab=nil
+    @search_vocabs=[]
   end
   # call the parser on an input object (file)
   def format_linecol(file,linecol)
     line,col=linecol
     "#{file}:#{line}:#{col}"
+  end
+  def see
+    @dictionary.values.each do |vocab|
+      puts vocab.see
+    end
   end
   def parse(input)
     @@parser.parse(input)
@@ -163,45 +234,87 @@ class MFactor
     puts failure.cause.ascii_tree
     raise
   end
-  # parse file, store into internal hash
-  def load_file(file)
+  def parse_file(file)
     @current_file=file
-    puts "loading #{file}"
+    puts "parsing #{file}"
     STDOUT.flush
     result=@@transform.apply(parse(File.read(file)))
-    @files[file] = result
+    # pp result
     result
   end
-  # check if word is known by name
-  def known_word?(name)
-    @defs[name]
-  end
-  # step through all the definitions of the files, checking
-  # dependencies, building the index table
-  def iterate_definitions
-    counter = 0
-    @files.each do |fname,defs|
-      puts "analyzing #{fname}:"
-      defs.each do |d|
-        name = d[:name].to_s
-        if existing=@defs[name]
-          raise "word already exists: #{name}: #{existing[:body]}"
-        else
-          body = d[:definition_body]
-          body.flatten.select{|e| e.is_a?(MFWord)}.each do |w|
-            unless known_word? w
-              raise "#{format_linecol(fname,w.name.line_and_column)}:unknown word: #{w.name} in #{name}"
-            end
-          end
-          word=MFDefinition.new(name,d[:definer],counter,d[:effect],body)
-          @defs[name]=word
-          counter += word.size
-        end
+  # check if word is known by name in search path, return definition if found
+  # TODO check search path search order
+  def find_name(name)
+    searchlist=@dictionary.values
+    searchlist.each do |vocab|
+      if found=vocab.find(name)
+        # puts "found word: #{found}"
+        return found
       end
     end
-    @defs
+    nil
+  end
+  # return existing or add
+  def get_vocabulary_create(name)
+    unless @dictionary[name.to_s]
+      @dictionary[name.to_s] = MFVocabulary.new(name.to_s)
+    end
+    @dictionary[name.to_s]
+  end
+  def find_vocab_file(vocab_name)
+    @vocab_roots.map{|path| Dir.glob("#{path}/#{vocab_name}.mfactor")}.flatten.first ||
+      raise("vocabulary not found: #{vocab_name} (in #{@current_file})")
+  end
+  # try to load one vocabulary
+  def load_vocab (vocab_name)
+    file=find_vocab_file(vocab_name)
+    if @files.member?(file)
+      return @dictionary[vocab_name]||raise("file '#{file}' loaded, but no vocabulary '#{vocab_name} found!")
+    end
+    puts "trying to load '#{vocab_name}.mfactor'"
+    program=parse_file(file)
+    # step through every definition
+    program.each do |d|
+      case d
+        # IN: directive
+      when MFCurrentVocab then
+        puts "define vocab: #{d.vocab}"
+        @current_vocab=get_vocabulary_create(d.vocab)
+        @dictionary[d.vocab]=@current_vocab
+        # USING: deirective
+      when MFSearchPath then
+        # TODO: save search path when diving into different file
+        d.vocabs.each do |v|
+          puts "maybe load #{v}"
+          load_vocab(v) unless @dictionary[v]
+          puts "done loading #{v}"
+          @search_vocabs.unshift(@dictionary[v]) unless @search_vocabs.member?(@dictionary[v])
+        end
+        puts "file:#{file}\n searchpath:"
+        pp @search_vocabs.map{|v| v.name}
+      when MFDefinition then
+        d.file=file
+        name = d.name.to_s
+        if old_def=find_name(name)
+          raise "#{d.err_loc}:Error: word already exists: #{name}
+#{old_def.err_loc}:Note: Location of previous definition"
+        end
+        @current_vocab.add d    # need to add here because of recursion
+        # find all used words in vocabularies
+        d.body.flatten.select{|w| w.is_a?(MFWord)}.each do |word|
+          wname=word.name.to_s
+          def_of_d = find_name(wname)
+          raise "#{d.err_loc}:Error: word '#{wname}' not found on #{@search_vocabs.map{|s| s.name}}" unless def_of_d
+          word.definition=def_of_d
+          # puts "word #{word.name} has def in \nFile:#{word.definition.err_loc}"
+        end
+      else
+        raise "don't know how to load program item #{d}"
+      end
+    end
   end
 end
+
 
 # def mfparse(str)
 #   p=MFP.new

@@ -1,4 +1,7 @@
 !-*- mode: factor -*-
+USING: kernel ;
+IN: vocabs
+
 
 ! dictionary handling
 
@@ -10,6 +13,9 @@
 ! find next free dictionary entry (check for first name byte = 0)
 : dict-next ( dict-entry -- dict-entry ) _name>> dup strlen + 1 + ;
 
+! actually call the quotation associated with word
+: execute ( word -- effect ) _quot>> call ;
+
 ! dictionary entry considered valid if
 : dict-valid? ( dict-entry -- ? ) _name>> strlen 0 = not ;
 : dict-map ( q: ( ... dict-entry -- ... ) -- )
@@ -17,7 +23,7 @@
 : _free-name ( -- addr ) dict-start [ dup dict-valid? ] [ dict-next ] while ;
 
 ! test dictionary access by enumerating all dictionary entries
-: dict-enum ( -- ) [ [ _name>> print ": " print ] [ .x ] bi ] dict-map ;
+! : dict-enum ( -- ) [ [ _name>> print ": " print ] [ .x ] bi ] dict-map ;
 
 ! save quotation in dictionary, non-immediate, name is counted string, add terminating 0 for compatibility
 : rename ( quot dictentry -- ) set ;
@@ -26,5 +32,5 @@
 : name= ( str name -- ? ) [ uncount ] bi@ [ swap ] dip 1 - over = [ mem= ] [ 3drop f ] if ;
 
 ! dictionary usage
-: dsize ( -- ) dictend dictstart - _free-name dictstart - ;
+: dsize ( -- ) dictend dict-start - _free-name dict-start - ;
 

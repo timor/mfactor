@@ -61,7 +61,7 @@ port Factor <http://factorcode.org> to embedded platforms.
 ## boxing/sequences ##
 - sequences consist of header containing sequence type ( 2 bytes ),
   element length (1 byte) and sequence length (1 byte for now).
-- Sequence accumulation works by collecting items on the stack until
+- Sequence accumulation at runtime works by collecting items on the stack until
   finished and exact size of data is known.  This should allow for
   nesting data definitions (through parsing words).  Sequences and
   boxed data are constructed on the stack between nested brace-like
@@ -69,8 +69,8 @@ port Factor <http://factorcode.org> to embedded platforms.
   remains on the stack.
 - boxed data includes size and type information.
 - types of sequences
-  - untyped arrays: one type field overhead per element
-  - byte-arrays: for strings
+  - fixed-element-size-arrays, header information:
+    - 1 byte type
   - quotations: like byte-arrays, but don't respond to nth
 - sequence access
   - push sequence header elements to stack ( element-size elements type )
@@ -93,15 +93,30 @@ port Factor <http://factorcode.org> to embedded platforms.
   being a notable exception
 
 ## types (TODO) ##
-- used in boxed data
-- for data on stack, type stack holds rtti
+- used in complex data
+- complex data is represented as |address(31)|1|, whereas fixnums always have LSB=0
+- complex data type specifiers are one byte wide, with following layout:
+
+        |type(3)|aux(5)|
+  where type indicates:
+  - 0: cell(only used in elt-type)
+  - 1: fixed-size-sequence, aux is |elt-type(3) | elt-size(2)|
+    - element size is (elt-size + 1) ** 2
+    - a count byte follows
+  - 2: quotation, aux is reserved, no count byte follows
+  - 3: user-defined, aux is reserved, the following two bytes specify
+    the type location in memory
+  - 4: byte-cond, elements are byte -> quotation pairs, used for numeric case statements,
+    something akin to jump tables
+  - 5: hook (TBD), aux (TBD), in-memory address follows (pointer-type)
+- variable type arrays are fixed-size-sequences with elt-type 3 and elt-size 2,
+  this basically means an array of boxes
 - parser can unbox data on type checks when known at parse time, this
   however requires distinct words that work with unboxed values
-- 2 strategies for inline data:
-  - untyped, make sure compiler does all necessary checks (preferred)
-  - typed, additional overhead needed since box must be stored
+- inline data: typed, additional overhead needed since box must be stored
 - type system implemented as library instead of language feature
   should allow generic compiler optimization on type checks
+- see boxing/sequences above
 
 ## stacks ##
 
