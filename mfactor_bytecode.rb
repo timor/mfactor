@@ -69,6 +69,7 @@ class MF_ByteCode < MFactor
       end
       loc += code.length
     end
+    raise "internal indices don't match" unless @definition_code.keys == @locations.keys
   end
   # element size
   def element_size(elt)
