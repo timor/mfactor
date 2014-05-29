@@ -23,5 +23,12 @@ IN: memory
 ! temporarily different memory pointer
 : with-MP ( addr quot -- ) swap _MP get [ _MP set call ] dip _MP set ;
 
+! compilation, forward
+: b, ( byteval -- ) _MP [ get setbyte ] [ 1 swap +@ ] bi ;
+! ! compile short to mem, little endian
+: s, ( short -- ) dup b, 8 neg shift b, ;
+! compile cell
+: , ( val -- ) cell [ dup b, 8 neg shift ] times drop ;
+
 ! count reaching 0 means all matched
 : mem= ( a1 a2 n -- ? ) dup 0 = [ 3drop t ] [ -rot 2dup [ getbyte ] bi@ = [ [ 1 + ] bi@ rot 1 - mem= ] [ 3drop f ] if ] if ;

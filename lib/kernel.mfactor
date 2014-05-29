@@ -46,12 +46,19 @@ IN: kernel
 
 ! basic arithmetic and logic operations
 
-: >= ( n1 n2 -- ? ) 2dup > [ 2drop t ] [ = ] if ;
-
 : t ( -- t ) 1 ;
 : f ( -- f ) 0 ;
+
+: >= ( n1 n2 -- ? ) 2dup > [ 2drop t ] [ = ] if ;
 
 : and ( obj1 obj2 -- ? ) over ? ;
 : or ( obj1 obj2 -- - ) dupd ? ;
 : not ( ? -- \? ) 0 1 ? ;
+
+! start inclusive, end exclusive
+: in-range ( val start end -- ? ) [ over [ >= ] dip ] dip < and ;
+
+! convert tos to inst
+: _inst ( inst -- ) cell 1 - 8 * neg shift 0xff bitand ;
+: prim? ( address -- ? ) _inst instbase >= ;
 

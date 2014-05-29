@@ -2,9 +2,6 @@
 USING: io ;
 IN: math
 
-! start inclusive, end exclusive
-: in-range ( val start end -- ? ) [ over [ >= ] dip ] dip < and ;
-
 : square ( x -- x² ) dup * ;
 
 : each-integer ( ... n quot: ( ... i -- ... ) -- ... ) swap 0 swap [ [ swap call ] 2keep 1 + ] times 2drop ;
