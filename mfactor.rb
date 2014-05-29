@@ -59,14 +59,30 @@ end
 # maybe better to use hash instead of methods
 
 # Classes that are output by the parser transformations
-class MFWord < Struct.new(:name,:definition)
+class MFWord < Struct.new(:name,:definition,:is_tail)
+  def initialize(*a)
+    super *a
+    @file=$current_mfactor_file
+  end
   def see
     name.to_s.downcase
   end
+  def err_loc
+    line,col=name.line_and_column
+    "#{@file}:#{line}:#{col}"
+  end
 end
 class MFPrim < Struct.new(:name)
+  def initialize(*a)
+    super *a
+    @file=$current_mfactor_file
+  end
   def see
     name.to_s.upcase
+  end
+  def err_loc
+    line,col=name.line_and_column
+    "#{@file}:#{line}:#{col}"
   end
 end
 class MFIntLit < Struct.new(:value)
@@ -191,6 +207,8 @@ class MFTransform < Parslet::Transform
   rule(:program => subtree(:p)) { p }
 end
 
+$current_mfactor_file=nil
+
 # used to build up an application image composed of multiple source files
 class MFactor
   attr_accessor :dictionary
@@ -198,7 +216,7 @@ class MFactor
   @@transform = MFTransform.new
   def initialize
     @files=[]                   # keep track of loaded files
-    @current_file=nil
+    # @current_file=nil
     @dictionary={}
     @vocab_roots=[File.expand_path(File.dirname(__FILE__)+"/lib")]
     @current_vocab=nil
@@ -225,14 +243,14 @@ class MFactor
         end
       end
       line,col=cause.source.line_and_column(cause.pos)
-      puts "#{@current_file}:#{line}:#{col}: Error: #{cause.to_s}"
+      puts "#{$current_mfactor_file}:#{line}:#{col}: Error: #{cause.to_s}"
     end
     rec_print(cause)
     puts failure.cause.ascii_tree
     raise
   end
   def parse_file(file)
-    @current_file=file
+    $current_mfactor_file=file
     puts "parsing #{file}" if Rake.verbose
     STDOUT.flush
     result=@@transform.apply(parse(File.read(file)))
@@ -260,7 +278,7 @@ class MFactor
   end
   def find_vocab_file(vocab_name)
     @vocab_roots.map{|path| Dir.glob("#{path}/#{vocab_name}.mfactor")}.flatten.first ||
-      raise("vocabulary not found: #{vocab_name} (in #{@current_file})")
+      raise("vocabulary not found: #{vocab_name} (in #{$current_mfactor_file})")
   end
   # try to load one vocabulary
   def load_vocab (vocab_name)
