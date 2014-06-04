@@ -29,7 +29,7 @@ class MF_ByteCode < MFactor
     @compiled_definitions=[]               # holds the actual byte code
     ISET.each_with_index do |elt,i|
       @prims[elt[0]]=inst_base+i
-      @compiled_definitions << MFCompiledDefinition.new(MFDefinition.new(elt[0],:primitive,nil,[]),inst_base+i)
+      @compiled_definitions << MFCompiledDefinition.new(MFDefinition.new(elt[0],:primitive,nil,[]),inst_base+i,[],2)
     end
     @generated                    # flag for on-demand bytecode generation
     @size                         # store bytecode size here after generation
