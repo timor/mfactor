@@ -21,9 +21,9 @@ class MF_ByteCode < MFactor
   SEQ_QUOT=2
   SEQ_USER=3
   SEQ_BYTE_COND=4
-  @@cell_width=nil
+  @@cell_width=nil              # used as constant, override in subclass
   attr_accessor :compiled_definitions
-  def initialize(*args)
+  def initialize
     super
     @prims={}                     # set of primitives for this architecture
     @compiled_definitions=[]               # holds the actual byte code
@@ -31,6 +31,8 @@ class MF_ByteCode < MFactor
       @prims[elt[0]]=inst_base+i
       @compiled_definitions << MFCompiledDefinition.new(MFDefinition.new(elt[0],:primitive,nil,[]),inst_base+i)
     end
+    @generated                    # flag for on-demand bytecode generation
+    @size                         # store bytecode size here after generation
   end
   # some architecture-specific definitions
   def atom_size(elt)
@@ -46,9 +48,9 @@ class MF_ByteCode < MFactor
     [val].pack("I").unpack("CC")
   end
   # actual code generation routine
-  def bytecode_image(start_word)
+  def maybe_generate
+    return if @generated
     puts "\nGenerating byte_code image" if Rake.verbose
-    raise "unknown entry point: '#{start_word}'" unless find_name(start_word)
     image=[]
     memloc=0
     def_list=@dictionary.values.map{|v| v.definitions}.flatten
@@ -70,6 +72,7 @@ class MF_ByteCode < MFactor
       memloc += defsize+1
       cdef.code=code
     end
+    @size=memloc
     puts "total bytecode size: #{memloc}" if Rake.verbose
     puts "memory map:" if Rake.verbose
     @compiled_definitions.each do |d|
@@ -79,7 +82,8 @@ class MF_ByteCode < MFactor
     end if Rake.verbose == true
     print ISET.keys.map{ |name| [name,prim(name)] },"\n" if Rake.verbose == true
     check_locations
-    @compiled_definitions.map{|d| d.code}.flatten
+    @generated = true
+    #@compiled_definitions.map{|d| d.code}.flatten
   end
   # check pre-compile size computations
   def check_locations
@@ -138,6 +142,7 @@ class MF_ByteCode < MFactor
   # c code generation:
   # c99 initiailizers for the dictionary
   def write_dictionary_entries(io="")
+    maybe_generate
     @compiled_definitions.each do |cdef|
       io << cdef.write_dict_entry << ",\n"
     end
@@ -147,6 +152,19 @@ class MF_ByteCode < MFactor
     ISET.each_with_index do |inst,num|
       name,cname = inst
       io << "#{cname} = 0x#{(num+inst_base).to_s(16)}, /* #{name} */\n"
+    end
+  end
+  def bytecode_size
+    maybe_generate
+    @size
+  end
+  def write_bytecode_image(io="")
+    maybe_generate
+    @compiled_definitions.each do |cdef|
+      next if cdef.definition.primitive?
+      io << "/* #{cdef.definition.name} */ "
+      io << cdef.code.join(", ")
+      io << ",\n"
     end
   end
 end
