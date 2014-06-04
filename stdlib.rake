@@ -402,8 +402,10 @@ task :mftest do
   mf=MF_Cortex.new
   mf.load_vocab("_stdlib")
   mf.see if Rake.verbose == true
-  mf.bytecode_image("top")
+#  mf.bytecode_image("top")
   mf.write_dictionary_entries STDOUT
+  mf.write_inst_enum_entries STDOUT
+  mf.write_bytecode_image STDOUT
 end
 
 task :mfdeps do
