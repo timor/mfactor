@@ -341,9 +341,9 @@ class MFactor
         # find all used words in vocabularies
         d.body.flatten.select{|w| w.is_a?(MFWord)}.each do |word|
           wname=word.name.to_s
-          def_of_d = find_name(wname)
-          raise "#{d.err_loc}:Error: word '#{wname}' not found on #{@search_vocabs.map{|s| s.name}}" unless def_of_d
-          word.definition=def_of_d
+          def_of_w = find_name(wname)
+          raise "#{d.err_loc}:Error: word '#{wname}' not found on #{@search_vocabs.map{|s| s.name}}" unless def_of_w
+          word.definition=def_of_w
           # puts "word #{word.name} has def in \nFile:#{word.definition.err_loc}"
         end
       else
