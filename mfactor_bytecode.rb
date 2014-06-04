@@ -4,6 +4,9 @@
 
 require_relative 'mfactor'
 
+# holds specialized compiled information
+class MFCompiledDefinition < Struct.new(:definition,:location,:code)
+end
 
 # expect to be created with already loaded MFactor instance
 class MF_ByteCode < MFactor
@@ -12,14 +15,14 @@ class MF_ByteCode < MFactor
   SEQ_QUOT=2
   SEQ_USER=3
   SEQ_BYTE_COND=4
+  attr_accessor :compiled_definitions
   def initialize(*args)
     super
-    @locations={}                 # stores memory locations of definitions
     @prims={}                     # set of primitives for this architecture
     ISET.each_with_index do |elt,i|
       @prims[elt[0]]=inst_base+i
     end
-    @definition_code={}               # holds the actual byte code
+    @compiled_definitions=[]               # holds the actual byte code
   end
   # some architecture-specific definitions
   def atom_size(elt)
@@ -39,7 +42,9 @@ class MF_ByteCode < MFactor
     def_list=@dictionary.values.map{|v| v.definitions}.flatten
     def_list.each do |d|
       code=[]
-      @locations[d]=memloc
+      cdef=MFCompiledDefinition.new
+      cdef.location=memloc
+      cdef.definition=d
       defsize=0
       puts "compiling definition for #{d.name}" if Rake.verbose == true
       d.body.each do |word|
@@ -49,28 +54,28 @@ class MF_ByteCode < MFactor
       code << prim(:qend)      # maybe omit, check space savings
       puts "#{d.name} is at #{memloc}" if Rake.verbose == true
       memloc += defsize+1
-      @definition_code[d]=code
+      cdef.code=code
+      @compiled_definitions << cdef
     end
     puts "total bytecode size: #{memloc}" if Rake.verbose
-    @locations.each do |d,loc|
-      puts "@#{loc}: #{d.name} "
-      print @definition_code[d]
+    @compiled_definitions.each do |d|
+      puts "@#{d.location}: #{d.definition.name} "
+      print d.code
       puts ";"
     end if Rake.verbose == true
     print ISET.keys.map{ |name| [name,prim(name)] },"\n" if Rake.verbose == true
     check_locations
-    @definition_code.values.flatten
+    @compiled_definitions.map{|d| d.code}.flatten
   end
   # check pre-compile size computations
   def check_locations
     loc=0
-    @definition_code.each do |d,code|
-      if loc != @locations[d]
+    @compiled_definitions.each do |d|
+      if loc != d.location
         raise "unmatched location for #{d.name}: counted #{loc}, expected #{@locations[d]}!"
       end
-      loc += code.length
+      loc += d.code.length
     end
-    raise "internal indices don't match" unless @definition_code.keys == @locations.keys
   end
   # element size
   def element_size(elt)
@@ -104,7 +109,7 @@ class MF_ByteCode < MFactor
     when MFWord then
       # puts "referring to #{word.name}"
       image << ( word.is_tail ? prim(:btcall) : prim(:bcall) )
-      image.concat bcall_bytes(@locations[word.definition])
+      image.concat bcall_bytes(@compiled_definitions.find{|elt| elt.definition=word.definition}.location)
     else raise "don't know how to compile #{word}"
     end
   end
