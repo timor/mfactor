@@ -19,12 +19,3 @@ IN: math
     ] [ 2drop f ] _if-iterate? ;
 : _iterate-prep ( n quot -- i n quot ) [ 0 ] 2dip ;
 : find-integer ( ... n quot: ( ... i -- ... ? ) -- ... i ? ) _iterate-prep _(find-integer) ;
-
-
-! comments
-SYNTAX: \! ( -- ) [ receive 10 = [ f ] [ t ] if ] loop ;
-SYNTAX: ( ( -- ) [ receive 41 = [ f ] [ t ] if ] loop ;
-
-
-
-

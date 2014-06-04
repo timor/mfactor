@@ -31,8 +31,6 @@ IN: parser
 ! loop until token matches str
 : scan-until-str ( str quot: ( tok -- ) -- )  swap [ token swap 2dup str= [ drop f ] [ [ swap [ call ] keep ] dip t ] if ] loop 2drop ;
 
-
-
-
-
-
+! comments
+SYNTAX: \! ( -- ) [ receive 10 = [ f ] [ t ] if ] loop ;
+SYNTAX: ( ( -- ) [ receive 41 = [ f ] [ t ] if ] loop ;
