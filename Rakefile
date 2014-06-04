@@ -24,6 +24,7 @@ if hostp
   PTRSIZE=64
   SIZE="size"
   CFLAGS << " -DVM_RETURNSTACK=256 "
+  GENERATOR='MF_Linux64'
 else
   INSTBASE=0xa0
   PTRSIZE=32
@@ -38,6 +39,7 @@ else
   GDB="arm-none-eabi-gdb"
   OBJDUMP="arm-none-eabi-objdump"
   SIZE="arm-none-eabi-size"
+  GENERATOR='MF_Cortex'
 end
 
 # include
