@@ -386,7 +386,7 @@ void interpreter(inst * user_program)
             print_error("token reader error");
             return;
           }} break;
-          /* (countedstr -- quot/addr foundp) */
+          /* (countedstr -- countedstr/dict_entry foundp) */
         case search: {
           cell name_to_find=ppop();
           dict_entry * addr=find_by_name(((char*)name_to_find)+1,*((char *) name_to_find)); /* skip countbyte */
