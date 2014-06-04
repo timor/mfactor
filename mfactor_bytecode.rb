@@ -42,6 +42,7 @@ class MF_ByteCode < MFactor
   end
   # actual code generation routine
   def bytecode_image(start_word)
+    puts "\nGenerating byte_code image" if Rake.verbose
     raise "unknown entry point: '#{start_word}'" unless find_name(start_word)
     image=[]
     memloc=0
