@@ -190,7 +190,7 @@ end
 
 class MF_Linux64 < MF_ByteCode
   @@cell_width=8
-  def atom_size
+  def atom_size(elt)
     @sizes={
       MFPrim => 1,
       MFWord => 3,
