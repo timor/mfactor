@@ -140,6 +140,9 @@ class MFDefinition < Struct.new(:name,:definer,:effect,:body,:vocabulary,:file)
   def normal_word?
     definer == ":"
   end
+  def primitive?
+    definer == :primitive
+  end
   # return printed location of definition
   def err_loc
     line,col=definer.line_and_column
