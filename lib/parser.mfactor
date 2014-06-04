@@ -3,7 +3,17 @@ USING: kernel vocabs ;
 IN: parser
 
 ! "parse accumulator" on the stack
-! acc in this context means reverse-vector on stack, consisting of item/type pairs and a count which always sits on top
+! acc in this context means reverse-vector on stack, consisting of
+! item/type pairs and a count which always sits on top
+
+! parse item types:
+! 0: primitive (instruction code)
+! 1: word call: base-relative (short jump)
+! 2: word call: absolute (long jump)
+! 3: integer literal
+! 4: byte literal
+! 5: inline quotation
+! 6: nop (TBR)
 
 ! add element to parsed stuff on stack, name taken from factor, but not completely correct
 : suffix ( ..item/types count item type -- ..item/types item type newcount ) rot 1 + ;
