@@ -7,11 +7,12 @@ require_relative 'mfactor'
 # holds specialized compiled information
 class MFCompiledDefinition < Struct.new(:definition,:location,:code,:flags)
   def write_dict_entry(io="")
-    loc = definition.primitive? ? location.to_s : "&stdlib+#{location.to_s}"
+    loc = definition.primitive? ? "0x#{(location << (8*(MF_ByteCode.cell_width-1))).to_s(16)}" : "&stdlib+#{location.to_s}"
     io <<
       "{ .address = (inst *)#{loc}, .flags = #{flags}, .name = #{definition.name.to_s.inspect}, .name_length=#{definition.name.to_s.length + 1}}"
   end
 end
+
 
 # expect to be created with already loaded MFactor instance
 class MF_ByteCode < MFactor
@@ -20,6 +21,7 @@ class MF_ByteCode < MFactor
   SEQ_QUOT=2
   SEQ_USER=3
   SEQ_BYTE_COND=4
+  @@cell_width=nil
   attr_accessor :compiled_definitions
   def initialize(*args)
     super
@@ -36,6 +38,9 @@ class MF_ByteCode < MFactor
   end
   def inst_base()
     raise "overwrite inst_base in subclass"
+  end
+  def self.cell_width()
+    @@cell_width || raise("set @@cell_width in subclass")
   end
   def bcall_bytes(val)
     [val].pack("I").unpack("CC")
@@ -138,6 +143,7 @@ class MF_ByteCode < MFactor
 end
 
 class MF_Cortex < MF_ByteCode
+  @@cell_width=4
   def atom_size(elt)
     @sizes={
       MFPrim => 1,
@@ -156,6 +162,7 @@ class MF_Cortex < MF_ByteCode
 end
 
 class MF_Linux64 < MF_ByteCode
+  @@cell_width=8
   def atom_size
     @sizes={
       MFPrim => 1,
