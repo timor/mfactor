@@ -5,7 +5,12 @@
 require_relative 'mfactor'
 
 # holds specialized compiled information
-class MFCompiledDefinition < Struct.new(:definition,:location,:code)
+class MFCompiledDefinition < Struct.new(:definition,:location,:code,:flags)
+  def write_dict_entry(io="")
+    loc = definition.primitive? ? location.to_s : "&stdlib+#{location.to_s}"
+    io <<
+      "{ .address = (inst *)#{loc}, .flags = #{flags}, .name = #{definition.name.to_s.inspect}, .name_length=#{definition.name.to_s.length + 1}}"
+  end
 end
 
 # expect to be created with already loaded MFactor instance
@@ -19,10 +24,11 @@ class MF_ByteCode < MFactor
   def initialize(*args)
     super
     @prims={}                     # set of primitives for this architecture
+    @compiled_definitions=[]               # holds the actual byte code
     ISET.each_with_index do |elt,i|
       @prims[elt[0]]=inst_base+i
+      @compiled_definitions << MFCompiledDefinition.new(MFDefinition.new(elt[0],:primitive,nil,[]),inst_base+i)
     end
-    @compiled_definitions=[]               # holds the actual byte code
   end
   # some architecture-specific definitions
   def atom_size(elt)
@@ -45,6 +51,8 @@ class MF_ByteCode < MFactor
       cdef=MFCompiledDefinition.new
       cdef.location=memloc
       cdef.definition=d
+      cdef.flags=(cdef.definition.definer == "SYNTAX:" ? 1 : 0)
+      @compiled_definitions << cdef # adding here already although body may be empty
       defsize=0
       puts "compiling definition for #{d.name}" if Rake.verbose == true
       d.body.each do |word|
@@ -55,13 +63,13 @@ class MF_ByteCode < MFactor
       puts "#{d.name} is at #{memloc}" if Rake.verbose == true
       memloc += defsize+1
       cdef.code=code
-      @compiled_definitions << cdef
     end
     puts "total bytecode size: #{memloc}" if Rake.verbose
+    puts "memory map:" if Rake.verbose
     @compiled_definitions.each do |d|
-      puts "@#{d.location}: #{d.definition.name} "
+      puts "@#{d.location}: #{d.definition.name} #{d.definition.primitive? ? 'prim' : '' }"
       print d.code
-      puts ";"
+      puts ";" if d.code
     end if Rake.verbose == true
     print ISET.keys.map{ |name| [name,prim(name)] },"\n" if Rake.verbose == true
     check_locations
@@ -71,8 +79,13 @@ class MF_ByteCode < MFactor
   def check_locations
     loc=0
     @compiled_definitions.each do |d|
+      puts "double-checking compiled location of #{d.definition.name}" if Rake.verbose == true
+      if d.definition.primitive?
+        puts "skipping primitive" if Rake.verbose == true
+        next
+      end
       if loc != d.location
-        raise "unmatched location for #{d.name}: counted #{loc}, expected #{@locations[d]}!"
+        raise "unmatched location for #{d.definition.name}: counted #{loc}, expected #{d.location}!"
       end
       loc += d.code.length
     end
@@ -109,12 +122,17 @@ class MF_ByteCode < MFactor
     when MFWord then
       # puts "referring to #{word.name}"
       image << ( word.is_tail ? prim(:btcall) : prim(:bcall) )
-      image.concat bcall_bytes(@compiled_definitions.find{|elt| elt.definition=word.definition}.location)
+      image.concat bcall_bytes(@compiled_definitions.find{|cdef| cdef.definition==word.definition}.location)
     else raise "don't know how to compile #{word}"
     end
   end
   def prim(name)
-    @prims[name.to_s]
+    @prims[name.to_s] || raise( "unknown primitive: #{name}")
+  end
+  def write_dictionary_entries(io="")
+    @compiled_definitions.each do |cdef|
+      io << cdef.write_dict_entry << ",\n"
+    end
   end
 end
 
