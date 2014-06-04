@@ -1,5 +1,5 @@
 ! -*- mode: factor -*-
-USING: kernel sequences listener memory ;
+USING: kernel sequences listener memory bcomp ;
 IN: toplevel
 
 ! some unit tests

@@ -1,5 +1,5 @@
 !-*- mode: factor -*-
-USING: kernel memory math io parser dict headers ;
+USING: kernel memory math io parser vocabs headers ;
 IN: bcomp
 
 ! byte code compiler functions
