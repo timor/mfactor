@@ -94,7 +94,6 @@ port Factor <http://factorcode.org> to embedded platforms.
 
 ## types (TODO) ##
 - used in complex data
-- complex data is represented as |address(31)|1|, whereas fixnums always have LSB=0
 - complex data type specifiers are one byte wide, with following layout:
 
         |type(3)|aux(5)|
