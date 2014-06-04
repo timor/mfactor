@@ -135,9 +135,18 @@ class MF_ByteCode < MFactor
   def prim(name)
     @prims[name.to_s] || raise( "unknown primitive: #{name}")
   end
+  # c code generation:
+  # c99 initiailizers for the dictionary
   def write_dictionary_entries(io="")
     @compiled_definitions.each do |cdef|
       io << cdef.write_dict_entry << ",\n"
+    end
+  end
+  # enum definitions for the instruction set
+  def write_inst_enum_entries(io="")
+    ISET.each_with_index do |inst,num|
+      name,cname = inst
+      io << "#{cname} = 0x#{(num+inst_base).to_s(16)}, /* #{name} */\n"
     end
   end
 end
