@@ -401,8 +401,9 @@ require 'pp'
 task :mftest do
   mf=MF_Cortex.new
   mf.load_vocab("_stdlib")
-  # mf.see
+  mf.see if Rake.verbose == true
   mf.bytecode_image("top")
+  mf.write_dictionary_entries STDOUT
 end
 
 task :mfdeps do
