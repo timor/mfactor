@@ -13,10 +13,10 @@
 - DONE: reader nesting, involves making parsing explicit
 - DONE: > remove dict entries and substitute with offset number from known ff-pointer array
     to allow for quick runtime word lookup (constant time)
-- DOING: revamp ruby compiler, with dictionary support and syntax error reporting
+- DONE: revamp ruby compiler, with dictionary support and syntax error reporting
+- DOING: implement new literals
 - maybe make execute primitive, skip primitive checks in call, then,
   dictionary entry can be checked for `primitive` flag
-- type checking and boxing/unboxing
 - graphical decompiler (should work on console, though)
 - stopworld mark-sweep gc (should only be triggered during user input,
   so not time critical)
