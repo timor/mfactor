@@ -59,30 +59,25 @@ port Factor <http://factorcode.org> to embedded platforms.
   6. primitives (byte code instructions)
 
 ## boxing/sequences ##
-- sequences consist of header containing sequence type ( 2 bytes ),
-  element length (1 byte) and sequence length (1 byte for now).
+- fixed-element-width sequences consist of header containing sequence header (codes element type and size) byte
+  and sequence length (1 byte for now) preceeding the content.
 - Sequence accumulation at runtime works by collecting items on the stack until
   finished and exact size of data is known.  This should allow for
   nesting data definitions (through parsing words).  Sequences and
   boxed data are constructed on the stack between nested brace-like
   words, and after a closing bracket the corresponding "load address"
   remains on the stack.
-- boxed data includes size and type information.
-- types of sequences
-  - fixed-element-size-arrays, header information:
-    - 1 byte type
-  - quotations: like byte-arrays, but don't respond to nth
 - sequence access
-  - push sequence header elements to stack ( element-size elements type )
+  - push pointer to sequence header to stack
   - use functions to work on this "header structure", nth can be
-    implemented generically that way (quotations have element size 0
-    and cannot be randomly accessed)
+    implemented generically that way
 
 ## garbage collection (tbd) ##
 - root set composed of
   - namestack assocs
   - ref instructions inside quotations
   - refs in parser's accumulation vectors
+  - imprecise stack elements (bad solution)
 - mark & compact ensures linear memory scanning 
 - types of objects inform gc wether to follow references
   - untyped arrays hold only references to boxed types
@@ -92,30 +87,13 @@ port Factor <http://factorcode.org> to embedded platforms.
   rely on garbage collection in most cases, the interpreter itself
   being a notable exception
 
-## types (TODO) ##
-- used in complex data
-- complex data type specifiers are one byte wide, with following layout:
-
-        |type(3)|aux(5)|
-  where type indicates:
-  - 0: cell(only used in elt-type)
-  - 1: fixed-size-sequence, aux is |elt-type(3) | elt-size(2)|
-    - element size is (elt-size + 1) ** 2
-    - a count byte follows
-  - 2: quotation, aux is reserved, no count byte follows
-  - 3: user-defined, aux is reserved, the following two bytes specify
-    the type location in memory
-  - 4: byte-cond, elements are byte -> quotation pairs, used for numeric case statements,
-    something akin to jump tables
-  - 5: hook (TBD), aux (TBD), in-memory address follows (pointer-type)
-- variable type arrays are fixed-size-sequences with elt-type 3 and elt-size 2,
-  this basically means an array of boxes
+## user types (TODO) ##
+- usage in code indicated by instruction, which refers to the type object itself (needs parser support)
 - parser can unbox data on type checks when known at parse time, this
   however requires distinct words that work with unboxed values
 - inline data: typed, additional overhead needed since box must be stored
 - type system implemented as library instead of language feature
   should allow generic compiler optimization on type checks
-- see boxing/sequences above
 
 ## stacks ##
 
