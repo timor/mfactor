@@ -343,9 +343,9 @@ require_relative "mfactor_bytecode"
 
 def build_stdlib
   puts "rebuilding stdlib from generated sources"
-  # if defined? $mfactor_ff
-  #   ffyaml=YAML.load_file($mfactor_ff)
-  # end
+  if defined? $mfactor_ff
+    ffyaml=YAML.load_file($mfactor_ff)
+  end
   # iset=YAML.load_file("#{THISDIR}/instructionset.yml")
   # stdlib=YAML_Mfactor.new("generated/mfactor.yml",iset)
   mf=Object.const_get(GENERATOR).new
@@ -354,7 +354,7 @@ def build_stdlib
     f.puts "#define STDLIB_SIZE #{mf.bytecode_size}"
   end
   File.open("generated/stdlib.code.h","w") do |f|
-    # ff_code(ffyaml || [],f)
+    ff_code(ffyaml || [],f)
     f.write "inst stdlib[#{mf.bytecode_size}]= {\n"
     mf.write_bytecode_image f
     f.write "};\n"
