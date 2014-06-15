@@ -36,6 +36,8 @@
 #include "runtime.h"
 #include "reset_system.h"
 
+#include "seq_headers.h"
+
 /* entry in name dictionary */
 /* TODO: ensure correct scanning direction so that skipping over entries stays trivial */
 typedef struct dict_entry
