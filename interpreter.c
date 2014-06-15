@@ -468,24 +468,24 @@ void interpreter(inst * user_program)
           ppush((cell) memory+VM_MEM*sizeof(cell));
           break;
           /* ( value address -- ) */
-        case _set:
+        case set:
           x=ppop();
           /* assert_memwrite((cell *)x); */
           *((cell*)x)=(ppop());
           break;
-        case _setbyte:
+        case setbyte:
           x=ppop();
           /* assert_memwrite((cell*)x); */
           *((char*)x)=((ppop()&0xff));
           break;
           /*  (address -- value )) */
-        case _get: {
+        case get: {
           cell *addr=(cell *)ppop();
           /* assert_memread(addr); */
           x = *addr;
           ppush(x);
         } break;
-        case _getbyte: {
+        case getbyte: {
           char *addr=(char *)ppop();
           /* assert_memread((cell *)addr); */
           x = (cell)(*(addr));
