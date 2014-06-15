@@ -11,7 +11,14 @@ IN: bcomp
 ! compile cell
 : -, ( val -- ) cell [ cell 1 - neg + 8 * over swap shift -b, ] each-integer drop ;
 
-: _-q, ( item type -- ) dup 0 = [ drop _inst -b, ] [ dup 1 = [ drop -s, oplit bcall _inst -b, ] [ dup 2 = [ drop -, oplit acall _inst -b, ] [ dup [ 3 = ] [ 5 = ] bi or [ drop -, oplit lit _inst -b, ] [ 6 = [ drop ] [ "compilation for item unknown" print error ] if ] if ] if ] if ] if ;
+! take an item/type pair from the parser accumulator, compile the correct quotation element
+! for type information, see parser vocabulary
+! TODO: user ref instructions!
+: _-q, ( item type -- ) dup 0 = [ drop _inst -b, ]
+    [ dup 1 = [ drop -s, oplit bcall _inst -b, ]
+      [ dup 2 = [ drop -, oplit acall _inst -b, ]
+        [ dup [ 3 = ] [ 5 = ] bi or [ drop -, oplit liti _inst -b, ]
+          [ 6 = [ drop ] [ "compilation for item unknown" print error ] if ] if ] if ] if ] if ;
 
 ! compile parser accumulator to memory
 : _stack2code ( acc -- ) _MP get + [ _MP set ] keep [ [ _-q, ] times ] with-MP ;
