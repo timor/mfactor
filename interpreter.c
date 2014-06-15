@@ -146,14 +146,20 @@ enum nesting_type {
 static inst * skip_to_instruction(inst* pc,inst until, inst nest_on, inst *base){
 	inst *ptr=pc;
     for(inst i= *ptr; (i != until); i=*(++ptr)) {
+      /* ptr still pointing to i here! */
 		  IFTRACE2(printf("skipping over %#x, ",i));
           if (i == nest_on)
             ptr=skip_to_instruction(ptr+1, until, nest_on, base);
             else
               switch (i) {
-              case lit:
+              case ref:
+              case liti:
                 ptr+=sizeof(cell);
                 break;
+              case litc: {
+                seq_header h =(seq_header)*(ptr+1);
+                /* compensate for header byte */
+                ptr+=1+fe_seq_size(h,ptr+2); } break;
               case litb:
               case oplit:
                 ptr+=sizeof(inst);
@@ -161,6 +167,7 @@ static inst * skip_to_instruction(inst* pc,inst until, inst nest_on, inst *base)
               case acall:
                 ptr+=sizeof(jump_target);
                 break;
+              case bref:
               case blitq:
               case bcall:
               case btcall:
@@ -317,20 +324,33 @@ void interpreter(inst * user_program)
           ppush((cell)INSTBASE);
           break;
         case ref:					  /* only gc knows a difference */
-        case lit:
+        case liti:                    /* literal wide integer */
           x=*((cell *)pc);
           ppush(x);
           pc+=sizeof(cell);
           break;
-        case oplit:
+        case litc:              /* complex inline literal */
+        {
+          /* pc is already at the next item -> header byte */
+          seq_header h = (seq_header)(*pc);
+          ppush((cell)pc);    /* push header to stack */
+          pc += 1 + fe_seq_size(h,pc+1);
+        } break;
+        case strstart: {           /* ( -- countedstr ) */
+          unsigned char len = *pc;
+          ppush((cell)pc);
+          pc += len+1;
+        } break;
+        case oplit:             /* literal primitive operation */
           x=(cell)*(pc++);
-          ppush(x<<(8*(sizeof(cell)-sizeof(inst))));         /*  */
+          ppush(x<<(8*(sizeof(cell)-sizeof(inst))));
           break;
-        case litb:
+        case litb:              /* byte literal */
           x=(cell)(*(pc++));
           ppush(x);
           break;
-        case blitq:
+        case bref:              /* reference to short-length in-memory data (type can be seen on-site)*/
+        case blitq:             /* reference to in-memory quotation */
           x=(cell)(*((short_jump_target*) pc));
           ppush((cell) (base + ((short_jump_target) x)));
           pc += sizeof(short_jump_target);
@@ -470,13 +490,6 @@ void interpreter(inst * user_program)
           /* assert_memread((cell *)addr); */
           x = (cell)(*(addr));
           ppush(x);
-        } break;
-	 case bastart:
-          /* ( -- countedstr ) */
-        case strstart: {
-          unsigned char len = *pc;
-          ppush((cell)pc);
-          pc += len+1;
         } break;
 	 case aend:
 		 goto _error ;
