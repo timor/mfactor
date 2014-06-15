@@ -16,11 +16,8 @@ end
 
 # expect to be created with already loaded MFactor instance
 class MF_ByteCode < MFactor
-  SEQ_ELT_CELL=0
-  SEQ_FIXED=1
-  SEQ_QUOT=2
-  SEQ_USER=3
-  SEQ_BYTE_COND=4
+  SEQ_ELT_DATA=0
+  SEQ_ELT_REF=1
   @@cell_width=nil              # used as constant, override in subclass
   attr_accessor :compiled_definitions
   def initialize
@@ -111,20 +108,20 @@ class MF_ByteCode < MFactor
   end
   def inline_seq_header(elt_type, elt_size, count, image)
     raise "inline sequences longer than 255 elements not supported!" if count >= 256
-    image << prim(:litc) << ((SEQ_FIXED << 5) | (elt_type << 2) | elt_size) << count 
+    image << prim(:litc) << (0 | (elt_type << 2) | elt_size) << count
   end
   # generate byte code for one word, append to image
   def word_bytecode(word,image)
     case word
     when String then
-      inline_seq_header(0,1,word.chars.to_a.length,image)
+      inline_seq_header(SEQ_ELT_DATA,1,word.chars.to_a.length,image)
       image.concat word.chars.map{|c| c.ord}
     when Array then
       image << prim(:qstart)
       word.map{|w| word_bytecode(w,image)}
       image << prim(:qend)      # maybe omit, check space savings
     when MFLitSequence then
-      inline_seq_header(0,word.element_size,word.content.length,image)
+      inline_seq_header(SEQ_ELT_DATA,word.element_size,word.content.length,image)
       word.content.map{|w| word_bytecode(w,image)}
     when MFByteLit then image << prim(:litb) << word.value
     when MFIntLit then (image << prim(:liti)).concat int_bytes(value)
