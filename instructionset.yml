@@ -41,8 +41,12 @@ liti: :private
 litb: :private
 # literal instruction
 oplit: :private
-# literal base-relative quotation (short)
+# literal base-relative quotation (short), for use with runtime-generated data
 blitq: :private
+# long reference to other data (same effect as lit)
+ref: :private
+# base-relative reference to other data 
+bref: :private
 # start of inline quotation
 qstart: :private
 # end of inline quotation
@@ -63,8 +67,6 @@ truefalse: "?"
 scall: "call"
 # call absolute address on stack (tail call)
 stcall: :private
-# used to refer to non-quotation data
-ref: :private
 # swap two top elements on stack
 swap:
 # get next token (parsing primitive)
