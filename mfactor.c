@@ -31,9 +31,13 @@ int main(void)
   /* interpreter((inst*)TBEGIN(p4)); */
   /* interpreter(&p1[sizeof(p1)/sizeof(inst)-1]); */
   /* interpreter((inst*)TBEGIN(p5)); */
+#if !STOP_ON_ERROR
   while (1) {
+#endif
     interpreter(NULL);
+#if !STOP_ON_ERROR
   }
+#endif
 }
 
 

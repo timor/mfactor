@@ -64,6 +64,7 @@ directory BUILD
 rule '.o' => '.c' do |t|
   cflags=CFLAGS
   cflags += " -DNOTAILCALL" if notailcall != "0"
+  cflags += " -DSTOP_ON_ERROR" if ENV['STOP_ON_ERROR']
   tname = t.source.pathmap("#{BUILD}/%n.i")
   sh "#{CC} #{cflags} #{t.source} -E -o #{tname}"
   sh "#{CC} #{cflags} #{t.source} -c -o #{t.name}"
