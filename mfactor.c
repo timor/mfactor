@@ -34,7 +34,7 @@ int main(void)
 #if !STOP_ON_ERROR
   while (1) {
 #endif
-    interpreter(NULL);
+    interpreter(START_WORD_OFFSET);
 #if !STOP_ON_ERROR
   }
 #endif

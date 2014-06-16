@@ -352,6 +352,8 @@ def build_stdlib
   mf.load_vocab("_stdlib")
   File.open("generated/stdlib_size.h","w") do |f|
     f.puts "#define STDLIB_SIZE #{mf.bytecode_size}"
+    # define the starting word for use in interpreter() call
+    f.puts "#define START_WORD_OFFSET " + (mf.get_word_address(START_WORD)).to_s
   end
   File.open("generated/stdlib.code.h","w") do |f|
     ff_code(ffyaml || [],f)

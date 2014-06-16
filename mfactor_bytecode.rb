@@ -164,6 +164,12 @@ class MF_ByteCode < MFactor
       io << ",\n"
     end
   end
+  # find a word in the compiled dictionary
+  def get_word_address(wordname)
+    d=@compiled_definitions.find{|cdef| cdef.definition.name == wordname } ||
+      raise("word '#{wordname}' not found in compiled definitions")
+    d.location
+  end
 end
 
 class MF_Cortex < MF_ByteCode

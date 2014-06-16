@@ -16,6 +16,7 @@ LDSCRIPT="gcc.ld"
 CODEOFFSET=0
 trace_level=ENV['TRACE_LEVEL'] || 0
 CFLAGS << " -DTRACE_INTERPRETER=#{trace_level}"
+START_WORD="top"
 if hostp
   INSTBASE=0x80
   CC="gcc"

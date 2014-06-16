@@ -58,6 +58,6 @@ inst stdlib[STDLIB_SIZE];
 
 #include "generated/inst_enum.h"
 
-void interpreter(inst *);
+void interpreter(unsigned int);
 
 #endif

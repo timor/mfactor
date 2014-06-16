@@ -240,9 +240,8 @@ extern cell DATA_END;
 #define assert_memread(x) if ((x < &DATA_START)||(x >= &DATA_END)) {printf("prevented memory read at %#lx\n",x); BACKTRACE(); return;}
 
 
-void interpreter(inst * user_program)
-{
-	static bool tailcall = true;
+void interpreter(unsigned int start_base_address) {
+  	static bool tailcall = true;
 	/* parameter stack */
 	static cell pstack[VM_PSTACK]={0};
 	cell* psp = &pstack[0];
@@ -258,7 +257,7 @@ void interpreter(inst * user_program)
 	/* TODO: name stack */
 	cell x;								/* temporary value for operations */
     static inst *base=stdlib;  /* base address for base-relative short calls */
-	inst *pc = user_program ? : &stdlib[0];
+    inst *pc = &stdlib[(start_base_address ? : 0)];
 	return_entry start_entry = {.return_address=NULL,.current_call = pc};
 	returnpush(start_entry);
     while(1) {
