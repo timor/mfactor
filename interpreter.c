@@ -610,7 +610,8 @@ void interpreter(unsigned int start_base_address) {
 			  } break;
 		  default:
           printf("unimplemented instruction %#x\n",i);
-          BACKTRACE();
+          /* BACKTRACE(); */
+          goto _error;
           return;
         }
         goto end_inst;
