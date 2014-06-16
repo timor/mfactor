@@ -366,6 +366,11 @@ def build_stdlib
     mf.write_dictionary_entries f
     f.write "};\n"
   end
+  mf
+end
+
+task :see_dict => "generated" do
+  puts build_stdlib.see
 end
 
 STDLIB_FILES=["generated/stdlib.code.h","generated/stdlib.dict.h","generated/stdlib_size.h"]

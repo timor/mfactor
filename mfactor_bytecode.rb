@@ -160,7 +160,7 @@ class MF_ByteCode < MFactor
     @compiled_definitions.each do |cdef|
       next if cdef.definition.primitive?
       io << "/* #{cdef.definition.name} */ "
-      io << cdef.code.join(", ")
+      io << cdef.code.map{|w|w.to_s(16).prepend("0x")}.join(", ")
       io << ",\n"
     end
   end
