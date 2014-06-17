@@ -203,7 +203,7 @@ class MF_Linux64 < MF_ByteCode
     raise "unknown element size: #{elt} of #{elt.class}" unless s
     s
   end
-  def inst_base() 0x70 end
+  def inst_base() 0x80 end
   def header_length() 3 end
   def int_bytes(val)
     [val].pack("I").unpack("CCCCCCCC")
