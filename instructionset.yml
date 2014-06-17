@@ -130,6 +130,8 @@ notail:
 tail:
 # system reset (maybe nop or quit on hosts)
 reset:
+# enter debug mode (single step until exit depth reached)
+debug:
 # getting an address from the foreign-function lut ( i -- addr )
 ff: :private
 # c function calling primitives

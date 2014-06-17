@@ -259,6 +259,13 @@ void interpreter(unsigned int start_base_address) {
     static inst *base=stdlib;  /* base address for base-relative short calls */
     inst *pc = &stdlib[(start_base_address ? : 0)];
 	return_entry start_entry = {.return_address=NULL,.current_call = pc};
+    /* single step debugging*/
+    unsigned int debug_nest = 0; /* used in debug mode to track when
+                                  * to stop single stepping*/
+    bool debug_mode = false;
+    #if DEBUG
+    debug_mode=true;
+    #endif
 	returnpush(start_entry);
     while(1) {
 		inst i;
@@ -271,16 +278,15 @@ void interpreter(unsigned int start_base_address) {
 		i= (*pc++);
 
     dispatch:
-	#if (TRACE_INTERPRETER >= 1)
-        IFTRACE2(printf("i:%#x\n",i));
-        {
+        if (debug_mode) {
+          (printf("i:%#x\n",i));
           char * name = find_by_address((inst*)((cell)i<<(8*(sizeof(inst *)-sizeof(inst)))));
           if (name) {
-            IFTRACE2(printf("%s\n",name));
+            printf("%s\n",name);
             fflush(stdout);
           }
+          (void)getc(stdin);
         }
-	#endif
         switch (i) {
 #define UNOP(op) { x=(op ((intptr_t) ppop())); ppush(x);} break
 #define BINOP(op) { x = ppop(); cell y = ppop(); ppush(((intptr_t)y) op ((intptr_t)x));} break
@@ -376,6 +382,11 @@ void interpreter(unsigned int start_base_address) {
             IFTRACE2(printf("<- %s\n",name));
             fflush(stdout);
           }
+          if (debug_mode)
+            if (debug_nest > 0)
+              debug_nest--;
+            else
+              debug_mode=false;
           pc=e.return_address;
         } break;
         case eql: BINOP(==);
@@ -554,6 +565,12 @@ void interpreter(unsigned int start_base_address) {
 		  case reset:
 			  reset_system();
 			  break;
+          case debug:
+            if (!debug_mode) {
+              debug_mode=true;
+              tailcall = false;
+            }
+            break;
 			  /* getting an address from the foreign-function lut ( i -- addr ) */
 		  case ff:
 			  {
@@ -628,6 +645,11 @@ void interpreter(unsigned int start_base_address) {
 	#endif
           return_entry e = {.return_address = pc, .current_call=next_word};
           returnpush(e);
+          if (debug_mode) {
+            char * name = find_by_address(next_word);
+            debug_nest++;
+            printf("calling: %s\n",name); 
+          }
           pc=next_word;
         }
         goto end_inst;
