@@ -383,8 +383,9 @@ void interpreter(unsigned int start_base_address) {
             fflush(stdout);
           }
           if (debug_mode)
-            if (debug_nest > 0)
-              debug_nest--;
+            if (debug_nest > 0) {
+              printf("<- %d\n",debug_nest);
+              debug_nest--; }
             else
               debug_mode=false;
           pc=e.return_address;
@@ -648,7 +649,7 @@ void interpreter(unsigned int start_base_address) {
           if (debug_mode) {
             char * name = find_by_address(next_word);
             debug_nest++;
-            printf("calling: %s\n",name); 
+            printf("calling: %s -> %d\n",name,debug_nest); 
           }
           pc=next_word;
         }
