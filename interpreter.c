@@ -257,7 +257,7 @@ void interpreter(unsigned int start_base_address) {
 	/* TODO: name stack */
 	cell x;								/* temporary value for operations */
     static inst *base=stdlib;  /* base address for base-relative short calls */
-    inst *pc = &stdlib[(start_base_address ? : 0)];
+    inst *pc = &stdlib[(start_base_address ? : START_WORD_OFFSET)];
 	return_entry start_entry = {.return_address=NULL,.current_call = pc};
     /* single step debugging*/
     unsigned int debug_nest = 0; /* used in debug mode to track when
