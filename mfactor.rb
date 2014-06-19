@@ -1,6 +1,9 @@
 # ruby version of the mfactor interpreter, which can be used to
 # cross-compile an image to c, amongst other things
 
+require 'rubygems'
+require 'bundler/setup'
+
 require 'parslet'
 require 'yaml'
 
