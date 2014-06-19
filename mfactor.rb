@@ -7,7 +7,7 @@ require 'bundler/setup'
 require 'parslet'
 require 'yaml'
 
-ISET=Hash[YAML.load_file("instructionset.yml").map{ |cname,name|
+ISET=Hash[YAML.load_file(File.dirname(__FILE__)+"/instructionset.yml").map{ |cname,name|
             [name==:private ? cname : (name || cname) , cname ] }]
 puts "Instruction Set: #{ISET}" if Rake.verbose==true
 
