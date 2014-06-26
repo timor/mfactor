@@ -6,8 +6,8 @@ require_relative 'mfactor'
 
 # holds specialized compiled information
 class MFCompiledDefinition < Struct.new(:definition,:location,:code,:flags)
-  def write_dict_entry(io="")
-    loc = definition.primitive? ? "0x#{(location << (8*(MF_ByteCode.cell_width-1))).to_s(16)}" : "&stdlib+#{location.to_s}"
+  def write_dict_entry(bytecode,io="")
+    loc = definition.primitive? ? "0x#{(location << (8*(bytecode.cell_width-1))).to_s(16)}" : "&stdlib+#{location.to_s}"
     io <<
       "{ .address = (inst *)#{loc}, .flags = #{flags}, .name = #{definition.name.to_s.inspect}, .name_length=#{definition.name.to_s.length + 1}}"
   end
@@ -18,7 +18,6 @@ end
 class MF_ByteCode < MFactor
   SEQ_ELT_DATA=0
   SEQ_ELT_REF=1
-  @@cell_width=nil              # used as constant, override in subclass
   attr_accessor :compiled_definitions
   def initialize
     super
@@ -32,14 +31,14 @@ class MF_ByteCode < MFactor
     @size                         # store bytecode size here after generation
   end
   # some architecture-specific definitions
+  def cell_width(elt)
+    raise "overwrite cell_width in sub-class"
+  end
   def atom_size(elt)
     raise "overwrite atom_size in sub-class"
   end
   def inst_base()
     raise "overwrite inst_base in subclass"
-  end
-  def self.cell_width()
-    @@cell_width || raise("set @@cell_width in subclass")
   end
   def bcall_bytes(val)
     [val].pack("I").unpack("CC")
@@ -141,7 +140,7 @@ class MF_ByteCode < MFactor
   def write_dictionary_entries(io="")
     maybe_generate
     @compiled_definitions.each do |cdef|
-      io << cdef.write_dict_entry << ",\n"
+      io << cdef.write_dict_entry(self) << ",\n"
     end
   end
   # enum definitions for the instruction set
@@ -173,7 +172,7 @@ class MF_ByteCode < MFactor
 end
 
 class MF_Linux64 < MF_ByteCode
-  @@cell_width=8
+  def cell_width() 8 end
   def atom_size(elt)
     @sizes={
       MFPrim => 1,
@@ -192,7 +191,7 @@ class MF_Linux64 < MF_ByteCode
 end
 
 class MF_Cortex < MF_ByteCode
-  @@cell_width=4
+  def cell_width() 4 end
   def atom_size(elt)
     @sizes={
       MFPrim => 1,
