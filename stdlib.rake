@@ -379,7 +379,7 @@ file "generated/_generated_" => STDLIB_FILES+["generated/inst_enum.h"] do
 end
 
 STDLIB_FILES.each do |f|
-  file f => ["generated","#{THISDIR}/instructionset.yml"]+FileList["lib/*.mfactor"] do
+  file f => ["generated","#{THISDIR}/instructionset.yml"]+FileList["lib/*.mfactor"]+FileList["#{MFACTOR_SRC_DIR}/*.mfactor"] do
     build_stdlib
   end
   if defined? $mfactor_ff
