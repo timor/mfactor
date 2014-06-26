@@ -172,6 +172,25 @@ class MF_ByteCode < MFactor
   end
 end
 
+class MF_Linux64 < MF_ByteCode
+  @@cell_width=8
+  def atom_size(elt)
+    @sizes={
+      MFPrim => 1,
+      MFWord => 3,
+      MFByteLit => 2,
+      MFIntLit => 9 }
+    s=@sizes[elt.class]
+    raise "unknown element size: #{elt} of #{elt.class}" unless s
+    s
+  end
+  def inst_base() 0x80 end
+  def header_length() 3 end
+  def int_bytes(val)
+    [val].pack("I").unpack("CCCCCCCC")
+  end
+end
+
 class MF_Cortex < MF_ByteCode
   @@cell_width=4
   def atom_size(elt)
@@ -191,21 +210,3 @@ class MF_Cortex < MF_ByteCode
   end
 end
 
-class MF_Linux64 < MF_ByteCode
-  @@cell_width=8
-  def atom_size(elt)
-    @sizes={
-      MFPrim => 1,
-      MFWord => 3,
-      MFByteLit => 2,
-      MFIntLit => 9 }
-    s=@sizes[elt.class]
-    raise "unknown element size: #{elt} of #{elt.class}" unless s
-    s
-  end
-  def inst_base() 0x80 end
-  def header_length() 3 end
-  def int_bytes(val)
-    [val].pack("I").unpack("CCCCCCCC")
-  end
-end
