@@ -112,11 +112,11 @@ class MFLitSequence
     @content=content
     case type
     when "B{" then
-      content.all? {|e| e.is_a?(MFByteLit) || raise( "not a byte literal: #{e}") } 
+      content.all? {|e| e.is_a?(MFByteLit) || raise( "#{e.err_loc}: not a byte literal: #{e}") } 
       @element_type=MFByteLit
       @element_size=1
     when "I{" then
-      content.all? {|e| e.is_a?(MFIntLit) || raise("not an int literal: #{e}") }
+      content.all? {|e| e.is_a?(MFIntLit) || raise("#{e.err_loc}: not an int literal: #{e}") }
       content.map{|e| MFIntLit.new(e.value)} # ensure int lit element class
       @element_size=4
       @element_type=MFIntLit
