@@ -7,9 +7,11 @@ require 'bundler/setup'
 require 'parslet'
 require 'yaml'
 
+$mf_verbose= defined?(Rake) ? Rake.verbose : nil
+
 ISET=Hash[YAML.load_file(File.dirname(__FILE__)+"/instructionset.yml").map{ |cname,name|
             [name==:private ? cname : (name || cname) , cname ] }]
-puts "Instruction Set: #{ISET}" if Rake.verbose==true
+puts "Instruction Set: #{ISET}" if $mf_verbose==true
 
 # parser class, will parse one source file when parse() method is
 # called
@@ -280,7 +282,7 @@ class MFactor
   end
   def parse_file(file)
     $current_mfactor_file=file
-    puts "parsing #{file}" if Rake.verbose
+    puts "parsing #{file}" if $mf_verbose
     STDOUT.flush
     result=@@transform.apply(parse(File.read(file)))
     # pp result
@@ -315,27 +317,27 @@ class MFactor
     if @files.member?(file)
       return @dictionary[vocab_name]||raise("file '#{file}' loaded, but no vocabulary '#{vocab_name} found!")
     end
-    puts "trying to load '#{vocab_name}.mfactor'" if Rake.verbose == true
+    puts "trying to load '#{vocab_name}.mfactor'" if $mf_verbose == true
     program=parse_file(file)
     # step through every definition
     program.each do |d|
       case d
         # IN: directive
       when MFCurrentVocab then
-        puts "define vocab: #{d.vocab}" if Rake.verbose == true
+        puts "define vocab: #{d.vocab}" if $mf_verbose == true
         @current_vocab=get_vocabulary_create(d.vocab)
         @dictionary[d.vocab]=@current_vocab
         # USING: directive
       when MFSearchPath then
         # TODO: save search path when diving into different file
         d.vocabs.each do |v|
-          puts "maybe load #{v}" if Rake.verbose == true
+          puts "maybe load #{v}" if $mf_verbose == true
           load_vocab(v) unless @dictionary[v]
-          puts "done loading #{v}" if Rake.verbose == true
+          puts "done loading #{v}" if $mf_verbose == true
           @search_vocabs.unshift(@dictionary[v]) unless @search_vocabs.member?(@dictionary[v])
         end
-        puts "file:#{file}\n searchpath:" if Rake.verbose == true
-        pp @search_vocabs.map{|v| v.name} if Rake.verbose == true
+        puts "file:#{file}\n searchpath:" if $mf_verbose == true
+        pp @search_vocabs.map{|v| v.name} if $mf_verbose == true
       when MFDefinition then
         d.file=file
         name = d.name.to_s
