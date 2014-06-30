@@ -20,9 +20,9 @@ class MFP < Parslet::Parser
   rule(:line_comment) { str('!') >> (newline.absent? >> any).repeat }
   rule(:space) { (line_comment | match('\s').repeat(1)).repeat }
   rule(:space?) { space.maybe }
-  rule(:unsigned_dec) { match('[0-9]').repeat(1) }
-  rule(:unsigned_hex) { str('0') >> match['xX'] >> match['0-9a-f'].repeat(1) }
-  rule(:unsigned) { unsigned_hex | unsigned_dec }
+  # rule(:unsigned_dec) { match('[0-9]').repeat(1) }
+  # rule(:unsigned_hex) { str('0') >> match['xX'] >> match['0-9a-f'].repeat(1) }
+  # rule(:unsigned) { unsigned_hex | unsigned_dec }
   rule(:normal_word_char) { match['^\s:{\[\]};'] }
   rule(:normal_word) { str(')').absent? >> normal_word_char.repeat(1) }
   rule(:sequence_opener_word) { normal_word_char.repeat(1) >> str('{') }
@@ -30,7 +30,7 @@ class MFP < Parslet::Parser
   rule(:def_end) { str(';') }
   rule(:word) { sequence_opener_word | definer_word | normal_word }
   rule(:char) { str("'") >> match["^'"].as(:char) >> str("'") }
-  rule(:atom) { char | unsigned.as(:unsigned) | str("'").absent? >> normal_word.as(:word) }
+  rule(:atom) { char | str("'").absent? >> normal_word.as(:word_or_number) }
   rule(:string) { str('"') >>
     ((str('\\')>>any)|(str('"').absent? >> any)).repeat(0).as(:string) >>
     str('"') }
@@ -217,13 +217,24 @@ end
 
 # tree transformation to output a structure that represents one file
 class MFTransform < Parslet::Transform
-  rule(:unsigned => simple(:lit)) {
-    num=(Integer(lit))
-    (num > 255 ? MFIntLit : MFByteLit).new(num)
-  }
+  # rule(:unsigned => simple(:lit)) {
+  #   num=(Integer(lit))
+  #   (num > 255 ? MFIntLit : MFByteLit).new(num)
+  # }
   rule(:char => simple(:c)) { MFByteLit.new(c.to_s.ord) }
   rule(:string => simple(:s)) { s.to_s }
-  rule(:word => simple(:name)) { (ISET[name.to_s] ? MFPrim : MFWord).new(name) }
+  rule(:word_or_number => simple(:name)) { if name.to_s =~ /^(0[xX][0-9a-fA-F]+|[0-9]+)$/
+                                             num=Integer(name)
+                                             (num > 255 ? MFIntLit : MFByteLit.new(num))
+                                           elsif ISET[name.to_s] # TODO: that distinction
+                                                                 # should probably made in
+                                                                 # the code generator, not
+                                                                 # here
+                                             MFPrim.new(name)
+                                           else
+                                             MFWord.new(name)
+                                           end
+  }
   rule(:quotation_body => subtree(:b)) { b }
   rule(:seq_start=>simple(:opener), :content => subtree(:content)) {
     MFLitSequence.new(opener,content) }
