@@ -91,7 +91,7 @@ class MF_ByteCode < MFactor
         next
       end
       if loc != d.location
-        raise "unmatched location for #{d.definition.name}: counted #{loc}, expected #{d.location}!"
+        raise "unmatched location for '#{d.definition.name}': counted #{loc}, expected #{d.location}!"
       end
       loc += d.code.length
     end
