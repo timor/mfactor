@@ -8,7 +8,7 @@ IN: headers
 ! put a sequence header into memory
 ! sequence header layout: |type(1)|number-of-elements(1)|
 ! type byte layout: |elt-type(5)|elt-size(3)|
-! elt-size is 2^(x+1)
+! actual element size is 2^(elt-size)
 ! element types: 0: data, 2: references
 : _seqhead, ( elt-size elt-type -- ) s, 0 b, b, ;
 
