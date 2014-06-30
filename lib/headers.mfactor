@@ -10,6 +10,8 @@ IN: headers
 ! type byte layout: |elt-type(5)|elt-size(3)|
 ! actual element size is 2^(elt-size)
 ! element types: 0: data, 2: references
+
+! NOTE: below is still old header layout, expect any new operations to fail
 : _seqhead, ( elt-size elt-type -- ) s, 0 b, b, ;
 
 ! put quotation head to memory

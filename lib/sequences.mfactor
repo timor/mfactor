@@ -24,5 +24,8 @@ IN: sequences
 : _ia-each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+4 quot ) 2dup [ [ get ] dip call ] 2dip [ 4 + ] dip ;
 : ia-each ( ... seq quot: ( ... x -- ... ) -- ... ) [ uncount 2 asr ] dip swap [ _ia-each-step ] times 2drop ;
 
-! case table:
-! big list composed of entries in the form 
+: each ( ... seq quot: ( ... x -- ... ) -- ... )
+    over [ 1 + ] 2dip
+    getbyte [ dup 0 = [ ba-each ]
+              [ 2 = [ ia-each ]
+                [ "each: unknown sequence type: " print '0' + emit error ] if ] if ] if ;
