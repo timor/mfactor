@@ -44,6 +44,7 @@ typedef struct dict_entry
 {
 	void * address;					/* pointer into memory */
 	unsigned char flags;		/* may include other flags later (inline, recursive, etc) */
+	unsigned char name_header; /* should always be zero */
 	unsigned char name_length;
 	char name[];
 }	__attribute__((packed)) dict_entry;
@@ -73,7 +74,7 @@ static dict_entry * find_by_name(char *fname, unsigned char length)
   IFTRACE1(printf("looking for '%s'(%d) ", fname,length));
   for(char * ptr=(char*)dict;
 		(ptr < ((char*)dict+sizeof(dict)))&&(((dict_entry*)ptr)->name_length > 0);
-		ptr += (((dict_entry*)ptr)->name_length + 2*sizeof(unsigned char) + sizeof(void*))) {
+		ptr += (((dict_entry*)ptr)->name_length + 3*sizeof(unsigned char) + sizeof(void*))) {
 	 dict_entry *dptr = (dict_entry*)ptr;
      unsigned char rl = dict_entry_real_length(dptr);
 	 IFTRACE1(printf("comparing to (%#lx): %s(%d); ",(uintptr_t)dptr->name,dptr->name,rl));
@@ -94,7 +95,7 @@ static char* find_by_address( inst * word)
   static char notfound[] = "(internal or private)";
   for (char * ptr=(char*)dict;
        (ptr < ((char*)dict+sizeof(dict)))&&(((dict_entry*)ptr)->name_length > 0);
-       ptr += (((dict_entry*)ptr)->name_length + 2*sizeof(unsigned char) + sizeof(void*))) {
+       ptr += (((dict_entry*)ptr)->name_length + 3*sizeof(unsigned char) + sizeof(void*))) {
     dict_entry *dptr = (dict_entry*)ptr;
     if (dptr->address == word)
       return dptr->name;
@@ -159,7 +160,7 @@ static inst * skip_to_instruction(inst* pc,inst until, inst nest_on, inst *base)
               case litc: {
                 seq_header h =(seq_header)*(ptr+1);
                 /* compensate for header byte */
-                ptr+=1+fe_seq_size(h,ptr+2); } break;
+                ptr+=2+fe_seq_size(h,ptr+2); } break;
               case litb:
               case oplit:
                 ptr+=sizeof(inst);
@@ -339,7 +340,7 @@ void interpreter(unsigned int start_base_address) {
           /* pc is already at the next item -> header byte */
           seq_header h = (seq_header)(*pc);
           ppush((cell)pc);    /* push header to stack */
-          pc += 1 + fe_seq_size(h,pc+1);
+          pc += 2 + fe_seq_size(h,pc+1);
         } break;
         case strstart: {           /* ( -- countedstr ) */
           unsigned char len = *pc;
