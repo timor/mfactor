@@ -101,13 +101,15 @@ class MF_ByteCode < MFactor
     case elt
     when String then header_length + elt.chars.to_a.length
     when Array then 2 + elt.map{|e| element_size(e)}.reduce(:+)
-    when MFLitSequence then header_length + elt.content.map{|e| element_size(e)}.reduce(:+)
+    when MFLitSequence then header_length + elt.element_size * elt.content.length
     else atom_size(elt)
     end
   end
   def inline_seq_header(elt_type, elt_size, count, image)
     raise "inline sequences longer than 255 elements not supported!" if count >= 256
-    image << prim(:litc) << (0 | (elt_type << 2) | elt_size) << count
+    size_indicator=Rational(Math::log2(elt_size))
+    raise "element size not a power of 2: #{elt_size}" if size_indicator.denominator != 1
+    image << prim(:litc) << (0 | (elt_type << 3) | size_indicator.numerator) << count
   end
   # generate byte code for one word, append to image
   def word_bytecode(word,image)
@@ -121,9 +123,9 @@ class MF_ByteCode < MFactor
       image << prim(:qend)      # maybe omit, check space savings
     when MFLitSequence then
       inline_seq_header(SEQ_ELT_DATA,word.element_size,word.content.length,image)
-      word.content.map{|w| word_bytecode(w,image)}
+      word.content.map{|w| image.concat int_bytes(w.value,word.element_size)}
     when MFByteLit then image << prim(:litb) << word.value
-    when MFIntLit then (image << prim(:liti)).concat int_bytes(value)
+    when MFIntLit then (image << prim(:liti)).concat int_bytes(value,cell_width)
     when MFPrim then image << prim(word.name)
     when MFWord then
       # puts "referring to #{word.name}"
@@ -131,6 +133,9 @@ class MF_ByteCode < MFactor
       image.concat bcall_bytes(@compiled_definitions.find{|cdef| cdef.definition==word.definition}.location)
     else raise "don't know how to compile #{word}"
     end
+  end
+  def prim?(name)
+    @prims[name.to_s]
   end
   def prim(name)
     @prims[name.to_s] || raise( "unknown primitive: #{name}")
@@ -169,6 +174,9 @@ class MF_ByteCode < MFactor
       raise("word '#{wordname}' not found in compiled definitions")
     d.location
   end
+  def int_bytes(val,width)
+    [val].pack("I").unpack("C"*width)
+  end
 end
 
 class MF_Linux64 < MF_ByteCode
@@ -185,9 +193,6 @@ class MF_Linux64 < MF_ByteCode
   end
   def inst_base() 0x80 end
   def header_length() 3 end
-  def int_bytes(val)
-    [val].pack("I").unpack("CCCCCCCC")
-  end
 end
 
 class MF_Cortex < MF_ByteCode
@@ -204,8 +209,5 @@ class MF_Cortex < MF_ByteCode
   end
   def inst_base() 0xa0 end
   def header_length() 3 end
-  def int_bytes(val)
-    [val].pack("I").unpack("CCCC")
-  end
 end
 
