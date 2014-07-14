@@ -17,8 +17,8 @@
 : set ( val addr -- ) [ _set ] _safeset ;
 
 ! check if in range before getting
-: _safeget ( address getter: (addr -- val ) -- val ) 
-    [ dup memrange 2drop in-range ] dip swap 
+: _safeget ( address getter: (addr -- val ) -- val )
+    [ dup memrange 2drop in-range ] dip swap
     [ call ] [ drop "safe get failed at " print .x error ] if ;
 : getbyte ( addr -- byteval ) [ _getbyte ] _safeget ;
 : get ( addr -- val ) [ _get ] _safeget ;
