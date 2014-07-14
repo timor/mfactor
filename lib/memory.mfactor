@@ -44,3 +44,10 @@
 
 ! count reaching 0 means all matched
 : mem= ( a1 a2 n -- ? ) dup 0 = [ 3drop t ] [ -rot 2dup [ getbyte ] bi@ = [ [ 1 + ] bi@ rot 1 - mem= ] [ 3drop f ] if ] if ;
+
+! copy bytes
+: memcpy8 ( dest src n -- )
+    [ [ getmem8 swap setmem8 ] 2keep [ 1 + ] bi@ ] times 2drop ;
+! copy words
+: memcpy ( dest src n -- )
+    [ [ getmem swap setmem ] 2keep [ 1 + ] bi@ ] times 2drop ;
