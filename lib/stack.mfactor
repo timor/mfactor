@@ -22,6 +22,7 @@
 : pick ( x y z -- x y z x ) >r over r> swap ;
 : bi* ( x y p q -- ) [ dip ] dip call ;
 : bi@ ( x y quot -- ) dup bi* ;
+: 2bi ( x y  p q -- ) [ 2keep ] dip call ;
 ! deprecated ones
 : rot ( x y z -- y z x ) >r swap r> swap ;
 : -rot ( x y z -- z x y ) swap >r swap r> ;
