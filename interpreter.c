@@ -594,6 +594,7 @@ void interpreter(inst * user_program)
 			  int res = fun();
 				  ppush((cell)res);
 			  } break;
+		  case ccall_lit: break;
 		  default:
           printf("unimplemented instruction %#x\n",i);
           BACKTRACE();
