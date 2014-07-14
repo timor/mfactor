@@ -633,6 +633,7 @@ void interpreter(unsigned int start_base_address) {
 			  int res = fun();
 				  ppush((cell)res);
 			  } break;
+		  case ccall_lit: break;
 		  default:
           printf("unimplemented instruction %#x\n",i);
           /* BACKTRACE(); */

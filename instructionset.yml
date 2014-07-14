@@ -147,3 +147,5 @@ ccall_iis:
 ccall_iii:
 # call with nothing
 ccall_v:
+# don't call, only leave symbol address
+ccall_lit:
