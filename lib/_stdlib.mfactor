@@ -11,7 +11,7 @@ IN: toplevel
 : _test-do-until ( -- ) 5 [ dup 0 = ] [ [ '0' + emit ] [ 1 - ] bi ] do until . ;
 : _test-ia-each ( -- ) I{ 5 4 3 2 1 } [ '0' + emit ] ia-each 0 . ;
 : _testend ( -- ) [ "tests done." print ] call nl ;
-: _test-times ( -- ) '!' 3 [ dup emit ] times nl ;
+: _test-times ( -- ) '!' 3 [ dup emit ] times drop nl ;
 : _run-tests ( -- ) nl [ [ 'b' emit ] 'a' emit call ] call
     _test-emit
     _test-loop
