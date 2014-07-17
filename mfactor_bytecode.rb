@@ -192,6 +192,7 @@ class MF_Linux64 < MF_ByteCode
     s
   end
   def inst_base() 0x80 end
+  # header includes lit instruction ( litc type count )
   def header_length() 3 end
 end
 
