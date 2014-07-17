@@ -11,11 +11,12 @@ IN: headers
 ! actual element size is 2^(elt-size)
 ! element types: 0: data, 2: references
 
-! NOTE: below is still old header layout, expect any new operations to fail
-: _seqhead, ( elt-size elt-type -- ) s, 0 b, b, ;
+: _seqhead, ( length elt-size elt-type -- ) 3 asl bitand b, b, ;
 
-! put quotation head to memory
-: _qhead, ( length-in-bytes -- ) oplit qstart b, ;
+! put quotation head to memory, note that checking sequence type of quotations is
+! undefined behaviour, since inline quotations in code do not have corresponding header!
+! (would increase code size _substantially_)
+: _qhead, ( length-in-bytes -- ) drop oplit qstart , ;
 
 : _strhead, ( length -- ) 0 0 _seqhead, ;
 
