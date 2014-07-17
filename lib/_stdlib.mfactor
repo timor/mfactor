@@ -3,19 +3,30 @@ USING: kernel sequences listener memory bcomp ;
 IN: toplevel
 
 ! some unit tests
-: _test2 ( -- ) 'c' emit [ f ] loop ;
-: _test3 ( -- ) 5 [ dup '0' + emit 1 - dup ] loop . ;
-: _test4 ( -- ) 254 memstart setbyte 175 memstart 1 + setbyte memstart get .x ;
-: _test5 ( -- ) 5 [ dup 0 = not ] [ [ '0' + emit ] [ 1 - ] bi ] while . ;
-: _test6 ( -- ) B{ 5 4 3 2 1 } [ '0' + emit ] ba-each 0 . ;
-: _test7 ( -- ) 5 [ dup 0 = ] [ [ '0' + emit ] [ 1 - ] bi ] do until . ;
-: _test8 ( -- ) I{ 5 4 3 2 1 } [ '0' + emit ] ia-each 0 . ;
+: _test-emit ( -- ) 'c' emit [ f ] loop nl ;
+: _test-loop ( -- ) 5 [ dup '0' + emit 1 - dup ] loop . ;
+: _test-mem ( -- ) 254 memstart setbyte 175 memstart 1 + setbyte memstart get .x ;
+: _test-while ( -- ) 5 [ dup 0 = not ] [ [ '0' + emit ] [ 1 - ] bi ] while . ;
+: _test-ba-each ( -- ) B{ 5 4 3 2 1 } [ '0' + emit ] ba-each 0 . ;
+: _test-do-until ( -- ) 5 [ dup 0 = ] [ [ '0' + emit ] [ 1 - ] bi ] do until . ;
+: _test-ia-each ( -- ) I{ 5 4 3 2 1 } [ '0' + emit ] ia-each 0 . ;
 : _testend ( -- ) [ "tests done." print ] call nl ;
-: _test1 ( -- ) [ [ 'b' emit ] 'a' emit call ] call _test2 nl _test3 _test4 _test5 _test6 _test7 _test8 _testend ;
+: _test-times ( -- ) '!' 3 [ dup emit ] times nl ;
+: _run-tests ( -- ) nl [ [ 'b' emit ] 'a' emit call ] call
+    _test-emit
+    _test-loop
+    _test-mem
+    _test-times
+    _test-while
+    _test-ba-each
+    _test-do-until
+    _test-ia-each
+    _testend ;
+
 
 ! listener
 ! top level loop
-: top ( -- ) _test1 _init_storage listener ;
+: top ( -- ) _run-tests _init_storage listener ;
 
 
 : testloop ( -- ) [ '!' emit t ] loop ;
