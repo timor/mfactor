@@ -279,15 +279,19 @@ void interpreter(unsigned int start_base_address) {
 		i= (*pc++);
 
     dispatch:
-        if (debug_mode) {
-          (printf("i:%#x\n",i));
-          char * name = find_by_address((inst*)((cell)i<<(8*(sizeof(inst *)-sizeof(inst)))));
-          if (name) {
-            printf("%s\n",name);
-            fflush(stdout);
-          }
-          (void)getc(stdin);
-        }
+		if (debug_mode) {
+			  printf("\n");
+			  printstack(psp,pstack);
+			  printf("retain");
+			  printstack(retainsp,retainstack);
+			  printf("i:%#x\n",i); fflush(stdout);
+			  char * name = find_by_address((inst*)((cell)i<<(8*(sizeof(inst *)-sizeof(inst)))));
+			  if (name) {
+				  printf("%s\n",name);
+				  fflush(stdout);
+			  }
+			  (void)getc(stdin);
+		}
         switch (i) {
 #define UNOP(op) { x=(op ((intptr_t) ppop())); ppush(x);} break
 #define BINOP(op) { x = ppop(); cell y = ppop(); ppush(((intptr_t)y) op ((intptr_t)x));} break
@@ -570,7 +574,7 @@ void interpreter(unsigned int start_base_address) {
           case debug:
             if (!debug_mode) {
               debug_mode=true;
-              tailcall = false;
+              /* tailcall = false; */
             }
             break;
 			  /* getting an address from the foreign-function lut ( i -- addr ) */
@@ -666,6 +670,10 @@ void interpreter(unsigned int start_base_address) {
             fflush(stdout);
           }
 	#endif
+          if (debug_mode) {
+            char * name = find_by_address(next_word);
+            printf("tail calling: %s -> %d\n",name,debug_nest); 
+          }
           /* dont update caller field to ease debugging */
           /* returnsp->current_call = next_word; */
           pc = next_word;
