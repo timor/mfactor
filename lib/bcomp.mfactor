@@ -43,17 +43,22 @@ IN: bcomp
 : read-token ( -- string ) token _token2str ;
 
 ! colon compiler
+! read in name and quotation, compile to memory, create dictionary entry
 SYNTAX: : ( -- ) read-token 0 B{ 59 } parse-until >quotation swap [ dup search nip [ "re" print ] when "defining: " print print nl ] keep name ;
 
 ! accumulate bytes on stack (expensive, but hey)
 : _readstr ( -- ..bytes num ) 0 [ receive dup 34 = [ drop f ] [ swap 1 + t ] if ] loop ;
-! allocate memory and copy bytes
-: _stack2string ( ..bytes num -- ) dup _MP get + [ _MP set ] keep [ [ -b, ] times ] with-MP ;
-SYNTAX: " ( -- countedstring" )  _readstr [ _strhead, ] keep _MP get [ _stack2string ] dip 1 - 5 suffix ;
-SYNTAX: B{ ( -- addr ) 0 "}" [ parsenum [ swap 1 + ] [ "not a byte literal: " print print error ] if ] scan-until-str dup _strhead, _MP get [ _stack2string ] dip 1 - 5 suffix ;
+! allocate memory and copy bytes, return address of count byte in header!
+: _stack2string ( ..bytes num -- address )
+    [ _strhead, ] keep
+    _MP get [ over +
+        [ [ -b, ] times ] with-MP ] keep 1 - ;
+: _read-string-and-compile ( -- string )
+    _readstr _stack2string 5 suffix ;
+SYNTAX: " ( -- countedstring" ) _read-string-and-compile ;
+SYNTAX: B{ ( -- addr ) 0 "}" [ parsenum [ swap 1 + ] [ "not a byte literal: " print print error ] if ] scan-until-str _stack2string 5 suffix ;
 
 : ] ( -- ) "unmatched ] " print error ;
 
 ! read in quotation, return address !
 SYNTAX: [ ( -- ) 0 "]" parse-until >quotation 5 suffix ;
-! read in quotation, compile to memory, create dictionary entry
