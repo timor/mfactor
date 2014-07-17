@@ -12,14 +12,21 @@ IN: toplevel
 : _test-ia-each ( -- ) I{ 5 4 3 2 1 } [ '0' + emit ] ia-each 0 . ;
 : _testend ( -- ) [ "tests done." print ] call nl ;
 : _test-times ( -- ) '!' 3 [ dup emit ] times drop nl ;
-: _test-string ( -- ) "abcde" 7 [ [ getbyte pwritex ' ' emit ] [ 1 + ] bi ] times drop ;
+: _test-string ( -- ) "abcde" 7 [ [ getbyte pwritex ' ' emit ] [ 1 + ] bi ] times drop nl ;
+: _test-stack2string ( -- ) 'h' 'e' 'l' 'l' 'o' 5 _stack2string print nl ;
+! that one is interactive!
+: _test-string-reader ( -- ) "enter some chars, terminate with \"" print
+    0 _read-string-and-compile dup 1 + getbyte [ [ getbyte pwritex ' ' emit ] [ 1 + ] ] times drop ;
 : _run-tests ( -- ) nl [ [ 'b' emit ] 'a' emit call ] call
     _test-emit
     _test-loop
     _test-mem
+    _init_storage               ! need to clean up after _test-mem!
     _test-times
     _test-while
     _test-string
+    _test-stack2string
+    _test-string-reader
     _test-ba-each
     _test-do-until
     _test-ia-each
@@ -28,7 +35,7 @@ IN: toplevel
 
 ! listener
 ! top level loop
-: top ( -- ) _run-tests _init_storage listener ;
+: top ( -- ) _run-tests listener ;
 
 
 : testloop ( -- ) [ '!' emit t ] loop ;
