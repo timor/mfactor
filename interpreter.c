@@ -343,7 +343,7 @@ void interpreter(unsigned int start_base_address) {
         {
           /* pc is already at the next item -> header byte */
           seq_header h = (seq_header)(*pc);
-          ppush((cell)pc);    /* push header to stack */
+          ppush((cell)pc+1);    /* leave address of count byte on stack */
           pc += 2 + fe_seq_size(h,pc+1);
         } break;
         case strstart: {           /* ( -- countedstr ) */
