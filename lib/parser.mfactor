@@ -25,7 +25,12 @@ IN: parser
     [ parsenum [ 3 ] [ "parsing '" print print "' failed\! " print error ] if ] if ;
 : scan-datum ( -- item type ) token parse-datum ;
 
-: parse-until-step ( acc end -- acc ? ) scan-datum dup 2 = [ rot pick _name>> name= [ 2drop f ] [ over parsing-word? [ drop execute t ] [ [ _quot>> ] dip suffix t ] if ] if ] [ [ drop ] 2dip suffix t ] if ;
+: parse-until-step ( acc end -- acc ? ) scan-datum dup 2 =
+    [ rot pick _name>> name=
+      [ 2drop f ]
+      [ over parsing-word?
+        [ drop execute t ] [ [ _quot>> ] dip suffix t ] if ] if ]
+    [ [ drop ] 2dip suffix t ] if ;
 : parse-until ( acc end -- acc ) [ parse-until-step ] keep swap [ parse-until ] [ drop ] if ;
 
 ! loop until token matches str
