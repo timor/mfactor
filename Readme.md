@@ -68,9 +68,13 @@ port Factor <http://factorcode.org> to embedded platforms.
   words, and after a closing bracket the corresponding "load address"
   remains on the stack.
 - sequence access
-  - push pointer to sequence header to stack
+  - push pointer to first element of sequence to stack
+  - either use access function directly (unsafe)
+  - or use type-checking function, which does a look-behind in memory
   - use functions to work on this "header structure", nth can be
     implemented generically that way
+  - if scalar value is on stack, this will still not be caught, since there is no way to
+    distiguish between scalar values and sequences (yet)
 
 ## garbage collection (tbd) ##
 - root set composed of
