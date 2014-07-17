@@ -12,12 +12,14 @@ IN: toplevel
 : _test-ia-each ( -- ) I{ 5 4 3 2 1 } [ '0' + emit ] ia-each 0 . ;
 : _testend ( -- ) [ "tests done." print ] call nl ;
 : _test-times ( -- ) '!' 3 [ dup emit ] times drop nl ;
+: _test-string ( -- ) "abcde" 7 [ [ getbyte pwritex ' ' emit ] [ 1 + ] bi ] times drop ;
 : _run-tests ( -- ) nl [ [ 'b' emit ] 'a' emit call ] call
     _test-emit
     _test-loop
     _test-mem
     _test-times
     _test-while
+    _test-string
     _test-ba-each
     _test-do-until
     _test-ia-each
