@@ -12,14 +12,17 @@ IN: parser
 ! 2: word call: absolute (long jump)
 ! 3: integer literal
 ! 4: byte literal
-! 5: inline quotation
+! 5: inline quotation, or literal sequence
 ! 6: nop (TBR)
 
 ! add element to parsed stuff on stack, name taken from factor, but not completely correct
 : suffix ( ..item/types count item type -- ..item/types item type newcount ) rot 1 + ;
 
 
-! If string is a valid number literal, it is converted to a number, otherwise search for a word named by the string.
+! If string is a valid number literal, it is converted to a number, otherwise search for a
+! word named by the string.
+
+! parsing words have to have ( acc -- acc ) signature.
 : parse-datum ( string  -- word/number type )
     search [ dup _quot>> prim? [ _quot>> 0 ] [ 2 ] if ]
     [ parsenum [ 3 ] [ "parsing '" print print "' failed\! " print error ] if ] if ;
@@ -38,4 +41,5 @@ IN: parser
 
 ! comments
 SYNTAX: \! ( -- ) [ receive 10 = [ f ] [ t ] if ] loop ;
+! stack effects, also comments for now
 SYNTAX: ( ( -- ) [ receive 41 = [ f ] [ t ] if ] loop ;
