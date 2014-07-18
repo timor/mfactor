@@ -369,6 +369,7 @@ def build_stdlib
   mf
 end
 
+desc "show the mfactor dictionary"
 task :see_dict => "generated" do
   puts build_stdlib.see
 end
@@ -406,6 +407,7 @@ END
   end
 end
 
+desc "build the mfactor code"
 task :stdlib => ["generated/stdlib.code.h","generated/stdlib.dict.h","generated/stdlib_size.h",__FILE__]
 
 require 'pp'
