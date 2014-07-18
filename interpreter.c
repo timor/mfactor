@@ -389,10 +389,10 @@ void interpreter(unsigned int start_base_address) {
           }
           if (debug_mode)
             if (debug_nest > 0) {
-              printf("<- %d\n",debug_nest);
-              debug_nest--; }
-            else
-              debug_mode=false;
+					printf("<- %d\n",debug_nest);
+					debug_nest--; }
+            else {
+					debug_mode=false; }
           pc=e.return_address;
         } break;
         case eql: BINOP(==);
