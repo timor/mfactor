@@ -466,6 +466,8 @@ void interpreter(unsigned int start_base_address) {
           printf("return");
           print_return_stack(returnsp,returnstack,base);
           break;
+		  case stack_level: /* ( -- u ) */
+			  ppush(psp-pstack); break;
         case parsenum: {
           char *str = (char *)ppop();
           assert_memread((cell *)str);

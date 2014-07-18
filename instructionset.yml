@@ -90,6 +90,8 @@ instbase:
 quit:
 # show current stack contents
 stack_show: "st"
+# get current stack level
+stack_level: "level"
 # try to parse string on top of stack as number
 # ( str -- num/str success? )
 parsenum:
