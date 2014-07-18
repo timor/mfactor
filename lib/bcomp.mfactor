@@ -53,12 +53,13 @@ SYNTAX: : ( -- ) read-token 0 B{ 59 } parse-until >quotation swap [ dup search n
     [ _strhead, ] keep
     _MP get [ over +
         [ [ -b, ] times ] with-MP ] keep 1 - ;
-: _read-string-and-compile ( -- string )
+: _read-string-and-compile ( acc -- acc )
     _readstr _stack2string 5 suffix ;
-SYNTAX: " ( -- countedstring" ) _read-string-and-compile ;
-SYNTAX: B{ ( -- addr ) 0 "}" [ parsenum [ swap 1 + ] [ "not a byte literal: " print print error ] if ] scan-until-str _stack2string 5 suffix ;
+SYNTAX: " ( acc -- acc" ) _read-string-and-compile ;
+SYNTAX: B{ ( acc -- acc ) 0 "}" [ parsenum [ swap 1 + ] [ "not a byte literal: " print print error ] if ] scan-until-str _stack2string 5 suffix ;
 
 : ] ( -- ) "unmatched ] " print error ;
 
-! read in quotation, return address !
-SYNTAX: [ ( -- ) 0 "]" parse-until >quotation 5 suffix ;
+! Read in quotation, return address and type.  Creates new accumulator, parses until
+! quotation end, saves that accum to memory and adds a reference to that to the old accum
+SYNTAX: [ ( acc -- acc ) 0 "]" parse-until >quotation 5 suffix ;
