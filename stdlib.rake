@@ -7,6 +7,10 @@ THISDIR=File.dirname(__FILE__)
 # generate the mfactor side of the ff code
 def ff_mfactor (yaml,out)
   i=0;
+  out << <<END
+USING: kernel ;
+IN: ff
+END
   yaml.each do |cname,opts|
     mfname= opts["name"]
     call = opts["call"] ? "ccall_"+opts["call"] : "" ; # if no call, then taken as literal (e.g. variable access)
@@ -43,10 +47,13 @@ def build_stdlib
   if defined? $mfactor_ff
     ffyaml=YAML.load_file($mfactor_ff)
   end
+  ff_mfactor(ffyaml,File.open("generated/ff.mfactor","w"))
   # iset=YAML.load_file("#{THISDIR}/instructionset.yml")
   # stdlib=YAML_Mfactor.new("generated/mfactor.yml",iset)
   mf=Object.const_get(GENERATOR).new
-  mf.load_vocab("_stdlib")
+  mf.vocab_roots << MFACTOR_SRC_DIR
+  mf.vocab_roots << "generated" # for ff code
+  mf.load_vocab(MFACTOR_ROOT_VOCAB)
   File.open("generated/stdlib_size.h","w") do |f|
     f.puts "#define STDLIB_SIZE #{mf.bytecode_size}"
     # define the starting word for use in interpreter() call
