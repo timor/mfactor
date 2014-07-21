@@ -254,6 +254,7 @@ $current_mfactor_file=nil
 # used to build up an application image composed of multiple source files
 class MFactor
   attr_accessor :dictionary
+  attr_accessor :vocab_roots
   @@parser = MFP.new
   @@transform = MFTransform.new
   def initialize
