@@ -1,19 +1,19 @@
 ! -*- mode: factor -*-
 USING: kernel sequences listener memory bcomp ;
-IN: toplevel
+IN: tests
 
 ! some unit tests
 : _lcheck ( -- ) level 0 = [ "!stack not empty!" print nl ] unless ;
 : _test-emit ( -- ) 'c' emit [ f ] loop nl ;
 : _test-loop ( -- ) 5 [ dup '0' + emit 1 - dup ] loop . ;
-: _test-mem ( -- ) 254 memstart setbyte 175 memstart 1 + setbyte memstart get .x ;
+: _test-mem ( -- ) 254 memstart setmem8 175 memstart 1 + setmem8 memstart getmem .x ;
 : _test-while ( -- ) 5 [ dup 0 = not ] [ [ '0' + emit ] [ 1 - ] bi ] while . ;
 : _test-ba-each ( -- ) B{ 5 4 3 2 1 } [ '0' + emit ] ba-each 0 . ;
 : _test-do-until ( -- ) 5 [ dup 0 = ] [ [ '0' + emit ] [ 1 - ] bi ] do until . ;
-: _test-ia ( -- ia ) I{ 1 2 } 10 [ dup getbyte pwritex ' ' emit 1 + ] times drop nl ;
+: _test-ia ( -- ia ) I{ 1 2 } 10 [ dup getmem8 pwritex ' ' emit 1 + ] times drop nl ;
 : _test-ia-each ( -- ) I{ 5 4 3 2 1 } [ '0' + emit ] ia-each 0 . ;
 : _test-times ( -- ) '!' 3 [ dup emit ] times drop nl ;
-: _test-string ( -- ) "abcde" 7 [ [ getbyte pwritex ' ' emit ] [ 1 + ] bi ] times drop nl ;
+: _test-string ( -- ) "abcde" 7 [ [ getmem8 pwritex ' ' emit ] [ 1 + ] bi ] times drop nl ;
 : _test-stack2string ( -- ) 'h' 'e' 'l' 'l' 'o' 5 _stack2string print nl ;
 ! that one is interactive!
 : _test-string-reader ( -- ) "enter some chars, terminate with \"" print
