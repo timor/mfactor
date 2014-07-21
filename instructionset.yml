@@ -100,11 +100,11 @@ nop:
 memrange:
 # memory operations
 # (value address -- )
-set:
-setbyte:
+setmem:
+setmem8:
 # (address -- value)
-get:
-getbyte:
+getmem:
+getmem8:
 # prettywrite ( value -- )
 _pwrite: "pwrite"
 pwritex:

@@ -15,9 +15,9 @@ IN: listener
 
 SYNTAX: \ ( -- quot type ) token search [ 3 suffix ] [ _bad-input ] if ;
 
-: showmem ( -- ) memstart _MP get [ 2dup >= [ f ] [ [ dup getbyte .x 1 + ] dip t ] if ] loop 2drop ;
+: showmem ( -- ) memstart _MP getmem [ 2dup >= [ f ] [ [ dup getmem8 .x 1 + ] dip t ] if ] loop 2drop ;
 
 ! memory usage
-: usage ( -- ) memrange _MP get pick - . swap - . 2drop ;
+: usage ( -- ) memrange _MP getmem pick - . swap - . 2drop ;
 
 

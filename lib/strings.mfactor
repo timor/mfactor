@@ -4,9 +4,9 @@ IN: strings
 
 ! string handling, which builds on byte-arrays, but counted
 
-: uncount ( countedstr -- str len ) dup getbyte [ 1 + ] dip ;
+: uncount ( countedstr -- str len ) dup getmem8 [ 1 + ] dip ;
 
-: strlen ( str -- n ) getbyte ;
+: strlen ( str -- n ) getmem8 ;
 
 : str= ( str1 str2 -- ? ) dup strlen 1 + mem= ;
 

@@ -5,7 +5,7 @@ IN: bcomp
 ! byte code compiler functions
 
 ! compilation, reverse
-: -b, ( byteval -- ) _MP [ 1 neg swap +@ ] [ get setbyte ] bi ;
+: -b, ( byteval -- ) _MP [ 1 neg swap +@ ] [ getmem setmem8 ] bi ;
 ! ! compile short to mem, little endian
 : -s, ( short -- ) dup 8 neg shift -b, -b, ;
 ! compile cell
@@ -21,7 +21,7 @@ IN: bcomp
           [ 6 = [ drop ] [ "compilation for item unknown" print error ] if ] if ] if ] if ] if ;
 
 ! compile parser accumulator to memory
-: _stack2code ( acc -- ) _MP get + [ _MP set ] keep [ [ _-q, ] times ] with-MP ;
+: _stack2code ( acc -- ) _MP getmem + [ _MP setmem ] keep [ [ _-q, ] times ] with-MP ;
 
 ! return size of word when stored in quotation
 : _wordsize ( type -- size ) dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup [ 2 = ] [ 5 = ] bi or [ drop cell 1 + ] [ dup 3 = [ drop cell 1 + ] [ dup 4 = [ 2 ] [ 6 = [ 0 ] [ "size for item unknown" print error ] if ] if ] if ] if ] if ] if ;
@@ -32,12 +32,12 @@ IN: bcomp
 : _accum-quotation-size ( acc -- acc x ) 0 _accum-quotation-size-worker ;
 
 ! check if accumulator contains valid quotation, if yes, save to memory and return saved address
-: >quotation ( acc -- addr ) [ oplit qend 0 ] dip 1 + _accum-quotation-size dup 255 > [ error ] [ dup _qhead, ] if _MP get [ _stack2code ] dip ;
+: >quotation ( acc -- addr ) [ oplit qend 0 ] dip 1 + _accum-quotation-size dup 255 > [ error ] [ dup _qhead, ] if _MP getmem [ _stack2code ] dip ;
 
 : ; ( -- ) "unexpected semicolon " print error ;
 
 ! copy token to memory since it will be overridden by following parsing
-: _token2str ( token -- addr ) uncount dup _strhead, _MP get [ [ dup getbyte b, 1 + ] times drop ] dip 1 - ;
+: _token2str ( token -- addr ) uncount dup _strhead, _MP getmem [ [ dup getmem8 b, 1 + ] times drop ] dip 1 - ;
 
 ! helper
 : read-token ( -- string ) token _token2str ;
@@ -51,7 +51,7 @@ SYNTAX: : ( -- ) read-token 0 B{ 59 } parse-until >quotation swap [ dup search n
 ! allocate memory and copy bytes, return address of count byte in header!
 : _stack2string ( ..bytes num -- address )
     [ _strhead, ] keep
-    _MP get [ over +
+    _MP getmem [ over +
         [ [ -b, ] times ] with-MP ] keep 1 - ;
 : _read-string-and-compile ( acc -- acc )
     _readstr _stack2string 5 suffix ;

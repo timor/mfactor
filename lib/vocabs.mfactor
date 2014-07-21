@@ -1,5 +1,5 @@
 !-*- mode: factor -*-
-USING: kernel ;
+USING: kernel strings sequences ;
 IN: vocabs
 
 
@@ -8,8 +8,8 @@ IN: vocabs
 ! dict_entry layout: addr(4)|flag(1)|name-headerinstr(1)|namelength(1)|name(namelength)
 ! name of dict entry
 : _name>> ( dictentry -- str ) cell + 1 + ;
-: parsing-word? ( dictentry -- ? ) cell + get 0x01 bitand ;
-: _quot>> ( dictentry -- quot ) get ;
+: parsing-word? ( dictentry -- ? ) cell + getmem 0x01 bitand ;
+: _quot>> ( dictentry -- quot ) getmem ;
 ! find next free dictionary entry (check for first name byte = 0)
 : dict-next ( dict-entry -- dict-entry ) _name>> dup strlen + 1 + ;
 
@@ -26,7 +26,7 @@ IN: vocabs
 ! : dict-enum ( -- ) [ [ _name>> print ": " print ] [ .x ] bi ] dict-map ;
 
 ! save quotation in dictionary, non-immediate, name is counted string, add terminating 0 for compatibility
-: rename ( quot dictentry -- ) set ;
+: rename ( quot dictentry -- ) setmem ;
 : name ( quot name -- ) search [ rename ] [ _free-name [ swap , 0 b, dup strlen 1 + b, [ b, ] ba-each 0 b, ] with-MP ] if ;
 ! compare read token to header name, problem: name has terminal 0 byte which must not be checked
 : name= ( str name -- ? ) [ uncount ] bi@ [ swap ] dip 1 - over = [ mem= ] [ 3drop f ] if ;

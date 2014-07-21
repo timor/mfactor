@@ -4,26 +4,26 @@ IN: sequences
 
 
 ! WARNING: <byte-array> has runtime allocation!
-: <byte-array> ( n -- byte array ) [ _strhead, ] keep _MP get [ [ 0xa5 b, ] times ] dip 1 - ;
+: <byte-array> ( n -- byte array ) [ _strhead, ] keep _MP getmem [ [ 0xa5 b, ] times ] dip 1 - ;
 ! random access into byte-array or string, seq is assumed to point to the count byte of the sequence, and one byte before that the element size
 : _ba-assert-index ( n seq -- n seq ) [ strlen 0 swap in-range not [ "byte-array index out of bound" print error ] when ] 2keep ;
-: ba-nth ( n seq -- elt ) _ba-assert-index + 1 + getbyte ;
-: ba-set-nth ( elt n seq -- ) _ba-assert-index + 1 + setbyte ;
+: ba-nth ( n seq -- elt ) _ba-assert-index + 1 + getmem8 ;
+: ba-set-nth ( elt n seq -- ) _ba-assert-index + 1 + setmem8 ;
 ! specialized version of each for byte arrays and strings
-: _ba-each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+1 quot ) 2dup [ [ getbyte ] dip call ] 2dip [ 1 + ] dip ;
+: _ba-each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+1 quot ) 2dup [ [ getmem8 ] dip call ] 2dip [ 1 + ] dip ;
 : ba-each ( ... seq quot: ( ... x -- ... ) -- ... ) [ uncount ] dip swap [ _ba-each-step ] times 2drop ;
 : ba-reduce ( ... seq identity quot: ( ... prev elt -- ... next ) -- ... result ) [ swap ] dip ba-each ;
 : ba-find ( ... seq quot: ( ... elt -- ... ? ) -- ... i elt ? ) over strlen [ pick pick [ swap [ swap ba-nth ] dip call ] 2dip rot ] find-integer [ nip swap over swap ba-nth t ] [ 2nip f f ] if ;
 
 : ia-length ( ia -- n ) strlen 2 asr ;
 : _ia-assert-index ( n seq -- n seq ) [ ia-length 0 swap in-range not [ "int-array index out of bound" print error ] when ] 2keep ;
-: ia-nth ( n seq -- elt ) _ia-assert-index 1 + swap 4 * + get ;
-: ia-set-nth ( elt n seq -- ) _ia-assert-index 1 + swap 4 * + set ;
-: _ia-each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+4 quot ) 2dup [ [ get ] dip call ] 2dip [ 4 + ] dip ;
+: ia-nth ( n seq -- elt ) _ia-assert-index 1 + swap 4 * + getmem ;
+: ia-set-nth ( elt n seq -- ) _ia-assert-index 1 + swap 4 * + setmem ;
+: _ia-each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+4 quot ) 2dup [ [ getmem ] dip call ] 2dip [ 4 + ] dip ;
 : ia-each ( ... seq quot: ( ... x -- ... ) -- ... ) [ uncount ] dip swap [ _ia-each-step ] times 2drop ;
 
 : each ( ... seq quot: ( ... x -- ... ) -- ... )
     over [ 1 + ] 2dip
-    getbyte [ dup 0 = [ ba-each ]
+    getmem8 [ dup 0 = [ ba-each ]
               [ 2 = [ ia-each ]
                 [ "each: unknown sequence type: " print '0' + emit error ] if ] if ] if ;
