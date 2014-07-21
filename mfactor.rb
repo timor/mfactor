@@ -225,7 +225,7 @@ class MFTransform < Parslet::Transform
   rule(:string => simple(:s)) { s.to_s }
   rule(:word_or_number => simple(:name)) { if name.to_s =~ /^(0[xX][0-9a-fA-F]+|[0-9]+)$/
                                              num=Integer(name)
-                                             (num > 255 ? MFIntLit : MFByteLit.new(num))
+                                             (num > 255 ? MFIntLit : MFByteLit).new(num)
                                            elsif ISET[name.to_s] # TODO: that distinction
                                                                  # should probably made in
                                                                  # the code generator, not
