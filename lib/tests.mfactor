@@ -5,6 +5,7 @@ IN: tests
 ! some unit tests
 : _lcheck ( -- ) level 0 = [ "!stack not empty!" print nl ] unless ;
 : _test-emit ( -- ) 'c' emit [ f ] loop nl ;
+: _test-int ( -- ) 0xaffecafe .x ;
 : _test-loop ( -- ) 5 [ dup '0' + emit 1 - dup ] loop . ;
 : _test-mem ( -- ) 254 memstart setmem8 175 memstart 1 + setmem8 memstart getmem .x ;
 : _test-while ( -- ) 5 [ dup 0 = not ] [ [ '0' + emit ] [ 1 - ] bi ] while . ;
@@ -22,6 +23,7 @@ IN: tests
    print nl ;
 : _run-tests ( -- ) nl [ [ 'b' emit ] 'a' emit call ] call
     _test-emit _lcheck
+    _test-int _lcheck
     _test-loop _lcheck
     _test-mem _lcheck
     _init_storage _lcheck       ! need to clean up after _test-mem!
