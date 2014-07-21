@@ -48,7 +48,7 @@ class MFP < Parslet::Parser
     (str(')').absent? >> stack_effect_element >> space).repeat >> str(')')}
   rule(:definition) { definer_word.as(:def) >> space >>
     match('\S').repeat(1).as(:name) >> space >>
-    (stack_effect.as(:effect) >> space).maybe >>
+    (stack_effect.as(:effect) >> space) >>
     quotation_body.as(:definition_body) >> def_end }
   rule(:in_declaration) { str('IN:') >> space >> normal_word.as(:current_dict) }
   rule(:using_declaration) { str('USING:') >> space >> 
