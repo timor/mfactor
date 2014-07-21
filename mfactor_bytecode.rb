@@ -145,7 +145,12 @@ class MF_ByteCode < MFactor
   def write_dictionary_entries(io="")
     maybe_generate
     @compiled_definitions.each do |cdef|
-      io << cdef.write_dict_entry(self) << ",\n"
+      if cdef.definition.name.to_s =~ /^_.*/
+        puts "skipping private word: #{cdef.definition.name} " if Rake.verbose == true
+      else
+        puts "not skipping word: #{cdef.definition.name} " if Rake.verbose == true
+        io << cdef.write_dict_entry(self) << ",\n"
+      end
     end
   end
   # enum definitions for the instruction set
