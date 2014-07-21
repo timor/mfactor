@@ -125,7 +125,7 @@ class MF_ByteCode < MFactor
       inline_seq_header(SEQ_ELT_DATA,word.element_size,word.content.length,image)
       word.content.map{|w| image.concat int_bytes(w.value,word.element_size)}
     when MFByteLit then image << prim(:litb) << word.value
-    when MFIntLit then (image << prim(:liti)).concat int_bytes(value,cell_width)
+    when MFIntLit then (image << prim(:liti)).concat int_bytes(word.value,cell_width)
     when MFPrim then image << prim(word.name)
     when MFWord then
       # puts "referring to #{word.name}"
