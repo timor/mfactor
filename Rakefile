@@ -135,7 +135,9 @@ end
 
 import "stdlib.rake"
 
-$mfactor_sources=FileList["lib/*.mfactor"]
+# $mfactor_sources=FileList["lib/*.mfactor"]
+MFACTOR_SRC_DIR=""
+MFACTOR_ROOT_VOCAB="tests"
 
 require 'yaml'
 
