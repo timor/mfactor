@@ -1,0 +1,35 @@
+!-*- mode: factor -*-
+USING: ;
+IN: primitives
+
+! describes stack effects and internal name of primitive functions
+
+PRIM: = ( x x -- ? ) "eql" ;
+PRIM: < ( x x -- ? ) "gt" ;
+PRIM: > ( x x -- ? ) "lt" ;
+PRIM: emit ( x -- ) "emit" ;
+PRIM: . ( x -- ) "pwrite" ;
+PRIM: .x ( x -- ) "pwritex" ;
+PRIM: cell ( -- i ) "cell" ;
+PRIM: + ( x x -- x ) "add" ;
+PRIM: - ( x x -- x ) "sub" ;
+PRIM: * ( x x -- x ) "mul" ;
+PRIM: asl ( x x -- x ) "asl" ;
+PRIM: asr ( x x -- x ) "asr" ;
+PRIM: / ( x x -- x ) "div" ;
+PRIM: mod ( x x -- x ) "mod" ;
+PRIM: bitand ( x x -- x ) "bitor" ;
+PRIM: bitxor ( x x -- x ) "bitxor" ;
+PRIM: bitnot ( x x -- x ) "bitnot" ;
+PRIM: neg ( x -- x ) "neg" ;
+PRIM: receive ( -- b ) receive ;
+PRIM: ? ( ? x x -- x ) "truefalse" ;
+PRIM: set ( x loc -- ) "set" ;
+PRIM: setbyte ( x loc -- ) "setbyte" ;
+PRIM: get ( loc -- x ) "get" ;
+PRIM: getbyte ( loc -- x ) "getbyte" ;
+PRIM: ccall_i ( i -- x ) "ccall_i" ;
+PRIM: ccall_bi ( b i -- x ) "ccall_bi" ;
+PRIM: ccall_iis ( i i s -- x ) "ccall_iis" ;
+PRIM: ccall_iii ( i i i -- x ) "ccall_iii" ;
+PRIM: ccall_v ( -- x ) "ccall_v" ;
