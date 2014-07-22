@@ -46,8 +46,8 @@ def build_stdlib
   puts "rebuilding stdlib from generated sources"
   if defined? $mfactor_ff
     ffyaml=YAML.load_file($mfactor_ff)
+    ff_mfactor(ffyaml,File.open("generated/ff.mfactor","w"))
   end
-  ff_mfactor(ffyaml,File.open("generated/ff.mfactor","w"))
   # iset=YAML.load_file("#{THISDIR}/instructionset.yml")
   # stdlib=YAML_Mfactor.new("generated/mfactor.yml",iset)
   mf=Object.const_get(GENERATOR).new
