@@ -262,8 +262,6 @@ class MFactor
     # @current_file=nil
     @dictionary={}
     @vocab_roots=[File.expand_path(File.dirname(__FILE__)+"/lib")]
-    @current_vocab=nil
-    @search_vocabs=[]
   end
   # call the parser on an input object (file)
   def format_linecol(file,linecol)
@@ -301,10 +299,8 @@ class MFactor
     result
   end
   # check if word is known by name in search path, return definition if found
-  # TODO check search path search order
-  def find_name(name)
-    searchlist=@dictionary.values
-    searchlist.each do |vocab|
+  def find_name(name,search_vocabs)
+    search_vocabs.each do |vocab|
       if found=vocab.find(name)
         # puts "found word: #{found}"
         return found
@@ -325,6 +321,8 @@ class MFactor
   end
   # try to load one vocabulary
   def load_vocab (vocab_name)
+    current_vocab=nil
+    search_vocabs=[]
     file=find_vocab_file(vocab_name)
     if @files.member?(file)
       return @dictionary[vocab_name]||raise("file '#{file}' loaded, but no vocabulary '#{vocab_name} found!")
@@ -333,36 +331,38 @@ class MFactor
     program=parse_file(file)
     # step through every definition
     program.each do |d|
-      case d
-        # IN: directive
+      case d                    # IN: directive
       when MFCurrentVocab then
         puts "define vocab: #{d.vocab}" if $mf_verbose == true
-        @current_vocab=get_vocabulary_create(d.vocab)
-        @dictionary[d.vocab]=@current_vocab
-        # USING: directive
-      when MFSearchPath then
-        # TODO: save search path when diving into different file
+        current_vocab=get_vocabulary_create(d.vocab)
+        @dictionary[d.vocab]=current_vocab
+      when MFSearchPath then    # USING: directive
+        search_vocabs=[]
         d.vocabs.each do |v|
-          puts "maybe load #{v}" if $mf_verbose == true
-          load_vocab(v) unless @dictionary[v]
-          puts "done loading #{v}" if $mf_verbose == true
-          @search_vocabs.unshift(@dictionary[v]) unless @search_vocabs.member?(@dictionary[v])
+          if @dictionary[v]
+            puts "#{v} already loaded" if $mf_verbose == true
+          else
+            puts "loading #{v}" if $mf_verbose == true
+            load_vocab(v)
+            puts "done loading #{v}" if $mf_verbose == true
+          end
+          search_vocabs.unshift(@dictionary[v])
         end
         puts "file:#{file}\n searchpath:" if $mf_verbose == true
-        pp @search_vocabs.map{|v| v.name} if $mf_verbose == true
+        pp search_vocabs.map{|v| v.name} if $mf_verbose == true
       when MFDefinition then
         d.file=file
         name = d.name.to_s
-        if old_def=find_name(name)
+        if old_def=find_name(name,[current_vocab] + search_vocabs)
           raise "#{d.err_loc}:Error: word already exists: #{name}
 #{old_def.err_loc}:Note: Location of previous definition"
         end
-        @current_vocab.add d    # need to add here because of recursion
+        current_vocab.add d    # need to add here because of recursion
         # find all used words in vocabularies
         d.body.flatten.select{|w| w.is_a?(MFWord)}.each do |word|
           wname=word.name.to_s
-          def_of_w = find_name(wname)
-          raise "#{d.err_loc}:Error: word '#{wname}' not found on #{@search_vocabs.map{|s| s.name}}" unless def_of_w
+          def_of_w = find_name(wname,[current_vocab]+search_vocabs)
+          raise "#{d.err_loc}:Error: word '#{wname}' not found on #{search_vocabs.map{|s| s.name}}" unless def_of_w
           word.definition=def_of_w
           # puts "word #{word.name} has def in \nFile:#{word.definition.err_loc}"
         end
