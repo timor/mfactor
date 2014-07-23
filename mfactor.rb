@@ -244,7 +244,7 @@ class MFTransform < Parslet::Transform
        :definition_body => subtree(:b)) { MFDefinition.new(name,definer,effect,b)}
   rule(:used_dict_name => simple(:dname)) { dname.to_s }
   rule(:using => simple(:junk)) { MFSearchPath.new([]) }
-  rule(:using => sequence(:vocabs)) {MFSearchPath.new(vocabs)}
+  rule(:using => sequence(:vocabs)) {MFSearchPath.new(vocabs.map{|v| v.to_s})}
   rule(:current_dict => simple(:vocab)) {MFCurrentVocab.new(vocab.to_s)}
   rule(:program => subtree(:p)) { p }
 end
