@@ -1,5 +1,5 @@
 !-*- mode: factor -*-
-USING: ;
+USING: kernel ;
 IN: memory
 
 ! memory access and information, also variables

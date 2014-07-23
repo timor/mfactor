@@ -1,5 +1,5 @@
 !-*- mode: factor -*-
-USING: kernel parser vocabs prettyprint;
+USING: kernel parser vocabs prettyprint io memory ;
 IN: listener
 
 ! listener, the interactive frontend

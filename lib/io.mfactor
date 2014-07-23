@@ -1,5 +1,5 @@
 !-*- mode: factor -*-
-USING: strings ;
+USING: kernel strings ;
 IN: io
 
 ! print byte array
