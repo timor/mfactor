@@ -382,11 +382,13 @@ void interpreter(unsigned int start_base_address) {
           return;
         case qend: {
           return_entry e = returnpop();
+	#if TRACE_INTERPRETER >= 2
           char * name = find_by_address(e.current_call);
           if (name) {
-            IFTRACE2(printf("<- %s\n",name));
+            printf("<- %s\n",name);
             fflush(stdout);
           }
+	#endif
           if (debug_mode)
             if (debug_nest > 0) {
 					printf("<- %d\n",debug_nest);
