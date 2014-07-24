@@ -28,6 +28,7 @@ IN: parser
     [ parsenum [ 3 ] [ "parsing '" print print "' failed\! " print error ] if ] if ;
 : scan-datum ( -- item type ) token parse-datum ;
 
+! that is the actual parsing step
 : parse-until-step ( acc end -- acc ? ) scan-datum dup 2 =
     [ rot pick _name>> name=
       [ 2drop f ]
