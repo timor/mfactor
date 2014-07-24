@@ -78,7 +78,7 @@ class MFWord < Struct.new(:name,:definition,:is_tail)
     "#{@file}:#{line}:#{col}"
   end
 end
-class MFPrim < Struct.new(:name)
+class MFPrim < Struct.new(:name,:is_tail)
   def initialize(*a)
     super *a
     @file=$current_mfactor_file
@@ -159,9 +159,11 @@ class MFDefinition < Struct.new(:name,:definer,:effect,:body,:mods,:vocabulary,:
       body.map{ |elt| see_word(elt) }.join(" ")
   end
   def convert_tailcalls(b)
+    puts "converting tail calls" if $mf_verbose == true
     if b[-1].is_a?(MFPrim) && b[-1].name.to_s=="call"
-      b[-1].change_name("stcall")
+      # b[-1].change_name("stcall")
       # puts "#{b[-1].err_loc}:Info: scall -> stcall"
+      b[-1].is_tail = true
     elsif b[-1].is_a?(MFWord)
       b[-1].is_tail = true
       # puts "#{b[-1].err_loc}:Info: tailcall"

@@ -126,7 +126,11 @@ class MF_ByteCode < MFactor
       word.content.map{|w| image.concat int_bytes(w.value,word.element_size)}
     when MFByteLit then image << prim(:litb) << word.value
     when MFIntLit then (image << prim(:liti)).concat int_bytes(word.value,cell_width)
-    when MFPrim then image << prim(word.name)
+    when MFPrim then if word.is_tail && word.name == "call" 
+                       image << prim("stcall")
+                     else
+                       image << prim(word.name)
+                     end
     when MFWord then
       # puts "referring to #{word.name}"
       image << ( word.is_tail ? prim(:btcall) : prim(:bcall) )
@@ -148,7 +152,6 @@ class MF_ByteCode < MFactor
       if cdef.definition.name.to_s =~ /^_.*/
         puts "skipping private word: #{cdef.definition.name} " if Rake.verbose == true
       else
-        puts "not skipping word: #{cdef.definition.name} " if Rake.verbose == true
         io << cdef.write_dict_entry(self) << ",\n"
       end
     end
