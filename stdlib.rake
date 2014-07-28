@@ -73,6 +73,13 @@ def build_stdlib
   mf
 end
 
+desc "output parser and transformation result of [arg]"
+task :parse, :path do |t,args|
+  res=MFP.new.parse(File.read(args[:path]))
+  pp res
+  pp MFTransform.new.apply(res)
+end
+
 desc "show the mfactor dictionary"
 task :see_dict => "generated" do
   puts build_stdlib.see
