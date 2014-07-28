@@ -49,7 +49,8 @@ class MFP < Parslet::Parser
   rule(:definition) { definer_word.as(:def) >> space >>
     match('\S').repeat(1).as(:name) >> space >>
     (stack_effect.as(:effect) >> space) >>
-    quotation_body.as(:definition_body) >> def_end }
+    quotation_body.as(:definition_body) >> def_end >>
+    (space >> normal_word.as(:definition_mod)).repeat(0).as(:definition_mods) }
   rule(:in_declaration) { str('IN:') >> space >> normal_word.as(:current_dict) }
   rule(:using_declaration) { str('USING:') >> space >> 
     (normal_word.as(:used_dict_name) >> space).repeat >> str(';')}
@@ -134,7 +135,7 @@ class MFLitSequence
 end
 
 # Definition object, which can be moved into dictionary
-class MFDefinition < Struct.new(:name,:definer,:effect,:body,:vocabulary,:file)
+class MFDefinition < Struct.new(:name,:definer,:effect,:body,:mods,:vocabulary,:file)
   def initialize(*args)
     super(*args)
     convert_tailcalls(body)
@@ -238,10 +239,12 @@ class MFTransform < Parslet::Transform
   rule(:quotation_body => subtree(:b)) { b }
   rule(:seq_start=>simple(:opener), :content => subtree(:content)) {
     MFLitSequence.new(opener,content) }
+  rule(:definition_mod => simple(:modname)) {modname}
   rule(:def => simple(:definer),
        :name => simple(:name),
        :effect => simple(:effect),
-       :definition_body => subtree(:b)) { MFDefinition.new(name,definer,effect,b)}
+       :definition_body => subtree(:body),
+       :definition_mods => sequence(:mods)) { MFDefinition.new(name,definer,effect,body,mods)}
   rule(:used_dict_name => simple(:dname)) { dname.to_s }
   rule(:using => simple(:junk)) { MFSearchPath.new([]) }
   rule(:using => sequence(:vocabs)) {MFSearchPath.new(vocabs.map{|v| v.to_s})}
