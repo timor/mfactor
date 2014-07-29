@@ -65,3 +65,4 @@ IN: kernel
 : _inst ( inst -- ) cell 1 - 8 * neg shift 0xff bitand ;
 : prim? ( address -- ? ) _inst instbase >= ;
 
+: most ( x y quot -- z ) 2keep ? ;
