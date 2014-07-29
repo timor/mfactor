@@ -40,12 +40,12 @@ class MFP < Parslet::Parser
     quotation_body.as(:content) >> str('}') }
   rule(:quotation) { str('[') >> space >>
     quotation_body.as(:quotation_body) >> str(']') }
-  rule(:stack_effect_element) { normal_word |
-    ( definer_word >> space >> stack_effect ) }
+  rule(:stack_effect_element) { normal_word.as(:effect_atom) |
+    ( definer_word >> space >> stack_effect ).as(:effect_quotation) }
   rule(:stack_effect) { str('(') >> space >>
-    ( str('--').absent? >>  stack_effect_element >> space ).repeat >>
+    ( str('--').absent? >>  stack_effect_element >> space ).repeat.as(:stack_input) >>
     str('--') >> space >>
-    (str(')').absent? >> stack_effect_element >> space).repeat >> str(')')}
+    (str(')').absent? >> stack_effect_element >> space).repeat.as(:stack_output) >> str(')')}
   rule(:definition) { definer_word.as(:def) >> space >>
     match('\S').repeat(1).as(:name) >> space >>
     (stack_effect.as(:effect) >> space) >>
@@ -240,9 +240,13 @@ class MFTransform < Parslet::Transform
   rule(:seq_start=>simple(:opener), :content => subtree(:content)) {
     MFLitSequence.new(opener,content) }
   rule(:definition_mod => simple(:modname)) {modname}
+  rule(:stack_input => subtree(:inp),
+       :stack_output => subtree(:outp)) { [inp,outp] }
+  rule(:effect_atom => simple(:a)) {a}
+  rule(:effect_quotation => subtree(:more)) {more}
   rule(:def => simple(:definer),
        :name => simple(:name),
-       :effect => simple(:effect),
+       :effect => subtree(:effect),
        :definition_body => subtree(:body),
        :definition_mods => sequence(:mods)) { MFDefinition.new(name,definer,effect,body,mods)}
   rule(:used_dict_name => simple(:dname)) { dname.to_s }
