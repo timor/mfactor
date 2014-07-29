@@ -46,11 +46,12 @@ class MFP < Parslet::Parser
     ( str('--').absent? >>  stack_effect_element >> space ).repeat.as(:stack_input) >>
     str('--') >> space >>
     (str(')').absent? >> stack_effect_element >> space).repeat.as(:stack_output) >> str(')')}
+  rule(:compiler_decl) { str('inline')|str('foldable')|str('flushable')|str('recursive') }
   rule(:definition) { definer_word.as(:def) >> space >>
     match('\S').repeat(1).as(:name) >> space >>
     (stack_effect.as(:effect) >> space) >>
     quotation_body.as(:definition_body) >> def_end >>
-    (space >> normal_word.as(:definition_mod)).repeat(0).as(:definition_mods) }
+    (space >> compiler_decl.as(:definition_mod)).repeat(0).as(:definition_mods) }
   rule(:in_declaration) { str('IN:') >> space >> normal_word.as(:current_dict) }
   rule(:using_declaration) { str('USING:') >> space >> 
     (normal_word.as(:used_dict_name) >> space).repeat >> str(';')}
