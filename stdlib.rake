@@ -50,9 +50,7 @@ def build_stdlib
   end
   # iset=YAML.load_file("#{THISDIR}/instructionset.yml")
   # stdlib=YAML_Mfactor.new("generated/mfactor.yml",iset)
-  mf=Object.const_get(GENERATOR).new
-  mf.vocab_roots << MFACTOR_SRC_DIR
-  mf.vocab_roots << "generated" # for ff code
+  mf=Object.const_get(GENERATOR).new([MFACTOR_SRC_DIR,"generated"])
   mf.load_vocab(MFACTOR_ROOT_VOCAB)
   File.open("generated/stdlib_size.h","w") do |f|
     f.puts "#define STDLIB_SIZE #{mf.bytecode_size}"

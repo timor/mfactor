@@ -19,8 +19,8 @@ class MF_ByteCode < MFactor
   SEQ_ELT_DATA=0
   SEQ_ELT_REF=1
   attr_accessor :compiled_definitions
-  def initialize
-    super
+  def initialize(*a)
+    super *a
     @prims={}                     # set of primitives for this architecture
     @compiled_definitions=[]               # holds the actual byte code
     ISET.each_with_index do |elt,i|

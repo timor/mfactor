@@ -245,11 +245,11 @@ class MFactor
   attr_accessor :vocab_roots
   @@parser = MFP.new
   @@transform = MFTransform.new
-  def initialize
+  def initialize(roots)
     @files=[]                   # keep track of loaded files
     # @current_file=nil
-    @dictionary={}
-    @vocab_roots=[File.expand_path(File.dirname(__FILE__)+"/lib")]
+    @dictionary={"kernel"=>MFVocabulary.new("kernel")}
+    @vocab_roots=[*roots,File.expand_path(File.dirname(__FILE__)+"/lib")]
   end
   # call the parser on an input object (file)
   def format_linecol(file,linecol)
@@ -287,7 +287,8 @@ class MFactor
     result
   end
   # check if word is known by name in search path, return definition if found
-  def find_name(name,search_vocabs)
+  def find_name(name,search_vocabs=@dictionary.values)
+    # search_vocabs ||= @dictionary.values
     search_vocabs.each do |vocab|
       if found=vocab.find(name)
         # puts "found word: #{found}"
@@ -327,7 +328,7 @@ class MFactor
       when MFSearchPath then    # USING: directive
         search_vocabs=[]
         d.vocabs.each do |v|
-          if @dictionary[v]
+          if @dictionary[v] && !(@dictionary[v].definitions.empty?)
             puts "#{v} already loaded" if $mf_verbose == true
           else
             puts "loading #{v}" if $mf_verbose == true
@@ -344,6 +345,10 @@ class MFactor
         if old_def=find_name(name,[current_vocab] + search_vocabs)
           raise "#{d.err_loc}:Error: word already exists: #{name}
 #{old_def.err_loc}:Note: Location of previous definition"
+        end
+        # hack: assume kernel vocab is present, add all primitives to kernel
+        if d.primitive?
+          @dictionary["kernel"].add d
         end
         current_vocab.add d    # need to add here because of recursion
         # find all used words in vocabularies
