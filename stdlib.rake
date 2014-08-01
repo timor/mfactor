@@ -1,6 +1,7 @@
 # -*- mode:ruby -*-
 
 require 'yaml'
+require_relative 'mfactor_analyze'
 
 THISDIR=File.dirname(__FILE__)
 
@@ -121,14 +122,11 @@ task :stdlib => ["generated/stdlib.code.h","generated/stdlib.dict.h","generated/
 
 require 'pp'
 
-task :mftest do
-  mf=MF_Cortex.new
-  mf.load_vocab("_stdlib")
-  mf.see if Rake.verbose == true
-#  mf.bytecode_image("top")
-  mf.write_dictionary_entries STDOUT
-  mf.write_inst_enum_entries STDOUT
-  mf.write_bytecode_image STDOUT
+task :mftest, :word do |t,args|
+  mf=Object.const_get(GENERATOR).new([MFACTOR_SRC_DIR,"generated"])
+  mf.load_vocab(MFACTOR_ROOT_VOCAB)
+  a=MFStaticCompiler.new(mf)
+  pp a.infer_word(args[:word])
 end
 
 task :mfdeps do
