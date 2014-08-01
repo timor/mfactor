@@ -541,10 +541,6 @@ void interpreter(unsigned int start_base_address) {
         case clear:
           psp = &pstack[0];
           break;
-        case psplevel:
-          x=(cell)(psp-pstack);
-          ppush(x);
-          break;
         case error:
 	 _error:
           printf("error!\n");

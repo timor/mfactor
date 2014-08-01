@@ -19,8 +19,8 @@ IN: vocabs
 ! dictionary entry considered valid if
 : dict-valid? ( dict-entry -- ? ) _name>> strlen 0 = not ;
 : dict-map ( q: ( ... dict-entry -- ... ) -- )
-    dict-start [ dup dict-valid? ] [ [ swap call ] 2keep dict-next ] while 2drop ;
-: _free-name ( -- addr ) dict-start [ dup dict-valid? ] [ dict-next ] while ;
+    dictstart [ dup dict-valid? ] [ [ swap call ] 2keep dict-next ] while 2drop ;
+: _free-name ( -- addr ) dictstart [ dup dict-valid? ] [ dict-next ] while ;
 
 ! test dictionary access by enumerating all dictionary entries
 ! : dict-enum ( -- ) [ [ _name>> print ": " print ] [ .x ] bi ] dict-map ;
@@ -32,5 +32,5 @@ IN: vocabs
 : name= ( str name -- ? ) [ uncount ] bi@ [ swap ] dip 1 - over = [ mem= ] [ 3drop f ] if ;
 
 ! dictionary usage
-: dsize ( -- ) dictend dict-start - _free-name dict-start - ;
+: dsize ( -- ) dictend dictstart - _free-name dictstart - ;
 
