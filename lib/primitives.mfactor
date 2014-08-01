@@ -4,6 +4,14 @@ IN: primitives
 
 ! describes stack effects and internal name of primitive functions
 
+PRIM: swap ( x y -- y x ) "swap" ;
+PRIM: dup ( x -- x x ) "dup" ;
+PRIM: drop ( x -- ) "drop" ;
+PRIM: >r ( x -- ) "to_r" ;
+PRIM: r> ( -- x ) "r_from" ;
+PRIM: call ( x -- ) "call" ;
+PRIM: nop ( -- ) "nop" ;
+PRIM: instbase ( -- i ) "instbase" ;
 PRIM: = ( x x -- ? ) "eql" ;
 PRIM: < ( x x -- ? ) "gt" ;
 PRIM: > ( x x -- ? ) "lt" ;
@@ -22,12 +30,27 @@ PRIM: bitand ( x x -- x ) "bitor" ;
 PRIM: bitxor ( x x -- x ) "bitxor" ;
 PRIM: bitnot ( x x -- x ) "bitnot" ;
 PRIM: neg ( x -- x ) "neg" ;
-PRIM: receive ( -- b ) receive ;
+PRIM: receive ( -- b ) "receive" ;
 PRIM: ? ( ? x x -- x ) "truefalse" ;
-PRIM: set ( x loc -- ) "set" ;
-PRIM: setbyte ( x loc -- ) "setbyte" ;
-PRIM: get ( loc -- x ) "get" ;
-PRIM: getbyte ( loc -- x ) "getbyte" ;
+PRIM: memstart ( -- addr ) "memstart" ;
+PRIM: memrange ( -- a a a a ) "memrange" ;
+PRIM: oplit ( -- ) "oplit" ;
+PRIM: qstart ( -- ) "qstart" ;
+PRIM: qend ( -- ) "qend" ;
+PRIM: error ( -- ) "error" ;
+PRIM: dictstart ( -- addr ) "dictstart" ;
+PRIM: dictend ( -- addr ) "dictend" ;
+PRIM: parsenum ( str -- num/str success? ) "parsenum" ;
+PRIM: token ( -- str ) "token" ;
+PRIM: level ( -- i ) "stack_level" ;
+PRIM: search ( cstr -- dictentry/name found? ) "search" ;
+PRIM: setmem ( x loc -- ) "setmem" ;
+PRIM: setmem8 ( x loc -- ) "setmem8" ;
+PRIM: getmem ( loc -- x ) "getmem" ;
+PRIM: getmem8 ( loc -- x ) "getmem8" ;
+PRIM: bcall ( quot: ( ..a -- ..b ) -- ..b ) "call" ;
+PRIM: acall ( quot: ( ..a -- ..b ) -- ..b ) "acall" ;
+PRIM: liti ( -- i ) "liti" ;
 PRIM: ccall_i ( i -- x ) "ccall_i" ;
 PRIM: ccall_bi ( b i -- x ) "ccall_bi" ;
 PRIM: ccall_iis ( i i s -- x ) "ccall_iis" ;
