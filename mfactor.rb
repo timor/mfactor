@@ -78,19 +78,6 @@ class MFWord < Struct.new(:name,:definition,:is_tail)
     line,col=name.line_and_column
     "#{@file}:#{line}:#{col}"
   end
-end
-class MFPrim < Struct.new(:name,:is_tail)
-  def initialize(*a)
-    super *a
-    @file=$current_mfactor_file
-  end
-  def see
-    name.to_s.upcase
-  end
-  def err_loc
-    line,col=name.line_and_column
-    "#{@file}:#{line}:#{col}"
-  end
   def change_name(newname)
     old=name
     name=Parslet::Slice.new(old.position,newname,old.line_cache)
@@ -148,7 +135,7 @@ class MFDefinition < Struct.new(:name,:definer,:effect,:body,:mods,:vocabulary,:
     definer == ":"
   end
   def primitive?
-    definer == :primitive
+    definer == "PRIM:"
   end
   # return printed location of definition
   def err_loc
@@ -159,13 +146,9 @@ class MFDefinition < Struct.new(:name,:definer,:effect,:body,:mods,:vocabulary,:
     ": #{name} #{effect} "+
       body.map{ |elt| see_word(elt) }.join(" ")
   end
+  # TODO: move out of here, into emitter
   def convert_tailcalls(b)
-    puts "converting tail calls" if $mf_verbose == true
-    if b[-1].is_a?(MFPrim) && b[-1].name.to_s=="call"
-      # b[-1].change_name("stcall")
-      # puts "#{b[-1].err_loc}:Info: scall -> stcall"
-      b[-1].is_tail = true
-    elsif b[-1].is_a?(MFWord)
+    if b[-1].is_a? MFWord
       b[-1].is_tail = true
       # puts "#{b[-1].err_loc}:Info: tailcall"
     end
@@ -230,11 +213,6 @@ class MFTransform < Parslet::Transform
   rule(:word_or_number => simple(:name)) { if name.to_s =~ /^(0[xX][0-9a-fA-F]+|[0-9]+)$/
                                              num=Integer(name)
                                              (num > 255 ? MFIntLit : MFByteLit).new(num)
-                                           elsif ISET[name.to_s] # TODO: that distinction
-                                                                 # should probably made in
-                                                                 # the code generator, not
-                                                                 # here
-                                             MFPrim.new(name)
                                            else
                                              MFWord.new(name)
                                            end
