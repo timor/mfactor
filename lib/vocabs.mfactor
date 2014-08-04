@@ -5,9 +5,9 @@ IN: vocabs
 
 ! dictionary handling
 
-! dict_entry layout: addr(4)|flag(1)|name-headerinstr(1)|namelength(1)|name(namelength)
+! dict_entry layout: addr(4)|flag(1)|name-header(1)|namelength(1)|name(namelength)
 ! name of dict entry
-: _name>> ( dictentry -- str ) cell + 1 + ;
+: _name>> ( dictentry -- str ) cell + 2 + ;
 : parsing-word? ( dictentry -- ? ) cell + getmem 0x01 bitand ;
 : _quot>> ( dictentry -- quot ) getmem ;
 ! find next free dictionary entry (check for first name byte = 0)
