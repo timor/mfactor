@@ -10,10 +10,10 @@ IN: memory
 ! : setmem ( val addr -- ) _set ;
 ! : setmem8 ( val addr -- ) _setbyte ;
 
-! apply q to var's value and update var
-: change ( var q: ( old -- new ) -- ) [ [ getmem ] keep ] dip dip setmem ;
-! incf var
-: +@ ( n var -- ) [ + ] change ;
+! apply q to value in memory and update memory location
+: changemem ( addr q: ( old -- new ) -- ) [ [ getmem ] keep ] dip dip setmem ;
+! incf memory address
+: +@ ( n addr -- ) [ + ] changemem ;
 
 ! memory pointers:
 ! MP: make-pointer for comma operations,
