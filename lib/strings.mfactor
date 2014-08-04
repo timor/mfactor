@@ -3,6 +3,7 @@ USING: kernel memory ;
 IN: strings
 
 ! string handling, which builds on byte-arrays, but counted
+! strings are represented by the memory address pointing to the count byte
 
 : uncount ( countedstr -- str len ) dup getmem8 [ 1 + ] dip ;
 
