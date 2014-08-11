@@ -19,6 +19,12 @@ require 'parslet'
 # operation.  Also, the stack effect must be updated.  When doing so, the updated stack
 # effect must be checked against the given stack effect.  This can result in upgrading
 
+# gensyms
+$unique='1'
+def gensym(s="G")
+  (s.to_s+$unique.succ!).to_sym
+end
+
 def combine_effects(effect1, effect2)
   in1,out1 = effect1.dup
   in2,out2 = effect2.dup
