@@ -17,7 +17,7 @@ require 'parslet'
 # Recording an operation involves taking the operands from the stack, and pushing one or
 # more items, which link the original input items on the stack with the corresponding
 # operation.  Also, the stack effect must be updated.  When doing so, the updated stack
-# effect must be checked against the given stack effect.  This can result in upgrading 
+# effect must be checked against the given stack effect.  This can result in upgrading
 
 def combine_effects(effect1, effect2)
   in1,out1 = effect1.dup
