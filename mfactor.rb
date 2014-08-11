@@ -137,6 +137,9 @@ class MFDefinition < Struct.new(:name,:definer,:effect,:body,:mods,:vocabulary,:
   def primitive?
     definer == "PRIM:"
   end
+  def inline?
+    mods.member? "inline"
+  end
   # return printed location of definition
   def err_loc
     line,col=definer.line_and_column
