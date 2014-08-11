@@ -1,6 +1,24 @@
 require_relative 'mfactor'
 require 'parslet'
 
+# compilation:
+# for each definition:
+#  3. upgrade compatible types between the inferred stack effect and the user-provided one
+#  4. initialize virtual stacks (factor implementation calls them meta-d and meta-r for
+#  the data stack and the retain stack, respectiverly)
+#  for each word:
+#   1. if it is a primitive, record an operation into the stack (see below)
+#   2. if it is a shuffling word, execute it on the virtual stacks
+#   3. if it is another word, record a call operation into the stack (see below)
+#   4. if it is call, inline the quotation which MUST reside on the stack
+#  5. take the resulting operation graph, and generate a dot file
+#  6. generate a c file
+
+# Recording an operation involves taking the operands from the stack, and pushing one or
+# more items, which link the original input items on the stack with the corresponding
+# operation.  Also, the stack effect must be updated.  When doing so, the updated stack
+# effect must be checked against the given stack effect.  This can result in upgrading 
+
 def combine_effects(effect1, effect2)
   in1,out1 = effect1.dup
   in2,out2 = effect2.dup
