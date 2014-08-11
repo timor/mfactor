@@ -56,6 +56,9 @@ class MFStack
   def initialize(a=[])
     @a = a
   end
+  def items
+    @a
+  end
   def swap
     e1 = @a.pop
     e2 = @a.pop
@@ -75,7 +78,38 @@ class MFStack
     @a.push e
     @a.push e
   end
-  def push(a) @a.push a end
+  def push(x) @a.push x end
+  # returns array
+  def pop_n(n)
+    if @a.length < n
+      # TODO: raise something that can be caught and converted into meaningful stack checker error
+      raise "not enough arguments on stack"
+    else
+      if n == 0
+        []
+      else
+        @a,ret=@a[0..-(n+1)],@a[-n..-1]
+        ret
+      end
+    end
+  end
+  def push_n(arr)
+    @a+=arr
+  end
+  def show
+    out=@a.map do |x|
+      case x
+      when MFInput then "#{x.name}(#{x.type})"
+      when MFCallResult then "#{x.call.definition.name}[#{x.index}]"
+      when MFIntLit then x.value.to_s
+      when Array then "[...]"
+      else
+        raise "don't know how to print stack object of type #{x.class}"
+      end
+    end.join("|")
+    puts out
+  end
+end
 end
 
 class MFStaticCompiler
