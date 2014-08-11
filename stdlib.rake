@@ -126,7 +126,13 @@ task :mftest, :word do |t,args|
   mf=Object.const_get(GENERATOR).new([MFACTOR_SRC_DIR,"generated"])
   mf.load_vocab(MFACTOR_ROOT_VOCAB)
   a=MFStaticCompiler.new(mf)
-  pp a.infer_word(args[:word])
+  # pp a.infer_word(args[:word])
+  dotfile=Tempfile.new("_mftestgraph_dot")
+  a.word_dot_graph(args[:word],dotfile)
+  dotfile.close
+  cp dotfile.path, "generated/test.dot"
+#  sh "dot -Tpng #{dotfile.path} -o generated/test.png "
+  sh "dot -Tpng generated/test.dot -o generated/test.png "
 end
 
 task :mfdeps do
