@@ -116,40 +116,166 @@ class MFStack
     puts out
   end
 end
+
+class MFInput < Struct.new(:name,:type)
+  def see
+    self.name
+  end
+end
+class MFCompiledCall < Struct.new(:definition,:inputs,:outputs)
+end
+# That is a result of a call to another word, which points to the corresponding call.
+# Index associates this result with the corresponding element in call's output stack
+# effect sequence.
+class MFCallResult < Struct.new(:call,:index)
+  def name
+    call.definition.effect[1][self.index][:name]
+  end
+  def type
+    call.definition.effect[1][self.index][:type]
+  end
+  def see
+    name
+  end
+end
+
+def escape(str)
+  str.to_s.gsub(/[-+.><]/,{
+             '+' => 'plus',
+             '-' => 'minus',
+             '.' => 'dot',
+             '>' => 'gt',
+             '<' => 'lt'})
+end
+
+# input: {port =>input,...}
+def dot_record(id,name,inputs,outputs,io,nodes)
+  puts "generating dot record for #{id}: #{name}"
+  inputs.values.map do |i|
+    dot_code(i,io,nodes) unless nodes[i]
+  end
+  edges=[]
+  io << "#{id} [label=\"#{name} | "
+  io << inputs.map do |port,input|
+    port_id=gensym(port)
+    edges << "#{nodes[input]} -> #{id}:#{port_id}"
+    "<#{port_id}> #{port}"
+  end.join(" | ")
+  if outputs
+    io << " | -- | "
+    io << outputs.map do |o|
+      port=gensym(o.type)
+      nodes[o]= "#{id}:#{port}"
+      "<#{port}> #{o.see}"
+    end.join(" | ")
+  end
+  io.puts "\"]"
+  edges.each{|e| io.puts(e)}
+  return edges
+end
+
+def dot_code(thing, io,nodes={})
+  case thing
+  when MFInput then 
+    id=gensym(thing.name)
+    nodes[thing]=id
+    io.puts "#{id} [label=\"#{thing.name}\"]"
+  when MFCompiledCall then
+    id=gensym(escape(thing.definition.name))
+    ins=Hash[thing.definition.effect[0].map{|x| x.name}.zip(thing.inputs)]
+    dot_record(id,thing.definition.name,ins,thing.outputs,io,nodes)
+  when MFStack then           # output stack, behaves like inputs
+    id = gensym("stack")
+    elts=Hash[(1..thing.items.length).map{|i| id.to_s+i.to_s}.zip(thing.items)]
+    dot_record(id,"stack",elts,nil,io,nodes)
+  when MFCallResult then
+    dot_code(thing.call,io,nodes)
+  when MFIntLit then
+    nodes[thing]=thing.value.to_s
+  else raise "cannot generate dot code for #{thing}"
+  end
 end
 
 class MFStaticCompiler
   attr_accessor :mf
   def initialize(mf)
     @mf=mf
+    @compiled_definitions={}
   end
   def infer_word(name)
     infer mf.find_name(name).body
   end
-  def compile_word(name)
-    d=mf.find_name name
-    pstack = MFStack.new(d.effect[0])
+  def compile_definition(name)
+    puts "compiling definition: #{name}"
+    d=mf.find_name(name)
+    inputs=d.effect[0].map{|i| MFInput.new(i[:name],i[:type])}
+    pstack = MFStack.new inputs
     rstack = MFStack.new
     if d.normal_word?
-      d.body.each do |word|
-        pp pstack
-        case word
-        when MFPrim then
-          case word.name
-          when "dup" then pstack.dup
-          when "drop" then pstack.drop
-          when "swap" then pstack.swap
-          when ">r" then rstack.push pstack.pop
-          when "r>" then pstack.push rstack.pop
-          else raise "don't know how to interpret #{word.name}"
-          end
-        when MFIntLit then word
-        when MFByteLit then word
-        when MFWord then word
-        end
-      end
+      outputs=compile_quotation(d.body,pstack,rstack)
+      @compiled_definitions[name]=MFCompiledCall.new(d,inputs,outputs)
     else
       raise "word not normal: #{d.name}"
     end
+  end
+  def compile_quotation(q,pstack,rstack)
+    print "compiling quotation: "; puts see_word(q)
+    q.each do |word|
+      print "p:"; pstack.show
+      print "r:"; rstack.show
+      case word
+      when MFWord then
+        case word.name
+        when "dup" then pstack.dup
+        when "drop" then pstack.drop
+        when "swap" then pstack.swap
+        when ">r" then rstack.push pstack.pop
+        when "r>" then pstack.push rstack.pop
+        when "call" then
+          puts "inlining literal quotation call"
+          called_q=pstack.pop
+          raise "#{word.err_loc}:Error: call must be compiled with literal quotation on stack" unless called_q.is_a? Array
+          compile_quotation(called_q,pstack,rstack)
+        else
+          if word.definition.inline?
+            puts "inlining #{word.definition.name}"
+            compile_quotation(word.definition.body,pstack,rstack)
+          else
+            compile_word_call(word,pstack)
+          end
+        end
+      when MFIntLit then pstack.push word
+      when MFByteLit then pstack.push word
+      when Array then pstack.push word
+      else raise "unable to compile word of type: #{word.class}"
+      end
+    end
+    pstack                      # return the last state
+  end
+  def compile_word_call(word,pstack)
+    # todo: type inference here!
+    puts "compiling call to #{word.definition.name}"
+    d=word.definition
+    inputs=pstack.pop_n(d.effect[0].length)
+    call=MFCompiledCall.new(d)
+    i=-1
+    outputs=d.effect[1].map do |e|
+      i+=1
+      MFCallResult.new(call,i)
+    end
+    call.inputs=inputs; call.outputs=outputs
+    pstack.push_n outputs
+  end
+  def maybe_compile(name)
+    compile_definition(name) unless @compiled_definitions[name]
+  end
+  def word_dot_graph(name,io)
+    maybe_compile(name)
+    io << <<END
+digraph #{name}_definition {
+node [shape=record,fontname=helvetica]
+END
+    dot_code(@compiled_definitions[name].outputs,io)
+    io.puts "}"
   end
 end
