@@ -40,8 +40,8 @@ class MFP < Parslet::Parser
     quotation_body.as(:content) >> str('}') }
   rule(:quotation) { str('[') >> space >>
     quotation_body.as(:quotation_body) >> str(']') }
-  rule(:stack_effect_element) { normal_word.as(:effect_atom) |
-    ( definer_word >> space >> stack_effect ).as(:effect_quotation) }
+  rule(:stack_effect_element) { normal_word.as(:effect_atom)>>
+    ( str(':') >> space >> ( stack_effect | normal_word ).as(:effect_type)).maybe }
   rule(:stack_effect) { str('(') >> space >>
     ( str('--').absent? >>  stack_effect_element >> space ).repeat.as(:stack_input) >>
     str('--') >> space >>
@@ -205,6 +205,9 @@ class MFVocabulary
   end
 end
 
+class MFEffectItem < Struct.new(:name,:type)
+end
+
 # tree transformation to output a structure that represents one file
 class MFTransform < Parslet::Transform
   # rule(:unsigned => simple(:lit)) {
@@ -226,7 +229,9 @@ class MFTransform < Parslet::Transform
   rule(:definition_mod => simple(:modname)) {modname}
   rule(:stack_input => subtree(:inp),
        :stack_output => subtree(:outp)) { [inp,outp] }
-  rule(:effect_atom => simple(:a)) {a}
+  rule(:effect_atom => simple(:a),
+       :effect_type => subtree(:type)) {MFEffectItem.new(a,type)}
+  rule(:effect_atom => simple(:a)) {MFEffectItem.new(a,:t)}
   rule(:effect_quotation => subtree(:more)) {more}
   rule(:def => simple(:definer),
        :name => simple(:name),
