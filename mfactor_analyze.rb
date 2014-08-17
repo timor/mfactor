@@ -213,6 +213,8 @@ class MFStaticCompiler
     rstack = MFStack.new
     if d.normal_word?
       outputs=compile_quotation(d.body,pstack,rstack)
+      raise "#{d.err_loc}: `#{name}` leaves quotations on stack, not supported yet" if
+        outputs.items.any?{|i| i.is_a? Array}
       @compiled_definitions[name]=MFCompiledCall.new(d,inputs,outputs)
     else
       raise "word not normal: #{d.name}"
