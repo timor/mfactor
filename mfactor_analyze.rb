@@ -19,6 +19,13 @@ require 'parslet'
 # operation.  Also, the stack effect must be updated.  When doing so, the updated stack
 # effect must be checked against the given stack effect.  This can result in upgrading
 
+# Note on handling conditionals: when hitting if, both paths are virtually executed using
+# a copy of the currently active parameter and return stack.  After that, both stack
+# versions have to look the same, otherwise no compilation is possible, only execution.  A
+# phi node is inserted for every stack element that has been modified during the execution
+# of both possible paths.  To keep track of which stack elements need to be phi'd, the
+# stack is instructed to track the modifications since from the beginning of the if execution part.
+
 # gensyms
 $unique='1'
 def gensym(s="G")
@@ -61,6 +68,11 @@ end
 class MFStack
   def initialize(a=[])
     @a = a
+    @mark=nil
+  end
+  def initialize_copy(source)
+    super
+    @a = source.items.dup
   end
   def items
     @a
@@ -76,6 +88,9 @@ class MFStack
       raise "stack empty!"
     else
       @a.pop
+    end
+    if @mark && (@mark > @a.length)
+      @mark = @a.length
     end
   end
   def drop() @a.pop; nil end
@@ -97,10 +112,23 @@ class MFStack
         @a,ret=@a[0..-(n+1)],@a[-n..-1]
         ret
       end
+      if @mark && (@mark > @a.length)
+        @mark = @a.length
+      end
     end
   end
   def push_n(arr)
     @a+=arr
+  end
+  def mark
+    @mark=items.length
+  end
+  # return sublist that has been changed since last call of mark
+  def get_marked
+    @a[@mark..-1]
+  end
+  def length
+    @a.length
   end
   def show
     out=@a.map do |x|
@@ -124,6 +152,23 @@ class MFInput < Struct.new(:name,:type)
 end
 class MFCompiledCall < Struct.new(:definition,:inputs,:outputs)
 end
+
+# input_lists is a list (actually Array) of pointers to all inputs that have to be phi'd
+class MFPhiNode
+  attr_accessor :input_lists
+  attr_reader :outputs
+  attr_accessor :condition
+  def initialize(condition,input_lists)
+    @condition=condition
+    @input_lists=input_lists
+    i=-1
+    @outputs = input_lists[0].map do
+      i+=1
+      MFCallResult.new(self,i)
+    end
+  end
+end
+
 # That is a result of a call to another word, which points to the corresponding call.
 # Index associates this result with the corresponding element in call's output stack
 # effect sequence.
@@ -238,6 +283,21 @@ class MFStaticCompiler
           called_q=pstack.pop
           raise "#{word.err_loc}:Error: call must be compiled with literal quotation on stack" unless called_q.is_a? Array
           compile_quotation(called_q,pstack,rstack)
+        when "if" then
+          puts "compiling `if`"
+          condition=pstack.pop
+          elsecode=pstack.pop
+          thencode=pstack.pop
+          raise "#{word.err_loc}:Error: if needs to literal quotations" unless
+            (elsecode.is_a?(Array)) && (thencode.is_a?(Array))
+          thenstack=compile_quotation(thencode,pstack.dup.mark,rstack.dup)
+          elsestack=compile_quotation(elsecode,elsestack.mark,rstack)
+          #TODO: maybe insert crazy stack correctnes checking here
+          raise "alternatives not stack effect compatible in `if`" unless
+            thencode.get_marked.length == elsecode.get_marked.length
+          phi=MFPhiNode.new(condition,[thenstack.get_marked,elsestack.get_marked])
+          pstack.pop_n(thenstack.length)
+          pstack.push_n phi.outputs
         else
           if word.definition.inline?
             puts "inlining `#{word.definition.name}` by definition"
