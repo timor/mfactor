@@ -238,7 +238,10 @@ class MFStaticCompiler
           compile_quotation(called_q,pstack,rstack)
         else
           if word.definition.inline?
-            puts "inlining #{word.definition.name}"
+            puts "inlining `#{word.definition.name}` by definition"
+            compile_quotation(word.definition.body,pstack,rstack)
+          elsif pstack.items.last(word.definition.effect[0].length).any?{|i| i.is_a? Array }
+            puts "auto-inlining `#{word.definition.name}` with quotation inputs"
             compile_quotation(word.definition.body,pstack,rstack)
           else
             compile_word_call(word,pstack)
