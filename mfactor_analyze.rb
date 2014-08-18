@@ -94,7 +94,7 @@ class MFStack
     end
   end
   def drop() @a.pop; nil end
-  def dup()
+  def _dup()
     e = @a.pop
     @a.push e
     @a.push e
@@ -273,7 +273,7 @@ class MFStaticCompiler
       case word
       when MFWord then
         case word.name
-        when "dup" then pstack.dup
+        when "dup" then pstack._dup
         when "drop" then pstack.drop
         when "swap" then pstack.swap
         when ">r" then rstack.push pstack.pop
