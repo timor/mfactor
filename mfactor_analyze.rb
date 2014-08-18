@@ -87,11 +87,12 @@ class MFStack
     if @a.size == 0
       raise "stack empty!"
     else
-      @a.pop
+      ret = @a.pop
     end
     if @mark && (@mark > @a.length)
       @mark = @a.length
     end
+    ret
   end
   def drop() @a.pop; nil end
   def _dup()
@@ -110,11 +111,11 @@ class MFStack
         []
       else
         @a,ret=@a[0..-(n+1)],@a[-n..-1]
-        ret
       end
       if @mark && (@mark > @a.length)
         @mark = @a.length
       end
+      ret
     end
   end
   def push_n(arr)
@@ -122,6 +123,7 @@ class MFStack
   end
   def mark
     @mark=items.length
+    self
   end
   # return sublist that has been changed since last call of mark
   def get_marked
@@ -134,7 +136,7 @@ class MFStack
     out=@a.map do |x|
       case x
       when MFInput then "#{x.name}(#{x.type})"
-      when MFCallResult then "#{x.call.definition.name}[#{x.index}]"
+      when MFCallResult then "res[#{x.index}]"
       when MFIntLit then x.value.to_s
       when Array then "[...]"
       else
@@ -184,13 +186,15 @@ class MFCallResult < Struct.new(:call,:index)
   end
 end
 
+
 def escape(str)
-  str.to_s.gsub(/[-+.><]/,{
+  str.to_s.gsub(/[-+.><*]/,{
              '+' => 'plus',
              '-' => 'minus',
              '.' => 'dot',
              '>' => 'gt',
-             '<' => 'lt'})
+             '<' => 'lt',
+             '*' => 'times'})
 end
 
 # input: {port =>input,...}
@@ -200,7 +204,7 @@ def dot_record(id,name,inputs,outputs,io,nodes)
     dot_code(i,io,nodes) unless nodes[i]
   end
   edges=[]
-  io << "#{id} [label=\"#{name} | "
+  io << "#{id} [label=\"#{escape(name)} | "
   io << inputs.map do |port,input|
     port_id=gensym(port)
     edges << "#{nodes[input]} -> #{id}:#{port_id}"
@@ -219,6 +223,38 @@ def dot_record(id,name,inputs,outputs,io,nodes)
   return edges
 end
 
+def dot_phi(phi,io,nodes)
+  puts "generating dot record for phi node"
+  id=gensym("phi")
+  dot_code(phi.condition, io, nodes) unless nodes[phi.condition]
+  phi.input_lists.each do |l|
+    l.each do |i|
+      dot_code(i,io,nodes) unless nodes[i]
+    end
+  end
+  edges=[]
+  io << "#{id} [label=\"<phi_cond> phi | "
+  i=-1
+  io << phi.input_lists[0].map do |dummy|
+    i= i+1
+    port_id=gensym("phi_in")
+    phi.input_lists.each do |l|
+      edges << "#{nodes[l[i]]} -> #{id}:#{port_id}"
+    end
+    "<#{port_id}> #{port_id}"
+  end.join(" | ")
+  io << " | -- | "
+  io << phi.outputs.map do |o|
+    port=gensym("phi_out")
+    nodes[o]= "#{id}:#{port}"
+    "<#{port}> #{port}"
+  end.join(" | ")
+  edges << "#{nodes[phi.condition]} -> #{id}:phi_cond"
+  io.puts "\"]"
+  edges.each{|e| io.puts(e)}
+  return edges
+end
+
 def dot_code(thing, io,nodes={})
   case thing
   when MFInput then 
@@ -229,6 +265,9 @@ def dot_code(thing, io,nodes={})
     id=gensym(escape(thing.definition.name))
     ins=Hash[thing.definition.effect[0].map{|x| x.name}.zip(thing.inputs)]
     dot_record(id,thing.definition.name,ins,thing.outputs,io,nodes)
+  when MFPhiNode then
+    id=gensym("phi")
+    dot_phi(thing,io,nodes)
   when MFStack then           # output stack, behaves like inputs
     id = gensym("stack")
     elts=Hash[(1..thing.items.length).map{|i| id.to_s+i.to_s}.zip(thing.items)]
@@ -285,16 +324,16 @@ class MFStaticCompiler
           compile_quotation(called_q,pstack,rstack)
         when "if" then
           puts "compiling `if`"
-          condition=pstack.pop
           elsecode=pstack.pop
           thencode=pstack.pop
-          raise "#{word.err_loc}:Error: if needs to literal quotations" unless
+          condition=pstack.pop
+          raise "#{word.err_loc}:Error: if needs two literal quotations" unless
             (elsecode.is_a?(Array)) && (thencode.is_a?(Array))
           thenstack=compile_quotation(thencode,pstack.dup.mark,rstack.dup)
-          elsestack=compile_quotation(elsecode,elsestack.mark,rstack)
+          elsestack=compile_quotation(elsecode,pstack.mark,rstack)
           #TODO: maybe insert crazy stack correctnes checking here
-          raise "alternatives not stack effect compatible in `if`" unless
-            thencode.get_marked.length == elsecode.get_marked.length
+          raise "#{word.err_loc}:Error: alternatives not stack effect compatible in `if`" unless
+            thenstack.get_marked.length == elsestack.get_marked.length
           phi=MFPhiNode.new(condition,[thenstack.get_marked,elsestack.get_marked])
           pstack.pop_n(thenstack.length)
           pstack.push_n phi.outputs
