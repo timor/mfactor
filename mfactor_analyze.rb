@@ -334,8 +334,9 @@ class MFStaticCompiler
           elsestack=compile_quotation(elsecode,pstack.mark,rstack)
           #TODO: maybe insert crazy stack correctnes checking here
           raise "#{word.err_loc}:Error: alternatives not stack effect compatible in `if`" unless
-            thenstack.get_marked.length == elsestack.get_marked.length
-          phi=MFPhiNode.new(condition,[thenstack.get_marked,elsestack.get_marked])
+            thenstack.length == elsestack.length
+          num_phis=[thenstack.get_marked,elsestack.get_marked].max
+          phi=MFPhiNode.new(condition,[thenstack.items.last(num_phis),elsestack.items.last(num_phis)])
           pstack.pop_n(thenstack.length)
           pstack.push_n phi.outputs
         else
