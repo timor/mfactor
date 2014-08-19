@@ -205,21 +205,21 @@ def dot_record(id,name,inputs,outputs,io,nodes)
     dot_code(i,io,nodes) unless nodes[i]
   end
   edges=[]
-  io << "#{id} [label=\"#{escape(name)} | "
+  io << "#{id} [label=\"{{"
   io << inputs.map do |port,input|
     port_id=gensym(port)
     edges << "#{nodes[input]} -> #{id}:#{port_id}"
     "<#{port_id}> #{port}"
-  end.join(" | ")
+  end.join(" | ")+"}"
   if outputs
-    io << " | -- | "
+    io << " | #{name} | {"
     io << outputs.map do |o|
       port=gensym(o.type)
       nodes[o]= "#{id}:#{port}"
       "<#{port}> #{o.see}"
-    end.join(" | ")
+    end.join(" | ")+"}"
   end
-  io.puts "\"]"
+  io.puts "}\"]"
   edges.each{|e| io.puts(e)}
   return edges
 end
