@@ -52,8 +52,13 @@ PRIM: getmem8 ( loc -- x ) "getmem8" ;
 PRIM: bcall ( quot: ( ..a -- ..b ) -- ..b ) "call" ;
 PRIM: acall ( quot: ( ..a -- ..b ) -- ..b ) "acall" ;
 PRIM: liti ( -- i ) "liti" ;
-PRIM: ccall_i ( i -- x ) "ccall_i" ;
-PRIM: ccall_bi ( b i -- x ) "ccall_bi" ;
-PRIM: ccall_iis ( i i s -- x ) "ccall_iis" ;
-PRIM: ccall_iii ( i i i -- x ) "ccall_iii" ;
-PRIM: ccall_v ( -- x ) "ccall_v" ;
+! getting an address from the foreign-function lut ( i -- addr )
+PRIM: ff ( i -- addr ) "ff";
+PRIM: ccall_b ( ff b -- x ) "ccall_b" ;
+PRIM: ccall_i ( ff i -- x ) "ccall_i" ;
+PRIM: ccall_bi ( ff b i -- x ) "ccall_bi" ;
+PRIM: ccall_is ( ff i s -- x ) "ccall_is" ;
+PRIM: ccall_iis ( ff i i s -- x ) "ccall_iis" ;
+PRIM: ccall_iii ( ff i i i -- x ) "ccall_iii" ;
+PRIM: ccall_v ( ff -- x ) "ccall_v" ;
+PRIM: ccall_lit ( ff -- addr ) "ccall_lit" ;
