@@ -59,7 +59,7 @@ IN: kernel
 : >= ( n1 n2 -- ? ) 2dup > [ 2drop t ] [ = ] if ;
 
 : and ( obj1 obj2 -- ? ) over ? ;
-: or ( obj1 obj2 -- - ) dupd ? ;
+: or ( obj1 obj2 -- ? ) dupd ? ;
 : not ( ? -- \? ) 0 1 ? ;
 
 ! start inclusive, end exclusive
