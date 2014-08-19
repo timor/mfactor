@@ -25,7 +25,9 @@ class MF_ByteCode < MFactor
     @compiled_definitions=[]               # holds the actual byte code
     ISET.each_with_index do |elt,i|
       @prims[elt[0]]=inst_base+i
-      @compiled_definitions << MFCompiledDefinition.new(MFDefinition.new(elt[0],:primitive,nil,[]),inst_base+i,[],2)
+      # create pseudo-definitions for primitives
+      # TODO: actually use the provided definitions
+      @compiled_definitions << MFCompiledDefinition.new(MFDefinition.new(elt[0],"PRIM:",nil,[]),inst_base+i,[],2)
     end
     @generated                    # flag for on-demand bytecode generation
     @size                         # store bytecode size here after generation
@@ -49,7 +51,7 @@ class MF_ByteCode < MFactor
     puts "\nGenerating byte_code image" if Rake.verbose
     image=[]
     memloc=0
-    def_list=@dictionary.values.map{|v| v.definitions}.flatten
+    def_list=@dictionary.values.map{|v| v.definitions}.flatten.reject{|d| d.primitive?}
     def_list.each do |d|
       code=[]
       cdef=MFCompiledDefinition.new
@@ -126,15 +128,18 @@ class MF_ByteCode < MFactor
       word.content.map{|w| image.concat int_bytes(w.value,word.element_size)}
     when MFByteLit then image << prim(:litb) << word.value
     when MFIntLit then (image << prim(:liti)).concat int_bytes(word.value,cell_width)
-    when MFPrim then if word.is_tail && word.name == "call" 
-                       image << prim("stcall")
-                     else
-                       image << prim(word.name)
-                     end
     when MFWord then
-      # puts "referring to #{word.name}"
-      image << ( word.is_tail ? prim(:btcall) : prim(:bcall) )
-      image.concat bcall_bytes(@compiled_definitions.find{|cdef| cdef.definition==word.definition}.location)
+      if word.definition.primitive?
+        if word.is_tail && word.name == "call"
+          image << prim("stcall")
+        else
+          image << prim(word.name)
+        end
+      else
+        # puts "referring to #{word.name}"
+        image << ( word.is_tail ? prim(:btcall) : prim(:bcall) )
+        image.concat bcall_bytes(@compiled_definitions.find{|cdef| cdef.definition==word.definition}.location)
+      end
     else raise "don't know how to compile #{word}"
     end
   end
@@ -207,14 +212,18 @@ end
 class MF_Cortex < MF_ByteCode
   def cell_width() 4 end
   def atom_size(elt)
-    @sizes={
-      MFPrim => 1,
-      MFWord => 3,
-      MFByteLit => 2,
-      MFIntLit => 5 }
-    s=@sizes[elt.class]
-    raise "unknown element size: #{elt} of #{elt.class}" unless s
-    s
+    case elt
+      when MFByteLit then 2
+      when MFIntLit then 5
+      when MFWord then
+      if elt.definition.primitive?
+        1
+      else
+        3
+      end
+    else
+      raise "unknown element size: #{elt} of #{elt.class}" unless s
+    end
   end
   def inst_base() 0xa0 end
   def header_length() 3 end
