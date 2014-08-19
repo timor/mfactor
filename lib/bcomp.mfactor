@@ -24,7 +24,12 @@ IN: bcomp
 : _stack2code ( acc -- ) _MP getmem + [ _MP setmem ] keep [ [ _-q, ] times ] with-MP ;
 
 ! return size of word when stored in quotation
-: _wordsize ( type -- size ) dup 0 = [ drop 1 ] [ dup 1 = [ drop 3 ] [ dup [ 2 = ] [ 5 = ] bi or [ drop cell 1 + ] [ dup 3 = [ drop cell 1 + ] [ dup 4 = [ 2 ] [ 6 = [ 0 ] [ "size for item unknown" print error ] if ] if ] if ] if ] if ] if ;
+: _wordsize ( type -- size ) dup 0 = [ drop 1 ]
+    [ dup 1 = [ drop 3 ]
+      [ dup [ 2 = ] [ 5 = ] bi or [ drop cell 1 + ]
+        [ dup 3 = [ drop cell 1 + ]
+          [ dup 4 = [ 2 ]
+            [ 6 = [ 0 ] [ "size for item unknown" print error ] if ] if ] if ] if ] if ] if ;
 
 ! determine size of quotation accumulated, careful: not tail recursive, return stack must be able to hold number of elements, retain stack must hold twice the number of elements in accumulator
 ! reminder: acc === .. item type n
