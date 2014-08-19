@@ -127,9 +127,9 @@ class MFStack
     @mark=items.length
     self
   end
-  # return sublist that has been changed since last call of mark
+  # return number of itmes that has been changed since last call of mark
   def get_marked
-    @a[@mark..-1]
+    @a.length - @mark
   end
   def length
     @a.length
