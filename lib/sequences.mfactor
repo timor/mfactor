@@ -3,6 +3,9 @@ USING: kernel math headers memory strings io ;
 IN: sequences
 
 
+! access the second byte in the header (see headers.mfactor), which by default al sequence pointers point to
+: length ( seq -- n ) getmem8 ;
+
 ! WARNING: <byte-array> has runtime allocation!
 : <byte-array> ( n -- byte array ) [ _strhead, ] keep _MP getmem [ [ 0xa5 b, ] times ] dip 1 - ;
 ! random access into byte-array or string, seq is assumed to point to the count byte of the sequence, and one byte before that the element size
