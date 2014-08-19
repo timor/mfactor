@@ -599,12 +599,27 @@ void interpreter(unsigned int start_base_address) {
 			  int res = fun(i1);
 			  ppush((cell)res);
 			  } break;
+		  case ccall_b:
+			  {
+			  int(*fun)(char) = (int (*)(char))ppop();
+			  int b1 = (char)ppop();
+			  int res = fun(b1);
+			  ppush((cell)res);
+			  } break;
 		  case ccall_bi:
 			  {
 				  int(*fun)(char, int) = (int (*)(char,int))ppop();
 				  int i2 = (int)ppop();
 				  char b1 = (char)ppop();
 				  int res = fun(b1,i2);
+				  ppush((cell)res);
+			  } break;
+		  case ccall_is:
+			  {
+				  int(*fun)(int,short) = (int (*)(int,short))ppop();
+				  short s2 = (short)ppop();
+				  int i1 = (int)ppop();
+				  int res = fun(i1,s2);
 				  ppush((cell)res);
 			  } break;
 		  case ccall_iis:
