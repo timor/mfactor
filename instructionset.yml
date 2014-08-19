@@ -80,7 +80,7 @@ search:
 memstart:
 memend:
 # dictionary mem
-dictstart: "dict-start"
+dictstart: "dictstart"
 dictend: :private
 # size of one cell
 cellsize: "cell"
