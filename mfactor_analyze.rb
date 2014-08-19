@@ -24,7 +24,9 @@ require 'parslet'
 # versions have to look the same, otherwise no compilation is possible, only execution.  A
 # phi node is inserted for every stack element that has been modified during the execution
 # of both possible paths.  To keep track of which stack elements need to be phi'd, the
-# stack is instructed to track the modifications since from the beginning of the if execution part.
+# stack is instructed to track the modifications since from the beginning of the if
+# execution part.  The stack containing the deepest modifications determines the number of
+# arguments that have to phi'd.
 
 # gensyms
 $unique='1'
