@@ -188,13 +188,14 @@ end
 
 
 def escape(str)
-  str.to_s.gsub(/[-+.><*]/,{
+  str.to_s.gsub(/[-+.><*=]/,{
              '+' => 'plus',
              '-' => 'minus',
              '.' => 'dot',
              '>' => 'gt',
              '<' => 'lt',
-             '*' => 'times'})
+             '*' => 'times',
+              '=' => 'equalp'})
 end
 
 # input: {port =>input,...}
