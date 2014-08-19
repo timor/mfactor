@@ -365,6 +365,7 @@ class MFStaticCompiler
     puts "compiling call to #{word.definition.name}"
     d=word.definition
     inputs=pstack.pop_n(d.effect[0].length)
+    inputs ||= []
     call=MFCompiledCall.new(d)
     i=-1
     outputs=d.effect[1].map do |e|
