@@ -64,9 +64,6 @@ def infer(body)
   e
 end
 
-def get_stack_effect(d)
-end
-
 class MFStack
   def initialize(a=[])
     @a = a
