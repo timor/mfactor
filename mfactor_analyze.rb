@@ -211,7 +211,7 @@ def dot_record(id,name,inputs,outputs,io,nodes)
     "<#{port_id}> #{port}"
   end.join(" | ")+"}"
   if outputs
-    io << " | #{name} | {"
+    io << " | #{escape(name)} | {"
     io << outputs.map do |o|
       port=gensym(o.type)
       nodes[o]= "#{id}:#{port}"
