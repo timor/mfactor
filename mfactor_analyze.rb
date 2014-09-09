@@ -379,6 +379,7 @@ class MFStaticCompiler
     maybe_compile(name)
     io << <<END
 digraph #{name}_definition {
+graph [ rankdir=LR ]
 node [shape=record,fontname=helvetica]
 END
     dot_code(@compiled_definitions[name].outputs,io)
