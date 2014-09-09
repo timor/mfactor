@@ -45,3 +45,6 @@ IN: tests
 : top ( -- ) _run-tests _init_storage listener ;
 
 : testloop ( -- ) [ '!' emit t ] loop ;
+
+: testnums ( x -- x x ) [ 1 + ] [ 2 + ] bi ;
+: testq ( x -- x ) dup 0 > [ 1 + ] [ 2 - ] if 3 * ;
