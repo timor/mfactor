@@ -1,9 +1,13 @@
 # -*- mode:ruby -*-
 
 require 'yaml'
-require_relative 'mfactor_analyze'
+# set up load path
+$:.unshift(File.join(File.dirname(__FILE__),"..","lib"))
+print $:
+require_relative '../lib/mfactor/analyze'
 
 THISDIR=File.dirname(__FILE__)
+ISETFILE=File.join(THISDIR,"../instructionset.yml")
 
 # generate the mfactor side of the ff code
 def ff_mfactor (yaml,out)
@@ -38,8 +42,8 @@ end
 
 directory "generated"
 
-require_relative "mfactor"
-require_relative "mfactor_bytecode"
+require "mfactor"
+require "mfactor/bytecode"
 
 # main code generation routine
 
@@ -51,7 +55,7 @@ def build_stdlib
   end
   # iset=YAML.load_file("#{THISDIR}/instructionset.yml")
   # stdlib=YAML_Mfactor.new("generated/mfactor.yml",iset)
-  mf=Object.const_get(GENERATOR).new([MFACTOR_SRC_DIR,"generated"])
+  mf=MFactor.const_get(GENERATOR).new([MFACTOR_SRC_DIR,"generated"])
   mf.load_vocab(MFACTOR_ROOT_VOCAB)
   File.open("generated/stdlib_size.h","w") do |f|
     f.puts "#define STDLIB_SIZE #{mf.bytecode_size}"
@@ -90,7 +94,7 @@ file "generated/_generated_" => STDLIB_FILES+["generated/inst_enum.h"] do
 end
 
 STDLIB_FILES.each do |f|
-  file f => ["generated","#{THISDIR}/instructionset.yml"]+FileList["#{THISDIR}/lib/*.mfactor"]+FileList["#{MFACTOR_SRC_DIR}/*.mfactor"] do
+  file f => ["generated","#{ISETFILE}"]+FileList["#{THISDIR}/lib/*.mfactor"]+FileList["#{MFACTOR_SRC_DIR}/*.mfactor"] do
     build_stdlib
   end
   if defined? $mfactor_ff
@@ -98,9 +102,9 @@ STDLIB_FILES.each do |f|
   end
 end
 
-file "generated/inst_enum.h" => ["#{THISDIR}/instructionset.yml"] do
+file "generated/inst_enum.h" => ["#{ISETFILE}"] do
   puts "updating instruction set"
-  iset=YAML.load_file("#{THISDIR}/instructionset.yml")
+  iset=YAML.load_file("#{ISETFILE}")
   File.open("generated/inst_enum.h","w") do |f|
     f.puts "enum inst_set {\n"
     i=INSTBASE
