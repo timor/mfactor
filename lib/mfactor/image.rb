@@ -11,7 +11,7 @@ $mf_verbose= defined?(Rake) ? Rake.verbose : nil
 require 'mfactor/parser'
 
 # TODO: replace ISET with all loaded primitives, used in bytecode compiler
-ISET=Hash[YAML.load_file(File.dirname(__FILE__)+"/../instructionset.yml").map{ |cname,name|
+ISET=Hash[YAML.load_file(File.dirname(__FILE__)+"/../../instructionset.yml").map{ |cname,name|
             [name==:private ? cname : (name || cname) , cname ] }]
 puts "Instruction Set: #{ISET}" if $mf_verbose==true
 
@@ -54,7 +54,7 @@ module MFactor
   $current_mfactor_file=nil
 
   # used to build up an application image composed of multiple source files
-  class MFactor
+  class Image
     attr_accessor :dictionary
     attr_accessor :vocab_roots
     @@parser = MFP.new
@@ -63,7 +63,7 @@ module MFactor
       @files=[]                   # keep track of loaded files
       # @current_file=nil
       @dictionary={"kernel"=>MFVocabulary.new("kernel")}
-      @vocab_roots=[*roots,File.expand_path(File.dirname(__FILE__)+"/../src/mfactor")]
+      @vocab_roots=[*roots,File.expand_path(File.dirname(__FILE__)+"/../../src/mfactor")]
       puts "vocab load path: #{@vocab_roots}" if $mf_verbose
     end
     # call the parser on an input object (file)

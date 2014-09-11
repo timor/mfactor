@@ -42,7 +42,6 @@ end
 
 directory "generated"
 
-require "mfactor"
 require "mfactor/bytecode"
 
 # main code generation routine

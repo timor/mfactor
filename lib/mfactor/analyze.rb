@@ -1,4 +1,4 @@
-require 'mfactor'
+require 'mfactor/image'
 require 'parslet'
 module MFactor
 

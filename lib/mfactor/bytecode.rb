@@ -2,7 +2,7 @@
 # performs dictionary validation among other stuff
 
 
-require 'mfactor'
+require 'mfactor/image'
 
 module MFactor
 
@@ -17,7 +17,7 @@ module MFactor
 
 
   # expect to be created with already loaded MFactor instance
-  class MF_ByteCode < MFactor
+  class ByteCodeImage < Image
     SEQ_ELT_DATA=0
     SEQ_ELT_REF=1
     attr_accessor :compiled_definitions
@@ -194,7 +194,7 @@ module MFactor
     end
   end
 
-  class MF_Linux64 < MF_ByteCode
+  class MF_Linux64 < ByteCodeImage
     def cell_width() 8 end
     def atom_size(elt)
       @sizes={
@@ -211,7 +211,7 @@ module MFactor
     def header_length() 3 end
   end
 
-  class MF_Cortex < MF_ByteCode
+  class MF_Cortex < ByteCodeImage
     def cell_width() 4 end
     def atom_size(elt)
       case elt
