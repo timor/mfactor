@@ -4,7 +4,7 @@ module MFactor
   class Vocabulary
     attr_accessor :name
     attr_accessor :definitions
-    def initialize(name)
+    def initialize(name="__unnamed__")
       @name=name
       @index={}
       @definitions=[]
