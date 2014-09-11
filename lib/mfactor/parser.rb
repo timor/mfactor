@@ -54,6 +54,8 @@ module MFactor
   # maybe better to use hash instead of methods
 
   # Classes that are output by the parser transformations
+
+  # represents a word occurrence in the context of a number of executed words (e.g. definition body, or quotation body)
   class MFWord < Struct.new(:name,:definition,:is_tail)
     def initialize(*a)
       super *a
@@ -72,11 +74,13 @@ module MFactor
     end
   end
 
+  # integer literal
   class MFIntLit < Struct.new(:value)
     def see
       "#I#{value}"
     end
   end
+  # special case: byte-sized literal
   class MFByteLit < MFIntLit
     def see
       "#B#{value}"
