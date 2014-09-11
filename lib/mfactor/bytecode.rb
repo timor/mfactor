@@ -194,40 +194,43 @@ module MFactor
     end
   end
 
-  class MF_Linux64 < ByteCodeImage
-    def cell_width() 8 end
-    def atom_size(elt)
-      @sizes={
-        MFPrim => 1,
-        MFWord => 3,
-        MFByteLit => 2,
-        MFIntLit => 9 }
-      s=@sizes[elt.class]
-      raise "unknown element size: #{elt} of #{elt.class}" unless s
-      s
-    end
-    def inst_base() 0x80 end
-    # header includes lit instruction ( litc type count )
-    def header_length() 3 end
-  end
+  module ByteCode
 
-  class MF_Cortex < ByteCodeImage
-    def cell_width() 4 end
-    def atom_size(elt)
-      case elt
-      when MFByteLit then 2
-      when MFIntLit then 5
-      when MFWord then
-        if elt.definition.primitive?
-          1
-        else
-          3
-        end
-      else
+    class Linux64 < ByteCodeImage
+      def cell_width() 8 end
+      def atom_size(elt)
+        @sizes={
+          MFPrim => 1,
+          MFWord => 3,
+          MFByteLit => 2,
+          MFIntLit => 9 }
+        s=@sizes[elt.class]
         raise "unknown element size: #{elt} of #{elt.class}" unless s
+        s
       end
+      def inst_base() 0x80 end
+      # header includes lit instruction ( litc type count )
+      def header_length() 3 end
     end
-    def inst_base() 0xa0 end
-    def header_length() 3 end
+
+    class Cortex < ByteCodeImage
+      def cell_width() 4 end
+      def atom_size(elt)
+        case elt
+        when MFByteLit then 2
+        when MFIntLit then 5
+        when MFWord then
+          if elt.definition.primitive?
+            1
+          else
+            3
+          end
+        else
+          raise "unknown element size: #{elt} of #{elt.class}" unless s
+        end
+      end
+      def inst_base() 0xa0 end
+      def header_length() 3 end
+    end
   end
 end
