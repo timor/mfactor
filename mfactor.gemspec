@@ -6,6 +6,6 @@ Gem::Specification.new do |s|
   s.description = "Ruby parser and code generator for using factor code on embedded systems, or other simplified execution environments"
   s.authors = ["timor"]
   s.email = "timor.dd@googlemail.com"
-  s.files= FileList["lib/**.rb","tasks/**.rb"].to_a
+  s.files= Dir["lib/**/*.rb","tasks/**.rake","instructionset.yml","Readme.md"].to_a
   s.license = 'CC BY-NC-ND'
 end
