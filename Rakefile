@@ -133,7 +133,7 @@ GDBEND
   sh "#{GDB} #{args} #{PROG}"
 end
 
-import "stdlib.rake"
+import "tasks/stdlib.rake"
 
 # $mfactor_sources=FileList["lib/*.mfactor"]
 MFACTOR_SRC_DIR=""
@@ -144,3 +144,11 @@ require 'yaml'
 CLEAN.include "generated"
 
 file "interpreter.o" => [:stdlib,"generated/inst_enum.h"]
+
+# testing ruby code itself
+require 'rake/testtask'
+Rake::TestTask.new do |t|
+  t.libs << 'test'
+end
+desc "Run ruby tests"
+task :default => :test
