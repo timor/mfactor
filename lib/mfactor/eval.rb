@@ -1,19 +1,31 @@
+require 'mfactor/vocab'
+# for the definition object
+require 'mfactor/parser'
+
 module MFactor
   class Eval
-    def >>(n)
-      advance n
-    end
+    attr_accessor :primitives  # for debugging
     def initialize(a=[])
+      @variables=[]             # array for holding special variables
+      @dictionary={}            # the dictionary: "name"->Vocab pairs
+      bootvocab=Vocabulary.new("bootvocab")
+      @search_vocabs=[bootvocab]
+      @current_vocab=bootvocab
+      # if the current vocab is bootstrap, all definitions go into this object itself
       @a=a
+      @primitives={
+        :dup => proc { @a+=[@a[-1]] },
+        :drop => proc { @a=@a[0...-1] },
+        :clear => proc { @a=[] },
+        :print => proc { print @a.pop },
+        :swap => proc { @a[-2],@a[-1] = @a[-1],@a[-2] },
+        :_? => proc { if @a.pop ; @a.pop else @a.delete_at -2 end },
+        :call => proc { @a.pop.each {|w| eval w } }
+      }
       self
     end
-    def dup
-      @a+=[@a[-1]]
-      self
-    end
-    def drop
-      @a=@a[0...-1]
-      self
+    def >>(n)
+      eval n
     end
     def clear
       @a=[]
@@ -23,62 +35,64 @@ module MFactor
       @a.push s
       self
     end
-    def print
-      super @a.pop
-      self
-    end
     def push elt
       @a.push elt
       self
     end
-    def method_missing(name)
-      if name[0] == 'I'
-        @a.push name[1..-1].to_i
-        self
-      elsif @a[-1].respond_to? name
-        @a.push @a.pop.send(name)
-        self
-      else
-        raise "unknown word: '#{name}'"
-      end
-    end
-    def q &proc
-      @a.push proc
-      self
-    end
-    def call
-      self.instance_eval &@a.pop
-      self
-    end
-    def _?
-      if @a.pop
-        @a.pop
-      else
-        @a.delete_at -2
-      end
-      self
-    end
     def [](*args)
       args.each do |n|
-        advance n
+        eval n
       end
       self
     end
-    def define (name, arr)
-      define_singleton_method(name) do
-        self[*arr]
-      end
+    def define (namesym, arr)
+      @current_vocab.add MFDefinition.new(namesym.to_s,":",nil,arr,[])
       self
     end
-    private
-    def advance n
-      if n.is_a? Symbol
-        send n
+    def pstack
+      @a
+    end
+    def eval n
+      case n
+      when Symbol then
+        # first check current vocab for definition
+        unless (d=search n.to_s).nil?
+          self.[] *d.body
+        else                    # if none found, send message to self, which paramounts to 
+          if @primitives[n]
+            @primitives[n].call
+          elsif @a[-1].respond_to? n  # allow calling ruby methods 
+            target = @a.pop
+            nargs = target.method(n).arity
+            nargs = -nargs-1 if nargs < 0
+            if nargs > 0
+              @a,args = @a[0...-nargs],@a[-nargs..-1]
+            else
+              args = []
+            end
+              @a.push target.send(n,*args)
+          else
+            raise "unknown word: '#{n}'"
+          end
+        end
+      when Proc then
+        self.instance_eval &n
       else 
         @a.push n
       end
       self
     end
+    # search for name
+    def search name
+      @search_vocabs.each do |vocab|
+        unless (d=vocab.find(name)).nil?
+          return d
+        end
+      end
+      nil
+    end
+    # when called, boot up an evaluator that is actually able to parse more definitions
+    def boot
+    end
   end
-
 end
