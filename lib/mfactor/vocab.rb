@@ -1,7 +1,7 @@
 module MFactor
 
   # named container for definitions
-  class MFVocabulary
+  class Vocabulary
     attr_accessor :name
     attr_accessor :definitions
     def initialize(name)

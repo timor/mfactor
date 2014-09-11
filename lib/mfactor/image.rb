@@ -39,7 +39,7 @@ module MFactor
     def initialize(roots)
       @files=[]                   # keep track of loaded files
       # @current_file=nil
-      @dictionary={"kernel"=>MFVocabulary.new("kernel")}
+      @dictionary={"kernel"=>Vocabulary.new("kernel")}
       @vocab_roots=[*roots,File.expand_path(File.dirname(__FILE__)+"/../../src/mfactor")]
       puts "vocab load path: #{@vocab_roots}" if $mf_verbose
     end
@@ -92,7 +92,7 @@ module MFactor
     # return existing or add
     def get_vocabulary_create(name)
       unless @dictionary[name.to_s]
-        @dictionary[name.to_s] = MFVocabulary.new(name.to_s)
+        @dictionary[name.to_s] = Vocabulary.new(name.to_s)
       end
       @dictionary[name.to_s]
     end
