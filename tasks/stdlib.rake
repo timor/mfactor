@@ -3,7 +3,6 @@
 require 'yaml'
 # set up load path
 $:.unshift(File.join(File.dirname(__FILE__),"..","lib"))
-print $:
 require_relative '../lib/mfactor/analyze'
 
 THISDIR=File.dirname(__FILE__)
