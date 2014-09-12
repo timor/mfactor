@@ -51,7 +51,6 @@ class EvalTest < Test::Unit::TestCase
     assert_equal [:foo],@e.pstack
   end
   def test_boot
-    e = MFactor::Eval.new
-    e.define(:token,[])
+    @e.boot
   end
 end
