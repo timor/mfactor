@@ -55,7 +55,14 @@ class EvalTest < Test::Unit::TestCase
   end
   def test_proc
     @e >> proc { push(:foo)}
+    @e >> :call
     assert_equal [:foo],@e.pstack
+  end
+  def test_quotations
+    @e >> [ 1, 2 ] >> :call
+    assert_equal [1, 2], @e.pstack
+    @e >> [ :+ ] >> :call
+    assert_equal [3], @e.pstack
   end
   def test_token
     @e.open("that 123")
@@ -70,6 +77,13 @@ class EvalTest < Test::Unit::TestCase
       @e[:token,:token]
       assert_equal ["that","123"],@e.pstack
     end
+  end
+  def test_compose
+    @e >> [ 1, 2 ] >> [ :+ ]
+    @e >> :compose
+    assert_instance_of Proc, @e.pstack[0]
+    @e >> :call
+    assert_equal [3], @e.pstack
   end
   def test_boot
     @e.boot

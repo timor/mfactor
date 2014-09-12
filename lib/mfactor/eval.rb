@@ -52,8 +52,13 @@ module MFactor
         :print => proc { print @a.pop },
         :swap => proc { @a[-2],@a[-1] = @a[-1],@a[-2] },
         :_? => proc { if @a.pop ; @a.pop else @a.delete_at -2 end },
-        :call => proc { @a.pop.each {|w| eval w } },
-        :token => proc { @a.push @tokenizer.next }
+        :call => proc { case callable = @a.pop
+                        when Array then callable.each {|w| eval w }
+                        when Proc then instance_eval &callable
+                        else raise "cannot call #{callable}"
+                        end },
+        :token => proc { @a.push @tokenizer.next },
+        :compose => proc { compose }
       }
       if input
         open input
@@ -119,9 +124,7 @@ module MFactor
             raise "unknown word: '#{n}'"
           end
         end
-      when Proc then
-        self.instance_eval &n
-      else 
+      else
         @a.push n
       end
       self
@@ -137,6 +140,17 @@ module MFactor
     end
     # when called, boot up an evaluator that is actually able to parse more definitions
     def boot
+    end
+    private
+    def compose
+      proc_2=@a.pop
+      proc_1=@a.pop
+      push proc {
+        push proc_1
+        eval :call
+        push proc_2
+        eval :call
+      }
     end
   end
 end
