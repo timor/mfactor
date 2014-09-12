@@ -45,12 +45,15 @@ module MFactor
       @current_vocab=bootvocab
       # if the current vocab is bootstrap, all definitions go into this object itself
       @a=a
+      @r=[]
       @primitives={
         :dup => proc { @a+=[@a[-1]] },
         :drop => proc { @a=@a[0...-1] },
         :clear => proc { @a=[] },
         :print => proc { print @a.pop },
         :swap => proc { @a[-2],@a[-1] = @a[-1],@a[-2] },
+        :to_r => proc { @r.push @a.pop },
+        :r_from => proc { @a.push @r.pop },
         :_? => proc { if @a.delete_at(-3); @a.pop else @a.delete_at -2 end },
         :call => proc { case callable = @a.pop
                         when Array then callable.each {|w| eval w }
@@ -93,6 +96,9 @@ module MFactor
     end
     def pstack
       @a
+    end
+    def rstack
+      @r
     end
     # set @tokenizer to an enumerator that responds to :next
     def open thing
