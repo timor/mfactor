@@ -101,7 +101,37 @@ class EvalTest < Test::Unit::TestCase
     @e[:dup,:equalp]
     assert_equal [2,true], @e.pstack
   end
-  def test_boot
+end
+
+class EvalBootedTest < Test::Unit::TestCase
+  def setup
+    @e = MFactor::Eval.new
     @e.boot
+  end
+  def test_if
+    @e[0,true,[1],[2],:if]
+    assert_equal [0,1],@e.pstack
+    @e.clear
+    @e[0,false,[1],[2],:if]
+    assert_equal [0,2],@e.pstack
+  end
+  def test_dip
+    @e >> 4 >> [1, 2, :+ ] >> :dip
+    assert_equal [3, 4], @e.pstack
+  end
+  def test_keep
+    @e[1,2,[:+],:keep]
+    assert_equal [3,2],@e.pstack
+  end
+  def test_when
+    @e[1,true,[ 2 ], :when ]
+    assert_equal [1,2],@e.pstack
+    @e.clear
+    @e[1,false,[ 2 ], :when ]
+    assert_equal [1],@e.pstack
+    end
+  def test_loop
+    @e[1, [ 1, :+, :dup, 5, :equalp, :not ], :loop ]
+    assert_equal [5], @e.pstack
   end
 end

@@ -154,6 +154,11 @@ module MFactor
     end
     # when called, boot up an evaluator that is actually able to parse more definitions
     def boot
+      define :if, [ :_?, :call ]
+      define :dip, [ :swap, :to_r, :call, :r_from ]
+      define :keep, [ :over, [ :call ], :dip ]
+      define :when, [ :swap, [ :call ], [ :drop ], :if ]
+      define :loop, [ [ :call ], :keep, [ :loop ], :curry, :when ]
     end
     private
     def compose
