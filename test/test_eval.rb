@@ -81,8 +81,12 @@ class EvalTest < Test::Unit::TestCase
   def test_compose
     @e >> [ 1, 2 ] >> [ :+ ]
     @e >> :compose
-    assert_instance_of Proc, @e.pstack[0]
     @e >> :call
+    assert_equal [3], @e.pstack
+  end
+  def test_curry
+    @e >> 1 >> [ 2, :+ ]
+    @e >> :curry >> :call
     assert_equal [3], @e.pstack
   end
   def test_boot

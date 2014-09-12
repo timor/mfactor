@@ -58,7 +58,8 @@ module MFactor
                         else raise "cannot call #{callable}"
                         end },
         :token => proc { @a.push @tokenizer.next },
-        :compose => proc { compose }
+        :compose => proc { compose },
+        :curry => proc { curry }
       }
       if input
         open input
@@ -140,6 +141,7 @@ module MFactor
     end
     # when called, boot up an evaluator that is actually able to parse more definitions
     def boot
+
     end
     private
     def compose
@@ -149,6 +151,10 @@ module MFactor
             proc_1, :call,
             proc_2, :call
       ]
+    end
+    def curry
+      @a[-2]=[ @a[-2] ]
+      compose
     end
   end
 end
