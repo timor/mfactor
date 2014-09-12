@@ -89,6 +89,18 @@ class EvalTest < Test::Unit::TestCase
     @e >> :curry >> :call
     assert_equal [3], @e.pstack
   end
+  def test_primitives
+    @e[1,2,:swap]
+    assert_equal [2,1], @e.pstack
+    @e[:over]
+    assert_equal [2,1,2], @e.pstack
+    @e[:not]
+    assert_equal [2,1,false], @e.pstack
+    @e[:equalp]
+    assert_equal [2,false], @e.pstack
+    @e[:dup,:equalp]
+    assert_equal [2,true], @e.pstack
+  end
   def test_boot
     @e.boot
   end

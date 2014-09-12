@@ -47,7 +47,10 @@ module MFactor
       @a=a
       @r=[]
       @primitives={
+        :not => proc { @a[-1] = !@a[-1] },
+        :equalp => proc { @a[-1]=(@a.pop == @a[-1]) },
         :dup => proc { @a+=[@a[-1]] },
+        :over => proc { @a.push @a[-2] },
         :drop => proc { @a=@a[0...-1] },
         :clear => proc { @a=[] },
         :print => proc { print @a.pop },
