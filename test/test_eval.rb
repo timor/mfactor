@@ -108,6 +108,9 @@ class EvalBootedTest < Test::Unit::TestCase
     @e = MFactor::Eval.new
     @e.boot
   end
+  def assert_stack(*items)
+    assert_equal items, @e.pstack
+  end
   def test_if
     @e[0,true,[1],[2],:if]
     assert_equal [0,1],@e.pstack
@@ -153,5 +156,9 @@ class EvalBootedTest < Test::Unit::TestCase
   def test_suffix
     @e[[],1,:suffix!]
     assert_equal [[1]],@e.pstack
+  end
+  def test_scan_datum
+    @e.open("123 :asd")[:scan_datum,:scan_datum]
+    assert_stack(123,:asd)
   end
 end

@@ -118,6 +118,7 @@ module MFactor
         when String then Tokenizer.new(StringIO.new(thing)).each
         else Tokenizer.new(thing).each
         end
+      self
     end
     def eval n
       case n
@@ -175,6 +176,7 @@ module MFactor
       define :neg, [ proc { push(- pop())}, :call ]
       define :minus, [ :neg, :+ ]
       define :suffix!, [ proc { @a[-2] << @a.pop }, :call]
+      define :scan_datum, [ :token, proc { push Kernel.eval(pop) }, :call ]
     end
     private
     def compose
