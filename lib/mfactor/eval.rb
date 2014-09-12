@@ -51,7 +51,7 @@ module MFactor
         :clear => proc { @a=[] },
         :print => proc { print @a.pop },
         :swap => proc { @a[-2],@a[-1] = @a[-1],@a[-2] },
-        :_? => proc { if @a.pop ; @a.pop else @a.delete_at -2 end },
+        :_? => proc { if @a.delete_at(-3); @a.pop else @a.delete_at -2 end },
         :call => proc { case callable = @a.pop
                         when Array then callable.each {|w| eval w }
                         when Proc then instance_eval &callable
@@ -141,7 +141,6 @@ module MFactor
     end
     # when called, boot up an evaluator that is actually able to parse more definitions
     def boot
-
     end
     private
     def compose
