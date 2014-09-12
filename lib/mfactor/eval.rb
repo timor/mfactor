@@ -57,11 +57,11 @@ module MFactor
       when Symbol then
         # first check current vocab for definition
         unless (d=search n.to_s).nil?
-          self.[] *d.body
-        else                    # if none found, send message to self, which paramounts to 
+          self.[] *d.body      # execute body
+        else
           if @primitives[n]
             @primitives[n].call
-          elsif @a[-1].respond_to? n  # allow calling ruby methods 
+          elsif @a[-1].respond_to? n  # allow calling ruby methods of TOS
             target = @a.pop
             nargs = target.method(n).arity
             nargs = -nargs-1 if nargs < 0
