@@ -1,5 +1,6 @@
 require 'test/unit'
 require 'mfactor/eval'
+require 'tempfile'
 
 class TokenizerTest < Test::Unit::TestCase
   def string_tokens(s)
@@ -24,6 +25,12 @@ class TokenizerTest < Test::Unit::TestCase
     assert_equal 1,a[0].line
     assert_equal 2,a[-1].line
   end
+  def test_enum_interface
+    e1 = MFactor::Tokenizer.new(StringIO.new("3 items here")).each
+    assert_equal "3", e1.next
+    assert_equal "items", e1.next
+    assert_equal "here", e1.next
+  end
 end
 
 class EvalTest < Test::Unit::TestCase
@@ -33,7 +40,7 @@ class EvalTest < Test::Unit::TestCase
   def test_basic_eval
     @e.eval 1
     assert_equal [ 1 ],@e.pstack
-    @e>> 2
+    @e >> 2
     assert_equal [1,2], @e.pstack
   end
   def test_object_creation
@@ -43,12 +50,26 @@ class EvalTest < Test::Unit::TestCase
   end
   def test_definition
     @e.define(:test_def,[1,2,:+])
-    @e>> :test_def
+    @e >> :test_def
     assert_equal [3], @e.pstack
   end
   def test_proc
-    @e>> proc { push(:foo)}
+    @e >> proc { push(:foo)}
     assert_equal [:foo],@e.pstack
+  end
+  def test_token
+    @e.open("that 123")
+    @e[:token,:token]
+    assert_equal ["that","123"],@e.pstack
+    @e.clear
+    tf=Tempfile.open('tokentest') do |f|
+      f.puts "that","123"
+      f.flush
+      f.rewind
+      @e.open f
+      @e[:token,:token]
+      assert_equal ["that","123"],@e.pstack
+    end
   end
   def test_boot
     @e.boot

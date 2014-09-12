@@ -1,6 +1,7 @@
 require 'mfactor/vocab'
 # for the definition object
 require 'mfactor/parser'
+require 'stringio'
 
 module MFactor
   class Token < String
@@ -19,13 +20,13 @@ module MFactor
       @s=source
     end
     def each
+      return enum_for(:each) unless block_given?
       col=0
       lnum=0
       while line=@s.gets
-        line.chomp
         lnum=lnum+1
         col=0
-        line=StringIO.new(line)
+        line=StringIO.new(line.chomp)
         while part=line.gets(" ")
           token=part.chomp(" ").gsub(/\t/,"")
           yield Token.new(token, lnum, col) if token != ""
@@ -36,7 +37,7 @@ module MFactor
   end
   class Eval
     attr_accessor :primitives  # for debugging
-    def initialize(a=[])
+    def initialize(a=[],input=nil)
       @variables=[]             # array for holding special variables
       @dictionary={}            # the dictionary: "name"->Vocab pairs
       bootvocab=Vocabulary.new("bootvocab")
@@ -51,8 +52,12 @@ module MFactor
         :print => proc { print @a.pop },
         :swap => proc { @a[-2],@a[-1] = @a[-1],@a[-2] },
         :_? => proc { if @a.pop ; @a.pop else @a.delete_at -2 end },
-        :call => proc { @a.pop.each {|w| eval w } }
+        :call => proc { @a.pop.each {|w| eval w } },
+        :token => proc { @a.push @tokenizer.next }
       }
+      if input
+        open input
+      end
       self
     end
     def >>(n)
@@ -82,6 +87,14 @@ module MFactor
     end
     def pstack
       @a
+    end
+    # set @tokenizer to an enumerator that responds to :next
+    def open thing
+      @tokenizer =
+        case thing
+        when String then Tokenizer.new(StringIO.new(thing)).each
+        else Tokenizer.new(thing).each
+        end
     end
     def eval n
       case n
