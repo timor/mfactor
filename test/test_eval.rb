@@ -27,29 +27,28 @@ class TokenizerTest < Test::Unit::TestCase
 end
 
 class EvalTest < Test::Unit::TestCase
+  def setup
+    @e = MFactor::Eval.new
+  end
   def test_basic_eval
-    e = MFactor::Eval.new
-    e.eval 1
-    assert_equal e.pstack, [ 1 ]
-    e >> 2
-    assert_equal e.pstack, [1,2]
+    @e.eval 1
+    assert_equal [ 1 ],@e.pstack
+    @e>> 2
+    assert_equal [1,2], @e.pstack
   end
   def test_object_creation
-    e = MFactor::Eval.new
-    e[MFactor::Vocabulary, :new]
-    assert_instance_of MFactor::Vocabulary, e.pstack[0]
-    assert_equal e.pstack[0].name, "__unnamed__"
+    @e[MFactor::Vocabulary, :new]
+    assert_instance_of MFactor::Vocabulary, @e.pstack[0]
+    assert_equal  "__unnamed__", @e.pstack[0].name
   end
-  def test_defnition
-    e = MFactor::Eval.new
-    e.define(:test_def,[1,2,:+])
-    e >> :test_def
-    assert_equal e.pstack,[3]
+  def test_definition
+    @e.define(:test_def,[1,2,:+])
+    @e>> :test_def
+    assert_equal [3], @e.pstack
   end
   def test_proc
-    e = MFactor::Eval.new
-    e >> proc { push(:foo)}
-    assert_equal e.pstack,[:foo]
+    @e>> proc { push(:foo)}
+    assert_equal [:foo],@e.pstack
   end
   def test_boot
     e = MFactor::Eval.new
