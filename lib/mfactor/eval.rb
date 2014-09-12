@@ -145,12 +145,10 @@ module MFactor
     def compose
       proc_2=@a.pop
       proc_1=@a.pop
-      push proc {
-        push proc_1
-        eval :call
-        push proc_2
-        eval :call
-      }
+      push [
+            proc_1, :call,
+            proc_2, :call
+      ]
     end
   end
 end
