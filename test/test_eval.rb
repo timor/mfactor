@@ -146,5 +146,8 @@ class EvalBootedTest < Test::Unit::TestCase
     @e[1,1,:<=,1,1,:>=,3,2,:<=,3,2,:>=,2,3,:<=,2,3,:>=]
     assert_equal [true,true,false,true,true,false],@e.pstack
   end
+  def test_while
+    @e[5, [ 0, :over, :< ], [ :dup, 1, :minus ], :while ]
+    assert_equal [5,4,3,2,1,0],@e.pstack
   end
 end
