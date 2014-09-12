@@ -159,10 +159,7 @@ module MFactor
     def compose
       proc_2=@a.pop
       proc_1=@a.pop
-      push [
-            proc_1, :call,
-            proc_2, :call
-      ]
+      push [ proc_1, :call, proc_2, :call ]
     end
     def curry
       @a[-2]=[ @a[-2] ]
