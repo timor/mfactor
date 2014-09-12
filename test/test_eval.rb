@@ -134,4 +134,17 @@ class EvalBootedTest < Test::Unit::TestCase
     @e[1, [ 1, :+, :dup, 5, :equalp, :not ], :loop ]
     assert_equal [5], @e.pstack
   end
+  def test_logical
+    @e[ true, false, false, :or]
+    assert_equal [true,false],@e.pstack
+    @e[:or]
+    assert_equal [true],@e.pstack
+    @e.clear
+    @e[1,2,:<,1,2,:>,2,2,:<,2,2,:>]
+    assert_equal [true,false,false,false],@e.pstack
+    @e.clear
+    @e[1,1,:<=,1,1,:>=,3,2,:<=,3,2,:>=,2,3,:<=,2,3,:>=]
+    assert_equal [true,true,false,true,true,false],@e.pstack
+  end
+  end
 end

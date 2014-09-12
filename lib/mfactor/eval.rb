@@ -48,6 +48,7 @@ module MFactor
       @r=[]
       @primitives={
         :not => proc { @a[-1] = !@a[-1] },
+        :> => proc { @a[-1]=(@a.pop < @a[-1]) },
         :equalp => proc { @a[-1]=(@a.pop == @a[-1]) },
         :dup => proc { @a+=[@a[-1]] },
         :over => proc { @a.push @a[-2] },
@@ -90,6 +91,9 @@ module MFactor
     def push elt
       @a.push elt
       self
+    end
+    def pop
+      @a.pop
     end
     def [](*args)
       args.each do |n|
@@ -156,9 +160,20 @@ module MFactor
     def boot
       define :if, [ :_?, :call ]
       define :dip, [ :swap, :to_r, :call, :r_from ]
+      define :twodip, [ :swap, [ :dip ], :dip ]
+      define :twodup, [ :over, :over ]
       define :keep, [ :over, [ :call ], :dip ]
       define :when, [ :swap, [ :call ], [ :drop ], :if ]
       define :loop, [ [ :call ], :keep, [ :loop ], :curry, :when ]
+      define :do, [ :dup, :twodip ]
+      define :while, [ :swap, :do, :compose, [ :loop ], :curry, :when ]
+      define :<=, [ :>, :not ]
+      define :dupd, [ :to_r, :dup, :r_from ]
+      define :or, [ :dupd, :_? ]
+      define :>=, [ :twodup, :>, [ :equalp ], :dip, :or ]
+      define :<, [ :>=, :not ]
+      define :neg, [ proc { push(- pop())}, :call ]
+      define :minus, [ :neg, :+ ]
     end
     private
     def compose
