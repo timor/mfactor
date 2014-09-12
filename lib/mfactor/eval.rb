@@ -174,6 +174,7 @@ module MFactor
       define :<, [ :>=, :not ]
       define :neg, [ proc { push(- pop())}, :call ]
       define :minus, [ :neg, :+ ]
+      define :suffix!, [ proc { @a[-2] << @a.pop }, :call]
     end
     private
     def compose

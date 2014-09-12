@@ -150,4 +150,8 @@ class EvalBootedTest < Test::Unit::TestCase
     @e[5, [ 0, :over, :< ], [ :dup, 1, :minus ], :while ]
     assert_equal [5,4,3,2,1,0],@e.pstack
   end
+  def test_suffix
+    @e[[],1,:suffix!]
+    assert_equal [[1]],@e.pstack
+  end
 end
