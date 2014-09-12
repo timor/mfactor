@@ -66,8 +66,8 @@ class EvalTest < Test::Unit::TestCase
   end
   def test_token
     @e.open("that 123")
-    @e[:token,:token]
-    assert_equal ["that","123"],@e.pstack
+    @e[:token,:token,:token,:token]
+    assert_equal ["that","123",nil,nil],@e.pstack
     @e.clear
     tf=Tempfile.open('tokentest') do |f|
       f.puts "that","123"

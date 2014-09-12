@@ -63,7 +63,11 @@ module MFactor
                         when Proc then instance_eval &callable
                         else raise "cannot call #{callable}"
                         end },
-        :token => proc { @a.push @tokenizer.next },
+        :token => proc { @a.push begin
+                                   @tokenizer.next
+                                 rescue StopIteration
+                                   nil
+                                 end },
         :compose => proc { compose },
         :curry => proc { curry }
       }
