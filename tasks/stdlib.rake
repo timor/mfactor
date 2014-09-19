@@ -87,10 +87,11 @@ task :see_dict => "generated" do
 end
 
 STDLIB_FILES=["generated/stdlib.code.h","generated/stdlib.dict.h","generated/stdlib_size.h"]
-file "generated/_generated_" => STDLIB_FILES+["generated/inst_enum.h"] do
-  touch "generated/_generated_"
-end
+# file "generated/_generated_" => STDLIB_FILES+["generated/inst_enum.h"] do
+#   touch "generated/_generated_"
+# end
 
+# requesting any of the to-be-generated files triggers generation of all
 STDLIB_FILES.each do |f|
   file f => ["generated","#{ISETFILE}"]+FileList["#{THISDIR}/lib/*.mfactor"]+FileList["#{MFACTOR_SRC_DIR}/*.mfactor"] do
     build_stdlib
@@ -99,6 +100,10 @@ STDLIB_FILES.each do |f|
     file f => $mfactor_ff
   end
 end
+
+# make target application's object file depend on the generated stuff
+file MFACTOR_DEPENDING_OBJECT => STDLIB_FILES
+
 
 file "generated/inst_enum.h" => ["#{ISETFILE}"] do
   puts "updating instruction set"
