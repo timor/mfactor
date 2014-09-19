@@ -13,7 +13,7 @@ IN: sequences
 : ba-nth ( n seq -- elt ) _ba-assert-index + 1 + getmem8 ;
 : ba-set-nth ( elt n seq -- ) _ba-assert-index + 1 + setmem8 ;
 ! specialized version of each for byte arrays and strings
-: _ba-each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+1 quot ) 2dup [ [ getmem8 ] dip call ] 2dip [ 1 + ] dip ;
+: _ba-each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+1 quot ) [ [ getmem8 ] dip call ] 2keep [ 1 + ] dip ;
 : ba-each ( ... seq quot: ( ... x -- ... ) -- ... ) [ uncount ] dip swap [ _ba-each-step ] times 2drop ;
 : ba-reduce ( ... seq identity quot: ( ... prev elt -- ... next ) -- ... result ) [ swap ] dip ba-each ;
 : ba-find ( ... seq quot: ( ... elt -- ... ? ) -- ... i elt ? ) over strlen [ pick pick [ swap [ swap ba-nth ] dip call ] 2dip rot ] find-integer [ nip swap over swap ba-nth t ] [ 2nip f f ] if ;
