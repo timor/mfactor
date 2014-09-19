@@ -22,3 +22,4 @@ IN: math
 
 : min ( x y -- z ) [ < ] most ;
 : max ( x y -- z ) [ > ] most ;
+: clamp ( x min max -- y ) [ max ] dip min ;

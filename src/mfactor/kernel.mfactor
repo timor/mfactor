@@ -7,12 +7,16 @@ IN: kernel
 : dip ( x quot -- x ) swap >r call r> ; inline
 : 2dip ( x y quot -- x y ) swap [ dip ] dip ; inline
 : 3dip ( x y z quot -- x y z ) swap [ 2dip ] dip ; inline
+: 4dip ( w x y z quot -- w x y z ) swap [ 3dip ] dip ; inline
 : dupd ( x y -- x x y ) >r dup r> ;
 : over ( x y -- x y x ) dupd swap ;
 : pick ( x y z -- x y z x ) >r over r> swap ;
+: -rot ( x y z -- z x y ) swap >r swap r> ; ! deprecated
+: 2swap ( a b x y -- x y a b ) [ -rot ] dip -rot ;
 : 2over ( x y z -- x y z x y ) pick pick ;
 : 2dup ( a b  -- a b a b ) over over ;
 : 3dup ( x y z -- x y z x y z ) pick pick pick ;
+: 4dup ( w x y z -- w x y z w x y z ) [ 2dup ] 2dip 2swap [ 2dup] 2dip 2swap ;
 : 2drop ( a b -- ) drop drop ;
 : 3drop ( x y z -- ) drop drop drop ;
 : keep ( ..a x quot: ( ..a x -- ..b ) -- ..b x )
@@ -21,6 +25,8 @@ IN: kernel
     [ 2dup ] dip 2dip ; inline
 : 3keep ( ..a x y z quot: ( ..a x y z -- ..b ) -- ..b x y z )
     [ 3dup ] dip 3dip ; inline
+: 4keep ( ..a w x y z quot: ( ..a w x y z -- ..b ) -- ..b w x y z )
+    [ 4dup ] dip 4dip ; inline
 : bi ( x p q -- ) [ keep ] dip call ; inline
 : tri ( x p q r -- ) [ [ keep ] dip keep ] dip call ; inline
 : bi* ( x y p q -- ) [ dip ] dip call ; inline
@@ -28,11 +34,9 @@ IN: kernel
 : 2bi ( x y  p q -- ) [ 2keep ] dip call ; inline
 ! deprecated ones
 : rot ( x y z -- y z x ) >r swap r> swap ;
-: -rot ( x y z -- z x y ) swap >r swap r> ;
 : spin ( x y z -- z y x ) swap rot ;
 : tuck ( x y -- y x y ) swap over ;
 ! mine
-: 2swap ( a b x y -- x y a b ) [ -rot ] dip -rot ;
 
 ! control flow
 : if ( ..a ? true: ( ..a -- ..b ) false: ( ..a -- ..b ) -- ..b )
