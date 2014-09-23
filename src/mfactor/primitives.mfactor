@@ -39,6 +39,7 @@ PRIM: oplit ( -- ) "oplit" ;
 PRIM: qstart ( -- ) "qstart" ;
 PRIM: qend ( -- ) "qend" ;
 PRIM: error ( -- ) "error" ;
+PRIM: reset ( -- ) "reset" ;
 PRIM: dictstart ( -- addr ) "dictstart" ;
 PRIM: dictend ( -- addr ) "dictend" ;
 PRIM: parsenum ( str -- num/str success? ) "parsenum" ;
