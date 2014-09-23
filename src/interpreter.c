@@ -264,6 +264,11 @@ void interpreter(unsigned int start_base_address) {
     unsigned int debug_nest = 0; /* used in debug mode to track when
                                   * to stop single stepping*/
     bool debug_mode = false;
+	 /* get the address of the error handler */
+	 inst * handler=NULL;
+	 dict_entry * handler_entry=find_by_name("on-error",8);
+	 if (handler_entry)
+		 handler=handler_entry->address;
     #if DEBUG
     debug_mode=true;
     #endif
@@ -544,7 +549,16 @@ void interpreter(unsigned int start_base_address) {
           break;
         case error:
 	 _error:
-          printf("error!\n");
+			  if (handler)
+				  {
+					  ppush((unsigned int)psp);
+					  ppush(psp-pstack);
+					  ppush((unsigned int)returnsp);
+					  ppush(returnsp-returnstack);
+					  x=(unsigned int)handler;
+					  goto nested_call;
+				  }
+			 printf("error!\n");
           printf("\np");
           printstack(psp,pstack);
           printf("retain");
