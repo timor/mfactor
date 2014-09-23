@@ -42,7 +42,7 @@
 /* TODO: ensure correct scanning direction so that skipping over entries stays trivial */
 typedef struct dict_entry
 {
-	void * address;					/* pointer into memory */
+	inst * address;					/* pointer into memory */
 	unsigned char flags;		/* may include other flags later (inline, recursive, etc) */
 	unsigned char name_header; /* should always be zero */
 	unsigned char name_length;
