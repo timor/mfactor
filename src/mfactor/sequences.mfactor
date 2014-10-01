@@ -25,6 +25,7 @@ IN: sequences
 : _ia-each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+4 quot ) 2dup [ [ getmem ] dip call ] 2dip [ 4 + ] dip ;
 : ia-each ( ... seq quot: ( ... x -- ... ) -- ... ) [ uncount ] dip swap [ _ia-each-step ] times 2drop ;
 
+! known bad
 : each ( ... seq quot: ( ... x -- ... ) -- ... )
     over [ 1 + ] 2dip
     getmem8 [ dup 0 = [ ba-each ]
