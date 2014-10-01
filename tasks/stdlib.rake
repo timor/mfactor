@@ -93,7 +93,7 @@ STDLIB_FILES=["generated/stdlib.code.h","generated/stdlib.dict.h","generated/std
 
 # requesting any of the to-be-generated files triggers generation of all
 STDLIB_FILES.each do |f|
-  file f => ["generated","#{ISETFILE}"]+FileList["#{THISDIR}/lib/*.mfactor"]+FileList["#{MFACTOR_SRC_DIR}/*.mfactor"] do
+  file f => ["generated","#{ISETFILE}"]+FileList["#{THISDIR}/../src/mfactor/*.mfactor"]+FileList["#{MFACTOR_SRC_DIR}/*.mfactor"] do
     build_stdlib
   end
   if defined? $mfactor_ff
