@@ -18,7 +18,7 @@ IN: sequences
 : ba-reduce ( ... seq identity quot: ( ... prev elt -- ... next ) -- ... result ) [ swap ] dip ba-each ;
 : ba-find ( ... seq quot: ( ... elt -- ... ? ) -- ... i elt ? ) over strlen [ pick pick [ swap [ swap ba-nth ] dip call ] 2dip rot ] find-integer [ nip swap over swap ba-nth t ] [ 2nip f f ] if ;
 
-: ia-length ( ia -- n ) strlen 2 asr ;
+: ia-length ( ia -- n ) strlen ;
 : _ia-assert-index ( n seq -- n seq ) [ ia-length 0 swap in-range not [ "int-array index out of bound" print error ] when ] 2keep ;
 : ia-nth ( n seq -- elt ) _ia-assert-index 1 + swap 4 * + getmem ;
 : ia-set-nth ( elt n seq -- ) _ia-assert-index 1 + swap 4 * + setmem ;
