@@ -23,25 +23,25 @@ IN: tests
    [ 5 = ] dip 1 = and [ "!accumulator wrong!" print nl ] unless
    print nl ;
 : _run-tests ( -- ) nl [ [ 'b' emit ] 'a' emit call ] call
-    _test-emit _lcheck
-    _test-int _lcheck
-    _test-loop _lcheck
-    _test-mem _lcheck
+    _test-emit _lcheck          ! prints the 'c' of "abc"
+    _test-int _lcheck           ! prints "0xaffecafe"
+    _test-loop _lcheck          ! prints 543210
+    _test-mem _lcheck           ! prints 0xaffe
     _init_storage _lcheck       ! need to clean up after _test-mem!
-    _test-times _lcheck
-    _test-while _lcheck
-    _test-string _lcheck
-    _test-stack2string _lcheck
+    _test-times _lcheck         ! prints "!!!"
+    _test-while _lcheck         ! prints 543210
+    _test-string _lcheck        ! prints 0x5 0x61 0x62 0x63 x64 0x65 and another byte
+    _test-stack2string _lcheck  ! prints hello
     ! _test-string-reader _lcheck
     ! _test-receive-until
-    _test-ba-each _lcheck
-    _test-do-until _lcheck
-    _test-ia _lcheck
-    _test-ia-each _lcheck
+    _test-ba-each _lcheck       ! prints 543210
+    _test-do-until _lcheck      ! prints 543210
+    _test-ia _lcheck            ! prints 0x2 0x1 0 0 0 0x2 0 0 0 and another byte
+    _test-ia-each _lcheck       ! prints 543210
     [ "tests done." print ] call nl ;
 
 ! listener
 ! top level loop
-: top ( -- ) _run-tests listener ;
+: top ( -- ) _run-tests _init_storage listener ;
 
 : testloop ( -- ) [ '!' emit t ] loop ;
