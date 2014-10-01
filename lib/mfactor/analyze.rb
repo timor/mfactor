@@ -306,7 +306,7 @@ module MFactor
       end
     end
     def compile_quotation(q,pstack,rstack)
-      print "compiling quotation: "; puts see_word(q)
+      print "compiling quotation: "; puts MFactor::see_word(q)
       q.each do |word|
         print "p:"; pstack.show
         print "r:"; rstack.show

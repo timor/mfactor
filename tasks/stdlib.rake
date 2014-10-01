@@ -130,9 +130,9 @@ task :stdlib => ["generated/stdlib.code.h","generated/stdlib.dict.h","generated/
 require 'pp'
 
 task :mftest, :word do |t,args|
-  mf=Object.const_get(GENERATOR).new([MFACTOR_SRC_DIR,"generated"])
+  mf=MFactor::ByteCode.const_get(GENERATOR).new([MFACTOR_SRC_DIR,"generated"])
   mf.load_vocab(MFACTOR_ROOT_VOCAB)
-  a=MFStaticCompiler.new(mf)
+  a=MFactor::MFStaticCompiler.new(mf)
   # pp a.infer_word(args[:word])
   dotfile=Tempfile.new("_mftestgraph_dot")
   a.word_dot_graph(args[:word],dotfile)

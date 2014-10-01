@@ -25,7 +25,7 @@ module MFactor
     else elt.see
     end
   end
-
+  module_function :see_word
   require 'pp'
 
   $current_mfactor_file=nil
