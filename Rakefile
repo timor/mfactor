@@ -41,7 +41,7 @@ else
   GDB="arm-none-eabi-gdb"
   OBJDUMP="arm-none-eabi-objdump"
   SIZE="arm-none-eabi-size"
-  GENERATOR='MF_Cortex'
+  GENERATOR='Cortex'
 end
 
 # include

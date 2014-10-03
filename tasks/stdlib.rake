@@ -102,7 +102,10 @@ STDLIB_FILES.each do |f|
 end
 
 # make target application's object file depend on the generated stuff
-file MFACTOR_DEPENDING_OBJECT => STDLIB_FILES
+MFACTOR_DEPENDING_OBJECT ||= nil
+if MFACTOR_DEPENDING_OBJECT
+  file MFACTOR_DEPENDING_OBJECT => STDLIB_FILES
+end
 
 
 file "generated/inst_enum.h" => ["#{ISETFILE}"] do
