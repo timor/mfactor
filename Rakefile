@@ -95,7 +95,7 @@ task :size => [PROG] do
   sh "#{SIZE} #{PROG}" unless Rake.application.options.silent
 end
 
-task :default => [PROG,:size]
+# task :default => [PROG,:size]
 
 if hostp
   task :run => PROG do
@@ -149,6 +149,8 @@ file "interpreter.o" => [:stdlib,"generated/inst_enum.h"]
 require 'rake/testtask'
 Rake::TestTask.new do |t|
   t.libs << 'test'
+  t.test_files=FileList['test/test*.rb']
+  t.verbose = true
 end
 desc "Run ruby tests"
 task :default => :test
