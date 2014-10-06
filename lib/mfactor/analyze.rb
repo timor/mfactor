@@ -1,5 +1,9 @@
 require 'mfactor/image'
+require 'mfactor/dot'
+require 'mfactor/stack'
 require 'parslet'
+
+
 module MFactor
 
   # compilation:
@@ -29,258 +33,6 @@ module MFactor
   # execution part.  The stack containing the deepest modifications determines the number of
   # arguments that have to phi'd.
 
-  # gensyms
-  @@unique='1'
-  def gensym(s="G")
-    (s.to_s+@@unique.succ!).to_sym
-  end
-
-  def combine_effects(effect1, effect2)
-    in1,out1 = effect1.dup
-    in2,out2 = effect2.dup
-    if in2.length > out1.length
-      raise "not enough items on stack #{out1} for input effect #{in2}"
-    else
-      [in1,out1[0..-in2.length-1]+out2]
-    end
-  end
-
-  def infer(body)
-    e=nil
-    body.each do |w|
-      next_effect=
-        case w
-        when String then [[],[w]]
-        when MFIntLit then [[],[w.value]]
-        when MFWord then  w.definition.effect
-        when Array then [[],[infer(w)]]
-        end
-      if e
-        e=combine_effects(e,next_effect)
-      else
-        e=next_effect
-      end
-      pp e
-    end
-    e
-  end
-
-  class MFStack
-    def initialize(a=[])
-      @a = a
-      @mark=nil
-    end
-    def initialize_copy(source)
-      super
-      @a = source.items.dup
-    end
-    def items
-      @a
-    end
-    def swap
-      e1 = @a.pop
-      e2 = @a.pop
-      @a.push e1
-      @a.push e2
-    end
-    def pop()
-      if @a.size == 0
-        raise "stack empty!"
-      else
-        ret = @a.pop
-      end
-      if @mark && (@mark > @a.length)
-        @mark = @a.length
-      end
-      ret
-    end
-    def drop() @a.pop; nil end
-    def _dup()
-      e = @a.pop
-      @a.push e
-      @a.push e
-    end
-    def push(x) @a.push x end
-    # returns array
-    def pop_n(n)
-      if @a.length < n
-        # TODO: raise something that can be caught and converted into meaningful stack checker error
-        raise "not enough arguments on stack"
-      else
-        if n == 0
-          []
-        else
-          @a,ret=@a[0..-(n+1)],@a[-n..-1]
-        end
-        if @mark && (@mark > @a.length)
-          @mark = @a.length
-        end
-        ret
-      end
-    end
-    def push_n(arr)
-      @a+=arr
-    end
-    def mark
-      @mark=items.length
-      self
-    end
-    # return number of itmes that has been changed since last call of mark
-    def get_marked
-      @a.length - @mark
-    end
-    def length
-      @a.length
-    end
-    def show
-      out=@a.map do |x|
-        case x
-        when MFInput then "#{x.name}(#{x.type})"
-        when MFCallResult then "res[#{x.index}]"
-        when MFIntLit then x.value.to_s
-        when Array then "[...]"
-        else
-          raise "don't know how to print stack object of type #{x.class}"
-        end
-      end.join("|")
-      puts out
-    end
-  end
-
-  class MFInput < Struct.new(:name,:type)
-    def see
-      self.name
-    end
-  end
-  class MFCompiledCall < Struct.new(:definition,:inputs,:outputs)
-  end
-
-  # input_lists is a list (actually Array) of pointers to all inputs that have to be phi'd
-  class MFPhiNode
-    attr_accessor :input_lists
-    attr_reader :outputs
-    attr_accessor :condition
-    def initialize(condition,input_lists)
-      @condition=condition
-      @input_lists=input_lists
-      i=-1
-      @outputs = input_lists[0].map do
-        i+=1
-        MFCallResult.new(self,i)
-      end
-    end
-  end
-
-  # That is a result of a call to another word, which points to the corresponding call.
-  # Index associates this result with the corresponding element in call's output stack
-  # effect sequence.
-  class MFCallResult < Struct.new(:call,:index)
-    def name
-      call.definition.effect[1][self.index][:name]
-    end
-    def type
-      call.definition.effect[1][self.index][:type]
-    end
-    def see
-      name
-    end
-  end
-
-
-  def escape(str)
-    str.to_s.gsub(/[-+.><*=]/,{
-                    '+' => 'plus',
-                    '-' => 'minus',
-                    '.' => 'dot',
-                    '>' => 'gt',
-                    '<' => 'lt',
-                    '*' => 'times',
-                    '=' => 'equalp'})
-  end
-
-  # input: {port =>input,...}
-  def dot_record(id,name,inputs,outputs,io,nodes)
-    puts "generating dot record for #{id}: #{name}"
-    inputs.values.map do |i|
-      dot_code(i,io,nodes) unless nodes[i]
-    end
-    edges=[]
-    io << "#{id} [label=\"{{"
-    io << inputs.map do |port,input|
-      port_id=gensym(port)
-      edges << "#{nodes[input]} -> #{id}:#{port_id}"
-      "<#{port_id}> #{port}"
-    end.join(" | ")+"}"
-    if outputs
-      io << " | #{escape(name)} | {"
-      io << outputs.map do |o|
-        port=gensym(o.type)
-        nodes[o]= "#{id}:#{port}"
-        "<#{port}> #{o.see}"
-      end.join(" | ")+"}"
-    end
-    io.puts "}\"]"
-    edges.each{|e| io.puts(e)}
-    return edges
-  end
-
-  def dot_phi(phi,io,nodes)
-    puts "generating dot record for phi node"
-    id=gensym("phi")
-    dot_code(phi.condition, io, nodes) unless nodes[phi.condition]
-    phi.input_lists.each do |l|
-      l.each do |i|
-        dot_code(i,io,nodes) unless nodes[i]
-      end
-    end
-    edges=[]
-    io << "#{id} [label=\"<phi_cond> phi | "
-    i=-1
-    io << phi.input_lists[0].map do |dummy|
-      i= i+1
-      port_id=gensym("phi_in")
-      phi.input_lists.each do |l|
-        edges << "#{nodes[l[i]]} -> #{id}:#{port_id}"
-      end
-      "<#{port_id}> #{port_id}"
-    end.join(" | ")
-    io << " | -- | "
-    io << phi.outputs.map do |o|
-      port=gensym("phi_out")
-      nodes[o]= "#{id}:#{port}"
-      "<#{port}> #{port}"
-    end.join(" | ")
-    edges << "#{nodes[phi.condition]} -> #{id}:phi_cond"
-    io.puts "\"]"
-    edges.each{|e| io.puts(e)}
-    return edges
-  end
-
-  def dot_code(thing, io,nodes={})
-    case thing
-    when MFInput then 
-      id=gensym(thing.name)
-      nodes[thing]=id
-      io.puts "#{id} [label=\"#{thing.name}\"]"
-    when MFCompiledCall then
-      id=gensym(escape(thing.definition.name))
-      ins=Hash[thing.definition.effect[0].map{|x| x.name}.zip(thing.inputs)]
-      dot_record(id,thing.definition.name,ins,thing.outputs,io,nodes)
-    when MFPhiNode then
-      id=gensym("phi")
-      dot_phi(thing,io,nodes)
-    when MFStack then           # output stack, behaves like inputs
-      id = gensym("stack")
-      elts=Hash[(1..thing.items.length).map{|i| id.to_s+i.to_s}.zip(thing.items)]
-      dot_record(id,"stack",elts,nil,io,nodes)
-    when MFCallResult then
-      dot_code(thing.call,io,nodes)
-    when MFIntLit then
-      nodes[thing]=thing.value.to_s
-    else raise "cannot generate dot code for #{thing}"
-    end
-  end
-
   class MFStaticCompiler
     attr_accessor :mf
     def initialize(mf)
@@ -292,20 +44,44 @@ module MFactor
     end
     def compile_definition(name)
       puts "compiling definition: #{name}"
-      d=mf.find_name(name)
-      inputs=d.effect[0].map{|i| MFInput.new(i[:name],i[:type])}
+      graph=CDFG.new
+      d=mf.find_name(name)      # get definition
+      puts d.effect.inputs
+      $stdout.flush
+      inputs=d.effect.inputs.map{|i| MFInput.new(i.name,i.type)}
+      saved_inputs=inputs.dup
       pstack = MFStack.new inputs
       rstack = MFStack.new
       if d.normal_word?
-        outputs=compile_quotation(d.body,pstack,rstack)
+        compile_quotation(d.body,pstack,rstack,graph)
+        outputs=pstack
         raise "#{d.err_loc}: `#{name}` leaves quotations on stack, not supported yet" if
           outputs.items.any?{|i| i.is_a? Array}
-        @compiled_definitions[name]=MFCompiledCall.new(d,inputs,outputs)
+        # @compiled_definitions[name]=MFCompiledCall.new(d,inputs,outputs)
+        raise "#{d.err_loc}: number of defined outputs (#{d.effect.outputs.length}) does not match with computed (#{outputs.length})" unless
+          d.effect.outputs.length == outputs.length
+        output_items=outputs.items.map.with_index do |x,i|
+          o=Output.new(d.effect.outputs[i].name)
+          graph.add_data_edge(x,o)
+          o
+        end
+        print "final_p:"; pstack.show
+        print "final_r:"; rstack.show
+        input_record=MFStack.new(saved_inputs)
+        graph.add_node input_record
+        output_record=MFStack.new(output_items)
+        graph.add_node output_record
+        # dummy calls to compute ports, workaround so that ports are
+        # sure to have their record fields set to avoid false duplicates when drawing
+        output_record.get_port_nodes
+        input_record.get_port_nodes
+        d.graph = graph
+        return graph
       else
         raise "word not normal: #{d.name}"
       end
     end
-    def compile_quotation(q,pstack,rstack)
+    def compile_quotation(q,pstack,rstack,graph,control=nil)
       print "compiling quotation: "; puts MFactor::see_word(q)
       q.each do |word|
         print "p:"; pstack.show
@@ -322,7 +98,7 @@ module MFactor
             puts "inlining literal quotation call"
             called_q=pstack.pop
             raise "#{word.err_loc}:Error: call must be compiled with literal quotation on stack" unless called_q.is_a? Array
-            compile_quotation(called_q,pstack,rstack)
+            control=compile_quotation(called_q,pstack,rstack,graph,control)
           when "if" then
             puts "compiling `if`"
             elsecode=pstack.pop
@@ -330,24 +106,33 @@ module MFactor
             condition=pstack.pop
             raise "#{word.err_loc}:Error: if needs two literal quotations" unless
               (elsecode.is_a?(Array)) && (thencode.is_a?(Array))
-            thenstack=compile_quotation(thencode,pstack.dup.mark,rstack.dup)
-            elsestack=compile_quotation(elsecode,pstack.mark,rstack)
+            cnode=ChoiceNode.new("if")
+            graph.add_control_edge(control,cnode)
+            thenstack=pstack.dup.mark
+            elsestack=pstack.mark
+            res_then=compile_quotation(thencode,thenstack,rstack.dup,graph,cnode)
+            res_else=compile_quotation(elsecode,elsestack,rstack,graph,cnode)
             #TODO: maybe insert crazy stack correctnes checking here
             raise "#{word.err_loc}:Error: alternatives not stack effect compatible in `if`" unless
               thenstack.length == elsestack.length
             num_phis=[thenstack.get_marked,elsestack.get_marked].max
             phi=MFPhiNode.new(condition,[thenstack.items.last(num_phis),elsestack.items.last(num_phis)])
+            #graph.add_node phi
+            graph.add_data_edge condition,phi
+            graph.add_control_edge res_then,phi
+            graph.add_control_edge res_else,phi
+            control=phi
             pstack.pop_n(thenstack.length)
             pstack.push_n phi.outputs
           else
             if word.definition.inline?
               puts "inlining `#{word.definition.name}` by definition"
-              compile_quotation(word.definition.body,pstack,rstack)
-            elsif pstack.items.last(word.definition.effect[0].length).any?{|i| i.is_a? Array }
+              control=compile_quotation(word.definition.body,pstack,rstack,graph,control)
+            elsif pstack.items.last(word.definition.effect.inputs.length).any?{|i| i.is_a? Array }
               puts "auto-inlining `#{word.definition.name}` with quotation inputs"
-              compile_quotation(word.definition.body,pstack,rstack)
+              control=compile_quotation(word.definition.body,pstack,rstack,graph,control)
             else
-              compile_word_call(word,pstack)
+              control=compile_word_call(word,pstack,graph,control)
             end
           end
         when MFIntLit then pstack.push word
@@ -356,35 +141,45 @@ module MFactor
         else raise "unable to compile word of type: #{word.class}"
         end
       end
-      pstack                      # return the last state
+      control                      # return control
     end
-    def compile_word_call(word,pstack)
+    def compile_word_call(word,pstack,graph,control)
       # todo: type inference here!
       puts "compiling call to #{word.definition.name}"
       d=word.definition
-      inputs=pstack.pop_n(d.effect[0].length)
+      inputs=pstack.pop_n(d.effect.inputs.length)
       inputs ||= []
+      puts "number of inputs: #{inputs.length}"
       call=MFCompiledCall.new(d)
-      i=-1
-      outputs=d.effect[1].map do |e|
-        i+=1
-        MFCallResult.new(call,i)
+      params=d.effect.inputs.map.with_index do |effectitem,i|
+        puts "input #{i}"
+        p=CallParameter.new(effectitem.name,i)
+        graph.add_data_edge(inputs[i], p)
+        call.add_port p
+        p
       end
-      call.inputs=inputs; call.outputs=outputs
+      call.add_port LabelNode.new(d.name),true
+      puts "number of outputs: #{d.effect.outputs.length}"
+      outputs=d.effect.outputs.map.with_index do |e,i|
+        o=MFCallResult.new(call,i)
+        call.add_port o
+        o
+      end
+      call.inputs=params; call.outputs=outputs
+      if control
+        graph.add_control_edge control, call
+      end
+      #graph.add_node call
       pstack.push_n outputs
+      puts "passing control to: #{call.node_name}"
+      return call
     end
     def maybe_compile(name)
       compile_definition(name) unless @compiled_definitions[name]
     end
     def word_dot_graph(name,io)
       maybe_compile(name)
-      io << <<END
-digraph #{name}_definition {
-graph [ rankdir=LR ]
-node [shape=record,fontname=helvetica]
-END
-      dot_code(@compiled_definitions[name].outputs,io)
-      io.puts "}"
+      @mf.find_name(name).graph.dot(io)
     end
   end
 end

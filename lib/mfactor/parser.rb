@@ -1,4 +1,5 @@
 require 'parslet'
+require 'mfactor/datatypes'
 
 module MFactor
   # parser class, will parse one source file when parse() method is
@@ -56,36 +57,6 @@ module MFactor
   # Classes that are output by the parser transformations
 
   # represents a word occurrence in the context of a number of executed words (e.g. definition body, or quotation body)
-  class MFWord < Struct.new(:name,:definition,:is_tail)
-    def initialize(*a)
-      super *a
-      @file=$current_mfactor_file
-    end
-    def see
-      name.to_s.downcase
-    end
-    def err_loc
-      line,col=name.line_and_column
-      "#{@file}:#{line}:#{col}"
-    end
-    def change_name(newname)
-      old=name
-      name=Parslet::Slice.new(old.position,newname,old.line_cache)
-    end
-  end
-
-  # integer literal
-  class MFIntLit < Struct.new(:value)
-    def see
-      "#I#{value}"
-    end
-  end
-  # special case: byte-sized literal
-  class MFByteLit < MFIntLit
-    def see
-      "#B#{value}"
-    end
-  end
 
   class MFLitSequence
     attr_accessor :element_type
@@ -114,56 +85,12 @@ module MFactor
     end
   end
 
-  # Definition object, which can be moved into dictionary
-  class MFDefinition < Struct.new(:name,:definer,:effect,:body,:mods,:vocabulary,:file)
-    def initialize(*args)
-      super(*args)
-      convert_tailcalls(body)
-    end
-    def syntax_word?
-      definer == "SYNTAX:"
-    end
-    def normal_word?
-      definer == ":"
-    end
-    def primitive?
-      definer == "PRIM:"
-    end
-    def inline?
-      mods.member? "inline"
-    end
-    # return printed location of definition
-    def err_loc
-      line,col=definer.line_and_column
-      "#{file}:#{line}:#{col}"
-    end
-    def see
-      ": #{name} #{effect} "+
-        body.map{ |elt| see_word(elt) }.join(" ")
-    end
-    # TODO: move out of here, into emitter
-    def convert_tailcalls(b)
-      if b[-1].is_a? MFWord
-        b[-1].is_tail = true
-        # puts "#{b[-1].err_loc}:Info: tailcall"
-      end
-      b.each do |elt|
-        if elt.is_a?(Array)
-          convert_tailcalls(elt)
-        end
-      end
-    end
-  end
-
   # represents a USING: entry
   class MFSearchPath < Struct.new(:vocabs)
   end
 
   # represents a change in current vocabulary
   class MFCurrentVocab < Struct.new(:vocab)
-  end
-
-  class MFEffectItem < Struct.new(:name,:type)
   end
 
   # tree transformation to output a structure that represents one file
@@ -186,7 +113,7 @@ module MFactor
       MFLitSequence.new(opener,content) }
     rule(:definition_mod => simple(:modname)) {modname}
     rule(:stack_input => subtree(:inp),
-         :stack_output => subtree(:outp)) { [inp,outp] }
+         :stack_output => subtree(:outp)) { StackEffect.new(inp,outp) }
     rule(:effect_atom => simple(:a),
          :effect_type => subtree(:type)) {MFEffectItem.new(a,type)}
     rule(:effect_atom => simple(:a)) {MFEffectItem.new(a,:t)}
