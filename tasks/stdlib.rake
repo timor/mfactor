@@ -76,9 +76,9 @@ end
 
 desc "output parser and transformation result of [arg]"
 task :parse, :path do |t,args|
-  res=MFP.new.parse(File.read(args[:path]))
+  res=MFactor::MFP.new.parse(File.read(args[:path]))
   pp res
-  pp MFTransform.new.apply(res)
+  pp MFactor::MFTransform.new.apply(res)
 end
 
 desc "show the mfactor dictionary"
@@ -133,6 +133,7 @@ task :stdlib => ["generated/stdlib.code.h","generated/stdlib.dict.h","generated/
 require 'pp'
 
 task :mftest, :word do |t,args|
+  $stdout.sync=true
   mf=MFactor::ByteCode.const_get(GENERATOR).new([MFACTOR_SRC_DIR,"generated"])
   mf.load_vocab(MFACTOR_ROOT_VOCAB)
   a=MFactor::MFStaticCompiler.new(mf)
@@ -144,6 +145,7 @@ task :mftest, :word do |t,args|
 #  sh "dot -Tpng #{dotfile.path} -o generated/test.png "
   sh "dot -Tpng generated/test.dot -o generated/test.png "
 end
+task :mftest => "generated"
 
 task :mfdeps do
   require 'tempfile'
