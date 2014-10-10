@@ -172,6 +172,7 @@ module MFactor
       @control_edges=[]
       @data_edges=[]
     end
+    # this needs only to be used when there is a node without a transition in the graph
     def add_node(n)
       @nodes.push n unless @nodes.include? n
     end
