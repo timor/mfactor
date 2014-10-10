@@ -123,10 +123,10 @@ module MFactor
     def add_port(c,handle_port_p=false)
       props
       if handle_port_p
-        puts "found handle"
+        # puts "found handle"
         self.handle_port=c
       end
-      puts "port to #{node_name}"
+      # puts "port to #{node_name}"
       MFactor::assert_is_node(c)
       unless @port_nodes.member? c
         @port_nodes.push c
@@ -138,7 +138,7 @@ module MFactor
     def get_port_nodes
       props
       if @port_nodes.empty?
-        puts "ports lazy"
+        # puts "ports lazy"
         pnodes = self.port_nodes()
         pnodes.each do |n|
           add_port n
@@ -152,7 +152,7 @@ module MFactor
     end
     # generate dot code for one record
     def dot_code(io)
-      puts "drawing record"
+      # puts "drawing record"
       props
       portinfos = get_port_nodes.map do |n|
         OpenStruct.new(name: n.node_name,
@@ -186,7 +186,7 @@ module MFactor
     end
     # generate graph from this node on, reachability determined by self
     def dot(io)
-      puts "drawing"
+      # puts "drawing"
       io << <<END
 digraph test_definition {
 graph [ rankdir=LR ]
@@ -222,11 +222,11 @@ END
       sname = s.node_name.to_s
       dname = d.node_name.to_s
       if s.is_record? && s.handle_port
-        puts "using handle"
+        # puts "using handle"
         sname = sname+':'+s.handle_port.node_name.to_s
       end
       if d.is_record? && d.handle_port
-        puts "using handle"
+        # puts "using handle"
         dname = dname+':'+d.handle_port.node_name.to_s
       end
       if s.record
