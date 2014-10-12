@@ -84,9 +84,9 @@ module MFactor
         d.log "final_p:"+pstack.show(true)
         d.log "final_r:"+rstack.show(true)
         input_record=MFStack.new(saved_inputs)
-        graph.add_node input_record
+        graph.add_node input_record unless saved_inputs.empty?
         output_record=MFStack.new(output_items)
-        graph.add_node output_record
+        graph.add_node output_record unless output_items.empty?
         # dummy calls to compute ports, workaround so that ports are
         # sure to have their record fields set to avoid false duplicates when drawing
         output_record.get_port_nodes
