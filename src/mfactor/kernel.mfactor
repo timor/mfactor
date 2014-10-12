@@ -2,23 +2,23 @@
 USING: primitives ;
 IN: kernel
 
-: nip ( x y -- y ) swap drop ;
-: 2nip ( x y z -- z ) >r drop drop r> ;
+: nip ( x y -- y ) swap drop ; inline
+: 2nip ( x y z -- z ) >r drop drop r> ; inline
 : dip ( x quot -- x ) swap >r call r> ; inline
 : 2dip ( x y quot -- x y ) swap [ dip ] dip ; inline
 : 3dip ( x y z quot -- x y z ) swap [ 2dip ] dip ; inline
 : 4dip ( w x y z quot -- w x y z ) swap [ 3dip ] dip ; inline
-: dupd ( x y -- x x y ) >r dup r> ;
-: over ( x y -- x y x ) dupd swap ;
-: pick ( x y z -- x y z x ) >r over r> swap ;
+: dupd ( x y -- x x y ) >r dup r> ; inline
+: over ( x y -- x y x ) dupd swap ; inline
+: pick ( x y z -- x y z x ) >r over r> swap ; inline
 : -rot ( x y z -- z x y ) swap >r swap r> ; ! deprecated
-: 2swap ( a b x y -- x y a b ) [ -rot ] dip -rot ;
-: 2over ( x y z -- x y z x y ) pick pick ;
-: 2dup ( a b  -- a b a b ) over over ;
-: 3dup ( x y z -- x y z x y z ) pick pick pick ;
-: 4dup ( w x y z -- w x y z w x y z ) [ 2dup ] 2dip 2swap [ 2dup] 2dip 2swap ;
-: 2drop ( a b -- ) drop drop ;
-: 3drop ( x y z -- ) drop drop drop ;
+: 2swap ( a b x y -- x y a b ) [ -rot ] dip -rot ; inline
+: 2over ( x y z -- x y z x y ) pick pick ; inline
+: 2dup ( a b  -- a b a b ) over over ; inline
+: 3dup ( x y z -- x y z x y z ) pick pick pick ; inline
+: 4dup ( w x y z -- w x y z w x y z ) [ 2dup ] 2dip 2swap [ 2dup] 2dip 2swap ; inline
+: 2drop ( a b -- ) drop drop ; inline
+: 3drop ( x y z -- ) drop drop drop ; inline
 : keep ( ..a x quot: ( ..a x -- ..b ) -- ..b x )
     over [ call ] dip ; inline
 : 2keep ( ..a x y quot: ( ..a x y -- ..b ) -- ..b x y )
@@ -33,9 +33,9 @@ IN: kernel
 : bi@ ( x y quot -- ) dup bi* ; inline
 : 2bi ( x y  p q -- ) [ 2keep ] dip call ; inline
 ! deprecated ones
-: rot ( x y z -- y z x ) >r swap r> swap ;
-: spin ( x y z -- z y x ) swap rot ;
-: tuck ( x y -- y x y ) swap over ;
+: rot ( x y z -- y z x ) >r swap r> swap ; inline
+: spin ( x y z -- z y x ) swap rot ; inline
+: tuck ( x y -- y x y ) swap over ; inline
 ! mine
 
 ! control flow
@@ -45,13 +45,13 @@ IN: kernel
 : unless ( ..a ? false: ( ..a -- ..a ) -- ..a ) [ nop ] swap if ; inline
 
 ! call pred until it returns f
-: loop ( ... pred: ( ... -- ... ? ) -- ... ) dup >r call [ r> loop ] [ r> drop ] if ;
-: times ( ... n quot: ( ... -- ... ) -- ... ) swap dup 0 = [ 2drop ] [ [ [ call ] keep ] dip 1 - swap times ] if ;
-: do ( pred body -- pred body ) dup 2dip ;
+: loop ( ... pred: ( ... -- ... ? ) -- ... ) dup >r call [ r> loop ] [ r> drop ] if ; inline recursive
+: times ( ... n quot: ( ... -- ... ) -- ... ) swap dup 0 = [ 2drop ] [ [ [ call ] keep ] dip 1 - swap times ] if ; inline recursive
+: do ( pred body -- pred body ) dup 2dip ; inline
 : while ( ..a pred: ( ..a -- ..b ? ) body: ( ..b -- ..a ) -- ..b )
-    over [ call ] 2dip rot [ over [ call ] 2dip while ] [ 2drop ] if ;
+    over [ call ] 2dip rot [ over [ call ] 2dip while ] [ 2drop ] if ; inline recursive
 : until ( ..a pred: ( ..a -- ..b ? ) body: ( ..b -- ..a ) -- ..b )
-    over [ call ] 2dip rot [ 2drop ] [ over [ call ] 2dip until ] if ;
+    over [ call ] 2dip rot [ 2drop ] [ over [ call ] 2dip until ] if ; inline recursive
 
 : shift ( x n -- y ) dup 0 > [ asl ] [ neg asr ] if ;
 
@@ -73,4 +73,4 @@ IN: kernel
 : _inst ( inst -- ) cell 1 - 8 * neg shift 0xff bitand ;
 : prim? ( address -- ? ) _inst instbase >= ;
 
-: most ( x y quot -- z ) 2keep ? ;
+: most ( x y quot -- z ) 2keep ? ; inline
