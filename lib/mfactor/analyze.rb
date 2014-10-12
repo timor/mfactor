@@ -185,8 +185,9 @@ module MFactor
       call.inputs=params; call.outputs=outputs
       if control
         graph.add_control_edge control, call
+      else
+        graph.add_node call
       end
-      #graph.add_node call
       pstack.push_n outputs
       @current_def.log "passing control to: #{call.node_name}"
       return call
