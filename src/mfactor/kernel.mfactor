@@ -70,7 +70,7 @@ IN: kernel
 : in-range ( val start end -- ? ) [ over [ >= ] dip ] dip < and ;
 
 ! convert tos to inst
-: _inst ( inst -- ) cell 1 - 8 * neg shift 0xff bitand ;
+: _inst ( data -- inst ) cell 1 - 8 * neg shift 0xff bitand ;
 : prim? ( address -- ? ) _inst instbase >= ;
 
 : most ( x y quot -- z ) 2keep ? ; inline
