@@ -216,6 +216,7 @@ END
         draw_transition(s,d,io,{color: "green"})
       end
       io.puts "}"
+      self
     end
     private
     def draw_transition(s,d,io,attrs={})
