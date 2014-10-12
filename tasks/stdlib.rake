@@ -147,6 +147,43 @@ task :mftest, :word do |t,args|
 end
 task :mftest => "generated"
 
+directory "generated/cfg"
+
+# iterate through all vocabularies
+# generate a subdir in generated for each vocabulary, generate a control flow graphic for each word, if applicable
+task :compile_all => "generated/cfg" do
+  $stdout.sync=true
+  mf=MFactor::Image.new([MFACTOR_SRC_DIR,"generated"])
+  mf.load_vocab(MFACTOR_ROOT_VOCAB)
+  a=MFactor::MFStaticCompiler.new(mf)
+  mf.dictionary.each do |name,vocab|
+    dir="generated/cfg/#{name}"
+    mkdir_p dir
+    vocab.definitions.each do |d|
+      next unless d.compilable?
+      begin
+        dotfname=dir+"/#{MFactor::filename_escape(d.name)}.dot"
+        dotfile= File.new(dotfname,"w")
+        a.definition_dot_graph d, dotfile
+        dotfile.flush
+        sh "dot -Tpng #{dotfname} -o #{dotfname.ext('png')} "
+        File.open(dotfname.ext('log'),"w") do |f|
+          f.puts d.compile_log
+        end
+      rescue MFactor::CompileError => msg
+        puts "ERROR: compilation of '#{d.name}' failed, reason: "
+        puts msg
+        puts d.err_loc
+      rescue Exception
+        puts "#{d.err_loc}:While compiling `#{d.name}`:"
+        puts "Compilation Log:"
+        puts d.compile_log
+        raise
+      end
+    end
+  end
+end
+
 task :mfdeps do
   require 'tempfile'
   dotfile=Tempfile.new("_mfdeps_dot")
