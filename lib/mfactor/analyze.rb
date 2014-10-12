@@ -134,7 +134,6 @@ module MFactor
               thenstack.length == elsestack.length
             num_phis=[thenstack.get_marked,elsestack.get_marked].max
             phi=MFPhiNode.new(condition,[thenstack.items.last(num_phis),elsestack.items.last(num_phis)])
-            #graph.add_node phi
             num_phis.times do |i|
               graph.add_data_edge thenstack.items[-(num_phis-i)], phi.phi_inputs[i]
               graph.add_data_edge elsestack.items[-(num_phis-i)], phi.phi_inputs[i]
