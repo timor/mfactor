@@ -60,8 +60,16 @@ module MFactor
     def primitive?
       definer == "PRIM:"
     end
+    def compilable?
+      (definer != "PRIM:") &&
+        !(mods.member?("inline")) &&
+        !(mods.member?("nocompile"))
+    end
     def inline?
       mods.member? "inline"
+    end
+    def recursive?
+      mods.member? "recursive"
     end
     # return printed location of definition
     def err_loc
