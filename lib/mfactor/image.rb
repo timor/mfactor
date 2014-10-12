@@ -34,6 +34,7 @@ module MFactor
   class Image
     attr_accessor :dictionary
     attr_accessor :vocab_roots
+    attr_accessor :files
     @@parser = MFP.new
     @@transform = MFTransform.new
     def initialize(roots)
