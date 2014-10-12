@@ -33,6 +33,19 @@ module MFactor
   # execution part.  The stack containing the deepest modifications determines the number of
   # arguments that have to phi'd.
 
+  def filename_escape(str)
+    str.to_s.gsub(/[.><*=?:"]/,{
+                    '.' => 'dot',
+                    '>' => 'gt',
+                    '<' => 'lt',
+                    '*' => 'times',
+                    '=' => 'equalp',
+                    '?' => 'qm',
+                    ':' => 'colon',
+                    '"' => 'dquote'
+                  })
+  end
+  module_function :filename_escape
   class MFStaticCompiler
     attr_accessor :mf
     def initialize(mf)

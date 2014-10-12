@@ -5,7 +5,7 @@
 # optionally provide dot_record() which
 # returns [record_object, position ]
 module MFactor
-  def escape(str)
+  def dot_escape(str)
     # str.to_s.gsub(/[-+.><*=]/,{
     str.to_s.gsub(/[><]/,{
                     # '+' => 'plus',
@@ -17,7 +17,7 @@ module MFactor
                     # '=' => 'equalp',
                   })
   end
-  module_function :escape
+  module_function :dot_escape
   def assert_is_node(n)
     raise "not a GraphNode: #{n}" unless n.is_a? GraphNode
   end
@@ -156,7 +156,7 @@ module MFactor
       props
       portinfos = get_port_nodes.map do |n|
         OpenStruct.new(name: n.node_name,
-                       label: MFactor::escape(n.dot_label))
+                       label: MFactor::dot_escape(n.dot_label))
       end
       io << node_name << " [label=\"{"
       io << portinfos.map do |p|
