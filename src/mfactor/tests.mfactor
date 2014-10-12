@@ -47,4 +47,7 @@ IN: tests
 : testloop ( -- ) [ '!' emit t ] loop ;
 
 : testnums ( x -- x x ) [ 1 + ] [ 2 + ] bi ;
-: testq ( x -- x ) dup 0 > [ 1 + ] [ 2 - ] if 3 * ;
+: testq ( in1 in2 -- out1 out2 ) dup 0 > [ [ 5 - ] dip 1 +  dup + ] [ 2 - dup * ] if 3 * ;
+! recursive, but not tail-recursive
+: testfact ( n -- n ) dup 0 = [ drop 1 ] [ dup 1 - testfact * ] if ;
+: testwhile ( n -- ) [ dup 0 = not ] [ 1 - dup pwrite ] while ;
