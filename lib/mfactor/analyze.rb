@@ -56,10 +56,10 @@ module MFactor
     def infer_word(name)
       infer mf.find_name(name).body
     end
-    def compile_definition(name)
+    def compile_definition(d)
       puts d.log("compiling definition: #{d.name}")
+      @current_def = d
       graph=CDFG.new
-      d=mf.find_name(name)      # get definition
       $stdout.flush
       inputs=d.effect.inputs.map{|i| MFInput.new(i.name,i.type)}
       saved_inputs=inputs.dup
@@ -89,6 +89,7 @@ module MFactor
         output_record.get_port_nodes
         input_record.get_port_nodes
         d.graph = graph
+        @compiled_definitions[d]=graph
         return graph
       else
         raise "word not normal: #{d.name}"
@@ -192,12 +193,12 @@ module MFactor
       @current_def.log "passing control to: #{call.node_name}"
       return call
     end
-    def maybe_compile(name)
-      compile_definition(name) unless @compiled_definitions[name]
+    def maybe_compile(d)
+      compile_definition(d) unless @compiled_definitions[d]
     end
-    def word_dot_graph(name,io)
-      maybe_compile(name)
-      @mf.find_name(name).graph.dot(io)
+    def definition_dot_graph(d,io)
+      maybe_compile(d)
+      @compiled_definitions[d].dot(io) || raise(CompileError,"compilation of definition of #{d.name} unsuccessful")
     end
   end
 end

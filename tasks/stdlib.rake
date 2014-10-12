@@ -139,7 +139,7 @@ task :mftest, :word do |t,args|
   a=MFactor::MFStaticCompiler.new(mf)
   # pp a.infer_word(args[:word])
   dotfile=Tempfile.new("_mftestgraph_dot")
-  a.word_dot_graph(args[:word],dotfile)
+  a.definition_dot_graph(mf.find_name(args[:word]),dotfile)
   dotfile.close
   cp dotfile.path, "generated/test.dot"
 #  sh "dot -Tpng #{dotfile.path} -o generated/test.png "
