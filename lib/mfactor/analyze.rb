@@ -51,15 +51,15 @@ module MFactor
     def initialize(mf)
       @mf=mf
       @compiled_definitions={}
+      @current_def=nil
     end
     def infer_word(name)
       infer mf.find_name(name).body
     end
     def compile_definition(name)
-      puts "compiling definition: #{name}"
+      puts d.log("compiling definition: #{d.name}")
       graph=CDFG.new
       d=mf.find_name(name)      # get definition
-      puts d.effect.inputs
       $stdout.flush
       inputs=d.effect.inputs.map{|i| MFInput.new(i.name,i.type)}
       saved_inputs=inputs.dup
@@ -78,8 +78,8 @@ module MFactor
           graph.add_data_edge(x,o)
           o
         end
-        print "final_p:"; pstack.show
-        print "final_r:"; rstack.show
+        d.log "final_p:"+pstack.show(true)
+        d.log "final_r:"+rstack.show(true)
         input_record=MFStack.new(saved_inputs)
         graph.add_node input_record
         output_record=MFStack.new(output_items)
@@ -95,10 +95,10 @@ module MFactor
       end
     end
     def compile_quotation(q,pstack,rstack,graph,control=nil)
-      print "compiling quotation: "; puts MFactor::see_word(q)
+      @current_def.log "compiling quotation: "+MFactor::see_word(q)
       q.each do |word|
-        print "p:"; pstack.show
-        print "r:"; rstack.show
+        @current_def.log("p:"+pstack.show(true))
+        @current_def.log("r:"+rstack.show(true))
         case word
         when MFWord then
           case word.name
@@ -108,12 +108,12 @@ module MFactor
           when ">r" then rstack.push pstack.pop
           when "r>" then pstack.push rstack.pop
           when "call" then
-            puts "inlining literal quotation call"
+            @current_def.log "inlining literal quotation call"
             called_q=pstack.pop
             raise "#{word.err_loc}:Error: call must be compiled with literal quotation on stack" unless called_q.is_a? Array
             control=compile_quotation(called_q,pstack,rstack,graph,control)
           when "if" then
-            puts "compiling `if`"
+            @current_def.log "compiling `if`"
             elsecode=pstack.pop
             thencode=pstack.pop
             condition=pstack.pop
@@ -143,10 +143,10 @@ module MFactor
             pstack.push_n phi.outputs
           else
             if word.definition.inline?
-              puts "inlining `#{word.definition.name}` by definition"
+              @current_def.log "inlining `#{word.definition.name}` by definition"
               control=compile_quotation(word.definition.body,pstack,rstack,graph,control)
             elsif pstack.items.last(word.definition.effect.inputs.length).any?{|i| i.is_a? Array }
-              puts "auto-inlining `#{word.definition.name}` with quotation inputs"
+              @current_def.log "auto-inlining `#{word.definition.name}` with quotation inputs"
               control=compile_quotation(word.definition.body,pstack,rstack,graph,control)
             else
               control=compile_word_call(word,pstack,graph,control)
@@ -162,21 +162,21 @@ module MFactor
     end
     def compile_word_call(word,pstack,graph,control)
       # todo: type inference here!
-      puts "compiling call to #{word.definition.name}"
+      @current_def.log "compiling call to #{word.definition.name}"
       d=word.definition
       inputs=pstack.pop_n(d.effect.inputs.length)
       inputs ||= []
-      puts "number of inputs: #{inputs.length}"
+      @current_def.log "number of inputs: #{inputs.length}"
       call=MFCompiledCall.new(d)
       params=d.effect.inputs.map.with_index do |effectitem,i|
-        puts "input #{i}"
+        @current_def.log "input #{i}"
         p=CallParameter.new(effectitem.name,i)
         graph.add_data_edge(inputs[i], p)
         call.add_port p
         p
       end
       call.add_port LabelNode.new(d.name),true
-      puts "number of outputs: #{d.effect.outputs.length}"
+      @current_def.log "number of outputs: #{d.effect.outputs.length}"
       outputs=d.effect.outputs.map.with_index do |e,i|
         o=MFCallResult.new(call,i)
         call.add_port o
@@ -188,7 +188,7 @@ module MFactor
       end
       #graph.add_node call
       pstack.push_n outputs
-      puts "passing control to: #{call.node_name}"
+      @current_def.log "passing control to: #{call.node_name}"
       return call
     end
     def maybe_compile(name)

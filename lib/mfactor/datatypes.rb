@@ -46,7 +46,7 @@ module MFactor
   # Definition object, which can be moved into dictionary
   # file: source file of the definition
   # graph: if set, points to the graph resulted by partial evaluation.  basis for code generation and petri-net simulation
-  class MFDefinition < Struct.new(:name,:definer,:effect,:body,:mods,:vocabulary,:file,:graph)
+  class MFDefinition < Struct.new(:name,:definer,:effect,:body,:mods,:vocabulary,:file,:graph,:compile_log)
     def initialize(*args)
       super(*args)
       convert_tailcalls(body)
@@ -83,6 +83,13 @@ module MFactor
           convert_tailcalls(elt)
         end
       end
+    end
+    # attach something to the compilation log
+    def log (s)
+      self.compile_log ||= ""
+      self.compile_log += s
+      self.compile_log += "\n"
+      s
     end
   end
 
