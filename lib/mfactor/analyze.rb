@@ -46,6 +46,10 @@ module MFactor
                   })
   end
   module_function :filename_escape
+
+  class CompileError < StandardError
+  end
+
   class MFStaticCompiler
     attr_accessor :mf
     def initialize(mf)
@@ -68,10 +72,9 @@ module MFactor
       if d.normal_word?
         compile_quotation(d.body,pstack,rstack,graph)
         outputs=pstack
-        raise "#{d.err_loc}: `#{name}` leaves quotations on stack, not supported yet" if
+        raise CompileError, "#{d.err_loc}: `#{name}` leaves quotations on stack, not supported yet" if
           outputs.items.any?{|i| i.is_a? Array}
-        # @compiled_definitions[name]=MFCompiledCall.new(d,inputs,outputs)
-        raise "#{d.err_loc}: number of defined outputs (#{d.effect.outputs.length}) does not match with computed (#{outputs.length})" unless
+        raise CompileError, "#{d.err_loc}: number of defined outputs (#{d.effect.outputs.length}) does not match with computed (#{outputs.length})" unless
           d.effect.outputs.length == outputs.length
         output_items=outputs.items.map.with_index do |x,i|
           o=Output.new(d.effect.outputs[i].name)
@@ -92,7 +95,7 @@ module MFactor
         @compiled_definitions[d]=graph
         return graph
       else
-        raise "word not normal: #{d.name}"
+        raise CompileError, "word not normal: #{d.name}"
       end
     end
     def compile_quotation(q,pstack,rstack,graph,control=nil)
@@ -111,14 +114,14 @@ module MFactor
           when "call" then
             @current_def.log "inlining literal quotation call"
             called_q=pstack.pop
-            raise "#{word.err_loc}:Error: call must be compiled with literal quotation on stack" unless called_q.is_a? Array
+            raise CompileError, "#{word.err_loc}:Error: call must be compiled with literal quotation on stack" unless called_q.is_a? Array
             control=compile_quotation(called_q,pstack,rstack,graph,control)
           when "if" then
             @current_def.log "compiling `if`"
             elsecode=pstack.pop
             thencode=pstack.pop
             condition=pstack.pop
-            raise "#{word.err_loc}:Error: if needs two literal quotations" unless
+            raise CompileError, "#{word.err_loc}:Error: if needs two literal quotations" unless
               (elsecode.is_a?(Array)) && (thencode.is_a?(Array))
             cnode=ChoiceNode.new("if")
             graph.add_control_edge(control,cnode)
@@ -127,7 +130,7 @@ module MFactor
             res_then=compile_quotation(thencode,thenstack,rstack.dup,graph,cnode)
             res_else=compile_quotation(elsecode,elsestack,rstack,graph,cnode)
             #TODO: maybe insert crazy stack correctnes checking here
-            raise "#{word.err_loc}:Error: alternatives not stack effect compatible in `if`" unless
+            raise CompileError, "#{word.err_loc}:Error: alternatives not stack effect compatible in `if`" unless
               thenstack.length == elsestack.length
             num_phis=[thenstack.get_marked,elsestack.get_marked].max
             phi=MFPhiNode.new(condition,[thenstack.items.last(num_phis),elsestack.items.last(num_phis)])
@@ -145,6 +148,9 @@ module MFactor
           else
             if word.definition.inline?
               @current_def.log "inlining `#{word.definition.name}` by definition"
+              if word.definition.recursive?
+                raise CompileError, "not yet compiling inline recursive combinators!"
+              end
               control=compile_quotation(word.definition.body,pstack,rstack,graph,control)
             elsif pstack.items.last(word.definition.effect.inputs.length).any?{|i| i.is_a? Array }
               @current_def.log "auto-inlining `#{word.definition.name}` with quotation inputs"
@@ -156,7 +162,7 @@ module MFactor
         when MFIntLit then pstack.push word
         when MFByteLit then pstack.push word
         when Array then pstack.push word
-        else raise "unable to compile word of type: #{word.class}"
+        else raise CompileError, "unable to compile word of type: #{word.class}"
         end
       end
       control                      # return control
