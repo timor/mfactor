@@ -73,7 +73,7 @@ module MFactor
     def length
       @a.length
     end
-    def show
+    def show(arg=false)
       out=@a.map do |x|
         case x
         when MFInput then "#{x.name}(#{x.type})"
@@ -85,7 +85,11 @@ module MFactor
           raise "don't know how to print stack object of type #{x.class}"
         end
       end.join("|")
-      puts out
+      if arg
+        out
+      else
+        puts out
+      end
     end
     def port_nodes
       items
