@@ -7,18 +7,18 @@ IN: math
 : each-integer ( ... n quot: ( ... i -- ... ) -- ... ) swap 0 swap [ [ swap call ] 2keep 1 + ] times 2drop ;
 
 ! copied some math words from factor
-: _if-iterate? ( i n true false -- ) [ 2over < ] 2dip if ;
-: _iterate-step ( i n quot -- i n quot ) [ nip call ] 3keep ;
-: _iterate-rot ( ? i n quot -- i n quot ? ) [ rot ] dip swap ;
-: _iterate-next ( i n quot -- i' n quot ) [ 1 + ] 2dip ;
+: _if-iterate? ( i n true false -- ) [ 2over < ] 2dip if ; inline ! TODO: analyzer fails bad when not declared inline
+: _iterate-step ( i n quot -- i n quot ) [ nip call ] 3keep ; inline
+: _iterate-rot ( ? i n quot -- i n quot ? ) [ rot ] dip swap ; inline
+: _iterate-next ( i n quot -- i' n quot ) [ 1 + ] 2dip ; inline
 ! slightly different than in factor: return additional flag marking if found, otherwise leave next number
 : _(find-integer) ( ... i n quot: ( ... i -- ... ? ) -- ... i ? )
     [
         _iterate-step _iterate-rot
         [ 2drop t ] [ _iterate-next _(find-integer) ] if
-    ] [ 2drop f ] _if-iterate? ;
+    ] [ 2drop f ] _if-iterate? ; inline recursive
 : _iterate-prep ( n quot -- i n quot ) [ 0 ] 2dip ;
-: find-integer ( ... n quot: ( ... i -- ... ? ) -- ... i ? ) _iterate-prep _(find-integer) ;
+: find-integer ( ... n quot: ( ... i -- ... ? ) -- ... i ? ) _iterate-prep _(find-integer) ; inline
 
 : min ( x y -- z ) [ < ] most ;
 : max ( x y -- z ) [ > ] most ;
