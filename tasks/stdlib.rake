@@ -158,6 +158,10 @@ directory "generated/cfg"
 # generate a subdir in generated for each vocabulary, generate a control flow graphic for each word, if applicable
 task :compile_all => "generated/cfg" do
   $stdout.sync=true
+  if defined? $mfactor_ff
+    ffyaml=YAML.load_file($mfactor_ff)
+    ff_mfactor(ffyaml,File.open("generated/ff.mfactor","w"))
+  end
   mf=MFactor::Image.new([MFACTOR_SRC_DIR,"generated"])
   mf.load_vocab(MFACTOR_ROOT_VOCAB)
   a=MFactor::MFStaticCompiler.new(mf)
