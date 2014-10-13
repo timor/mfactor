@@ -29,7 +29,7 @@ PRIM: mod ( x x -- x ) "mod" ;
 PRIM: bitand ( x x -- x ) "bitand" ;
 PRIM: bitor ( x x -- x ) "bitor" ;
 PRIM: bitxor ( x x -- x ) "bitxor" ;
-PRIM: bitnot ( x x -- x ) "bitnot" ;
+PRIM: bitnot ( x -- x ) "bitnot" ;
 PRIM: neg ( x -- x ) "neg" ;
 PRIM: receive ( -- b ) "receive" ;
 PRIM: ? ( ? x x -- x ) "truefalse" ;
