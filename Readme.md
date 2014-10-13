@@ -115,6 +115,18 @@ port Factor <http://factorcode.org> to embedded platforms.
 - saves return information as well as beginning of word information
   for debugging
 
+# compilation #
+Compilation works by "virtual interpretation", a technique for compiling
+stack-based languages described here: http://www.complang.tuwien.ac.at/projects/rafts.html
+
+Right now, a combined Control-/Dataflow graph is constructed, which is
+used as intermediate representation. This graph can be output in dot format for
+visual inspection of the workings of a word.  All combinators are inlined automatically.
+This is because the target output is C, which does not support higher order functions.
+
+There will be support for handling CSP-Style concurrency at compilation level.
+If this will work for interpreted code, or only for compiled code is still unclear.
+
 # build notes #
 
 - build system: rake
@@ -152,6 +164,6 @@ port Factor <http://factorcode.org> to embedded platforms.
   - tail calling can be reactivated with `tail`
 
 # caveats #
-- at the moment the gc is not implemented yet, so you will eventually
-  run out of memory if not careful.  current memory usage can be
+- At the moment the gc is not implemented yet, so you will eventually
+  run out of memory if not careful.  Current memory usage can be
   checked with the word `usage`
