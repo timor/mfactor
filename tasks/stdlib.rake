@@ -174,11 +174,8 @@ task :compile_all => "generated/cfg" do
         dotfname=dir+"/#{MFactor::filename_escape(d.name)}.dot"
         dotfile= File.new(dotfname,"w")
         a.definition_dot_graph d, dotfile
-        dotfile.flush
+        dotfile.close
         sh "dot -Tpng #{dotfname} -o #{dotfname.ext('png')} "
-        File.open(dotfname.ext('log'),"w") do |f|
-          f.puts d.compile_log
-        end
       rescue MFactor::CompileError => msg
         puts "ERROR: compilation of '#{d.name}' failed, reason: "
         puts msg
@@ -188,6 +185,11 @@ task :compile_all => "generated/cfg" do
         puts "Compilation Log:"
         puts d.compile_log
         raise
+      ensure
+        File.open(dotfname.ext('log'),"w") do |f|
+          f.puts d.compile_log
+        end
+
       end
     end
   end
