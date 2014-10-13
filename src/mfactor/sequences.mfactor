@@ -26,8 +26,8 @@ IN: sequences
 : ia-each ( ... seq quot: ( ... x -- ... ) -- ... ) [ uncount ] dip swap [ _ia-each-step ] times 2drop ;
 
 ! known bad
-: each ( ... seq quot: ( ... x -- ... ) -- ... )
-    over [ 1 + ] 2dip
-    getmem8 [ dup 0 = [ ba-each ]
-              [ 2 = [ ia-each ]
-                [ "each: unknown sequence type: " print '0' + emit error ] if ] if ] if ;
+! : each ( ... seq quot: ( ... x -- ... ) -- ... )
+!     over [ 1 + ] 2dip
+!     getmem8 [ dup 0 = [ ba-each ]
+!               [ 2 = [ ia-each ]
+!                 [ "each: unknown sequence type: " print '0' + emit error ] if ] if ] if ;
