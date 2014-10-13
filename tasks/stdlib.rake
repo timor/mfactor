@@ -17,9 +17,14 @@ IN: ff
 END
   yaml.each do |cname,opts|
     mfname= opts["name"]
-    call = opts["call"] ? "ccall_"+opts["call"] : "" ; # if no call, then taken as literal (e.g. variable access)
+    callspec= opts["call"]
+    call = callspec ? "ccall_"+callspec : "" ; # if no call, then taken as literal (e.g. variable access)
+    effect_input = ""
+    if (callspec != "lit") && (callspec != "v") then
+      effect_input = callspec.chars.to_a.join " "
+    end
     out << <<END
-: #{mfname} ( -- ) #{i} ff #{call} ;
+: #{mfname} ( #{effect_input} -- res ) #{i} ff #{call} ;
 END
     i += 1;
   end
