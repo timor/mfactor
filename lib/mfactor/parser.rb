@@ -35,7 +35,7 @@ module MFactor
       ( str('--').absent? >>  stack_effect_element >> space ).repeat.as(:stack_input) >>
       str('--') >> space >>
       (str(')').absent? >> stack_effect_element >> space).repeat.as(:stack_output) >> str(')')}
-    rule(:compiler_decl) { str('inline')|str('foldable')|str('flushable')|str('recursive') }
+    rule(:compiler_decl) { str('inline')|str('foldable')|str('flushable')|str('recursive')|str('nocompile') }
     rule(:definition) { definer_word.as(:def) >> space >>
       match('\S').repeat(1).as(:name) >> space >>
       (stack_effect.as(:effect) >> space) >>
