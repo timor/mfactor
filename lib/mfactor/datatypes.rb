@@ -61,7 +61,7 @@ module MFactor
       definer == "PRIM:"
     end
     def compilable?
-      (definer != "PRIM:") &&
+      (definer == ":") &&
         !(mods.member?("inline")) &&
         !(mods.member?("nocompile"))
     end
