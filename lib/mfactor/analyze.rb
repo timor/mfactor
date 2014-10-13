@@ -63,37 +63,36 @@ module MFactor
     def compile_definition(d)
       puts d.log("compiling definition: #{d.name}")
       @current_def = d
-      graph=CDFG.new
+      d.graph=CDFG.new
       $stdout.flush
       inputs=d.effect.inputs.map{|i| MFInput.new(i.name,i.type)}
       saved_inputs=inputs.dup
       pstack = MFStack.new inputs
       rstack = MFStack.new
       if d.normal_word?
-        compile_quotation(d.body,pstack,rstack,graph)
+        compile_quotation(d.body,pstack,rstack,d.graph)
         outputs=pstack
-        raise CompileError, "#{d.err_loc}: `#{name}` leaves quotations on stack, not supported yet" if
+        d.log "final_p:"+pstack.show(true)
+        d.log "final_r:"+rstack.show(true)
+        raise CompileError, "#{d.err_loc}: `#{d.name}` leaves quotations on stack, not supported yet" if
           outputs.items.any?{|i| i.is_a? Array}
         raise CompileError, "#{d.err_loc}: number of defined outputs (#{d.effect.outputs.length}) does not match with computed (#{outputs.length})" unless
           d.effect.outputs.length == outputs.length
         output_items=outputs.items.map.with_index do |x,i|
           o=Output.new(d.effect.outputs[i].name)
-          graph.add_data_edge(x,o)
+          d.graph.add_data_edge(x,o)
           o
         end
-        d.log "final_p:"+pstack.show(true)
-        d.log "final_r:"+rstack.show(true)
         input_record=MFStack.new(saved_inputs)
-        graph.add_node input_record unless saved_inputs.empty?
+        d.graph.add_node input_record unless saved_inputs.empty?
         output_record=MFStack.new(output_items)
-        graph.add_node output_record unless output_items.empty?
+        d.graph.add_node output_record unless output_items.empty?
         # dummy calls to compute ports, workaround so that ports are
         # sure to have their record fields set to avoid false duplicates when drawing
         output_record.get_port_nodes
         input_record.get_port_nodes
-        d.graph = graph
-        @compiled_definitions[d]=graph
-        return graph
+        @compiled_definitions[d]=d.graph # needed?
+        return d.graph                   # maybe better return definition?
       else
         raise CompileError, "word not normal: #{d.name}"
       end
@@ -124,7 +123,7 @@ module MFactor
             raise CompileError, "#{word.err_loc}:Error: if needs two literal quotations" unless
               (elsecode.is_a?(Array)) && (thencode.is_a?(Array))
             cnode=ChoiceNode.new("if")
-            graph.add_control_edge(control,cnode)
+            graph.add_control_edge(control,cnode) if control
             thenstack=pstack.dup.mark
             elsestack=pstack.mark
             res_then=compile_quotation(thencode,thenstack,rstack.dup,graph,cnode)
@@ -202,8 +201,15 @@ module MFactor
       compile_definition(d) unless @compiled_definitions[d]
     end
     def definition_dot_graph(d,io)
-      maybe_compile(d)
-      @compiled_definitions[d].dot(io) || raise(CompileError,"compilation of definition of #{d.name} unsuccessful")
+      begin
+        maybe_compile(d)
+      rescue Exception
+        raise
+      ensure
+        if d.graph
+          d.graph.dot(io)
+        end
+      end
     end
   end
 end

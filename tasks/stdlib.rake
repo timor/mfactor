@@ -175,7 +175,6 @@ task :compile_all => "generated/cfg" do
         dotfile= File.new(dotfname,"w")
         a.definition_dot_graph d, dotfile
         dotfile.close
-        sh "dot -Tpng #{dotfname} -o #{dotfname.ext('png')} "
       rescue MFactor::CompileError => msg
         puts "ERROR: compilation of '#{d.name}' failed, reason: "
         puts msg
@@ -186,6 +185,7 @@ task :compile_all => "generated/cfg" do
         puts d.compile_log
         raise
       ensure
+        sh "dot -Tpng #{dotfname} -o #{dotfname.ext('png')} " if File.exist?(dotfname)
         File.open(dotfname.ext('log'),"w") do |f|
           f.puts d.compile_log
         end
