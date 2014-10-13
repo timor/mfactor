@@ -14,7 +14,7 @@ IN: vocabs
 : dict-next ( dict-entry -- dict-entry ) _name>> dup strlen + 1 + ;
 
 ! actually call the quotation associated with word
-: execute ( word -- effect ) _quot>> call ;
+: execute ( word -- effect ) _quot>> call ; nocompile
 
 ! dictionary entry considered valid if
 : dict-valid? ( dict-entry -- ? ) _name>> strlen 0 = not ;
@@ -32,5 +32,5 @@ IN: vocabs
 : name= ( str name -- ? ) [ uncount ] bi@ [ swap ] dip 1 - over = [ mem= ] [ 3drop f ] if ;
 
 ! dictionary usage
-: dsize ( -- ) dictend dictstart - _free-name dictstart - ;
+: dsize ( -- n1 n2 ) dictend dictstart - _free-name dictstart - ;
 
