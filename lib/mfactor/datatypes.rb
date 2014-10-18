@@ -128,13 +128,15 @@ module MFactor
   class MFEffectItem < Struct.new(:name,:type)
   end
   
-  class LabelNode < Struct.new(:label)
+
+  class LabelNode < Struct.new(:dot_label)
     include GraphNode
-    def dot_label
-      label
-    end
-    def dot_name_prefix
-      "label"
+  end
+
+  class JoinNode < Struct.new(:dot_label)
+    include GraphNode
+    def dot_node_shape
+      "point"
     end
   end
   

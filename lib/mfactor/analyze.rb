@@ -56,6 +56,7 @@ module MFactor
       @mf=mf
       @compiled_definitions={}
       @current_def=nil
+      @loop_labels=[]
     end
     def infer_word(name)
       infer mf.find_name(name).body
@@ -123,33 +124,63 @@ module MFactor
             raise CompileError, "#{word.err_loc}:Error: if needs two literal quotations" unless
               (elsecode.is_a?(Array)) && (thencode.is_a?(Array))
             cnode=ChoiceNode.new("if")
+            graph.add_data_edge condition,cnode
             graph.add_control_edge(control,cnode) if control
             thenstack=pstack.dup.mark
             elsestack=pstack.mark
             res_then=compile_quotation(thencode,thenstack,rstack.dup,graph,cnode)
             res_else=compile_quotation(elsecode,elsestack,rstack,graph,cnode)
             #TODO: maybe insert crazy stack correctnes checking here
-            raise CompileError, "#{word.err_loc}:Error: alternatives not stack effect compatible in `if`" unless
-              thenstack.length == elsestack.length
-            num_phis=[thenstack.get_marked,elsestack.get_marked].max
-            phi=MFPhiNode.new(condition,[thenstack.items.last(num_phis),elsestack.items.last(num_phis)])
-            num_phis.times do |i|
-              graph.add_data_edge thenstack.items[-(num_phis-i)], phi.phi_inputs[i]
-              graph.add_data_edge elsestack.items[-(num_phis-i)], phi.phi_inputs[i]
+            if (thenstack.items.last == :loop_case) || (elsestack.items.last == :loop_case)
+              @current_def.log "loop case found"
+              if thenstack.items.last == :loop_case # select correct stack to continue
+                pstack=elsestack
+                control=res_else
+              else
+                pstack=thenstack
+                control=res_then
+              end
+            else
+              raise CompileError, "#{word.err_loc}:Error: alternatives not stack effect compatible in `if`" unless
+                thenstack.length == elsestack.length
+              num_phis=[thenstack.get_marked,elsestack.get_marked].max
+              @current_def.log("need to phi #{num_phis} elements")
+              phi=MFPhiNode.new(condition,[thenstack.items.last(num_phis),elsestack.items.last(num_phis)])
+              num_phis.times do |i|
+                graph.add_data_edge thenstack.items[-(num_phis-i)], phi.phi_inputs[i]
+                graph.add_data_edge elsestack.items[-(num_phis-i)], phi.phi_inputs[i]
+              end
+              if_j=JoinNode.new("if")
+              graph.add_control_edge(res_then, if_j)
+              graph.add_control_edge(res_else, if_j)
+              control = if_j
+              pstack.pop_n(thenstack.length)
+              pstack.push_n phi.outputs
             end
-            graph.add_data_edge condition,phi
-            graph.add_control_edge res_then,phi
-            graph.add_control_edge res_else,phi
-            control=phi
-            pstack.pop_n(thenstack.length)
-            pstack.push_n phi.outputs
           else
             if word.definition.inline?
               @current_def.log "inlining `#{word.definition.name}` by definition"
               if word.definition.recursive?
-                raise CompileError, "not yet compiling inline recursive combinators!"
+                # first check if this is the recursive call
+                if (i=@loop_labels.index{|l| l[0] == @current_def.name})
+                  target=@loop_labels[i][1]
+                  @current_def.log "resolving inline recursive jump"
+                  # TODO: check if more words are following
+                  graph.add_control_edge control, target
+                  pstack.push :loop_case
+                  break;        # bails out of the remaining quotation
+                else
+                  @current_def.log "compiling inline recursive combinator"
+                  j=JoinNode.new(@current_def.name)
+                  @loop_labels.push [@current_def.name, j]
+                  graph.add_control_edge control, j if control
+                  control=j
+                  control=compile_quotation(word.definition.body,pstack,rstack,graph,control)
+                  @loop_labels.pop
+                end
+              else
+                control=compile_quotation(word.definition.body,pstack,rstack,graph,control)
               end
-              control=compile_quotation(word.definition.body,pstack,rstack,graph,control)
             elsif pstack.items.last(word.definition.effect.inputs.length).any?{|i| i.is_a? Array }
               @current_def.log "auto-inlining `#{word.definition.name}` with quotation inputs"
               control=compile_quotation(word.definition.body,pstack,rstack,graph,control)

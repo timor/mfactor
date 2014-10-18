@@ -81,6 +81,7 @@ module MFactor
         when PhiResult then "phi[#{x.index}]"
         when MFIntLit then x.value.to_s
         when Array then "[...]"
+        when Symbol then x.inspect
         else
           raise "don't know how to print stack object of type #{x.class}"
         end
