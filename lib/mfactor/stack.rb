@@ -95,8 +95,5 @@ module MFactor
     def port_nodes
       items
     end
-    def dot_name_prefix
-      "stack"
-    end
   end
 end

@@ -14,9 +14,6 @@ module MFactor
     def dot_node_shape
       "circle"
     end
-    def dot_name_prefix
-      "int"
-    end
   end
   # special case: byte-sized literal
   class MFByteLit < MFIntLit
@@ -109,9 +106,6 @@ module MFactor
     def dot_label
       name
     end
-    def dot_name_prefix
-      "in"
-    end
   end
 
   # represents a result of a compiled definition
@@ -120,14 +114,10 @@ module MFactor
     def dot_label
       name
     end
-    def dot_name_prefix
-      "out"
-    end
   end
-  
+
   class MFEffectItem < Struct.new(:name,:type)
   end
-  
 
   class LabelNode < Struct.new(:dot_label)
     include GraphNode
@@ -139,7 +129,7 @@ module MFactor
       "point"
     end
   end
-  
+
   class ChoiceNode < Struct.new(:label)
     include GraphNode
     def dot_label
@@ -148,11 +138,8 @@ module MFactor
     def dot_node_shape
       "diamond"
     end
-    def dot_name_prefix
-      "choice"
-    end
   end
-  
+
   class CallParameter < Struct.new(:name,:index)
     include GraphNode
     def dot_label
@@ -171,9 +158,6 @@ module MFactor
     include DotRecord
     def port_nodes
       inputs+[LabelNode.new(definition.name)]+outputs
-    end
-    def dot_name_prefix
-      "call"
     end
   end
 
@@ -227,9 +211,6 @@ module MFactor
       end
     end
     # used as nodes for graphing
-    def dot_name_prefix
-      "phi_record"
-    end
   end
   
   # input nodes of compiled call
