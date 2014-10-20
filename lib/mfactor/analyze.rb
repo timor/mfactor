@@ -68,8 +68,8 @@ module MFactor
       $stdout.flush
       inputs=d.effect.inputs.map{|i| MFInput.new(i.name,i.type)}
       saved_inputs=inputs.dup
-      pstack = MFStack.new inputs
-      rstack = MFStack.new
+      pstack = MFStack.new inputs,d
+      rstack = MFStack.new [],d
       if d.normal_word?
         start=StartNode.new
         last_computation=compile_quotation(d.body,pstack,rstack,d.graph,start)
@@ -86,9 +86,9 @@ module MFactor
           d.graph.add_data_edge(x,o)
           o
         end
-        input_record=MFStack.new(saved_inputs)
+        input_record=MFStack.new(saved_inputs,d)
         d.graph.add_node input_record unless saved_inputs.empty?
-        output_record=MFStack.new(output_items)
+        output_record=MFStack.new(output_items,d)
         d.graph.add_node output_record unless output_items.empty?
         # dummy calls to compute ports, workaround so that ports are
         # sure to have their record fields set to avoid false duplicates when drawing
@@ -123,15 +123,22 @@ module MFactor
             elsecode=pstack.pop
             thencode=pstack.pop
             condition=pstack.pop
-            raise CompileError, "#{word.err_loc}:Error: if needs two literal quotations" unless
+            raise CompileError, "#{word.err_loc}:Error: `if` needs two literal quotations" unless
               (elsecode.is_a?(Array)) && (thencode.is_a?(Array))
             cnode=ChoiceNode.new("if")
             graph.add_data_edge condition,cnode
             graph.add_control_edge(control,cnode) if control
-            thenstack=pstack.dup.mark
-            elsestack=pstack.mark
+            thenstack=pstack.dup
+            elsestack=pstack
+            thenmark=thenstack.mark
+            elsemark=elsestack.mark
+            @current_def.log "compiling then branch"
             res_then=compile_quotation(thencode,thenstack,rstack.dup,graph,cnode)
+            @current_def.log "compiling else branch"
             res_else=compile_quotation(elsecode,elsestack,rstack,graph,cnode)
+            @current_def.log "returning to if"
+            @current_def.log "thenstack: "+thenstack.show(true)
+            @current_def.log "elsestack: "+elsestack.show(true)
             #TODO: maybe insert crazy stack correctnes checking here
             if (thenstack.items.last == :loop_case) || (elsestack.items.last == :loop_case)
               @current_def.log "loop case found"
@@ -145,7 +152,7 @@ module MFactor
             else
               raise CompileError, "#{word.err_loc}:Error: alternatives not stack effect compatible in `if`" unless
                 thenstack.length == elsestack.length
-              num_phis=[thenstack.get_marked,elsestack.get_marked].max
+              num_phis=[thenmark.get,elsemark.get].max
               @current_def.log("need to phi #{num_phis} elements")
               phi=MFPhiNode.new(condition,[thenstack.items.last(num_phis),elsestack.items.last(num_phis)])
               num_phis.times do |i|
@@ -159,22 +166,38 @@ module MFactor
               pstack.pop_n(thenstack.length)
               pstack.push_n phi.outputs
             end
-          else
+          else                  # word call
             if word.definition.inline?
               @current_def.log "inlining `#{word.definition.name}` by definition"
-              if word.definition.recursive?
-                # first check if this is the recursive call
-                if (i=@loop_labels.index{|l| l[0] == @current_def.name})
-                  target=@loop_labels[i][1]
+              if word.definition.recursive? # recursive inline word encountered
+                # first check if this is a recursive call
+                if (l=@loop_labels.detect {|x| x[:def_name] == @current_def.name})
                   @current_def.log "resolving inline recursive jump"
-                  # TODO: check if more words are following
+                  @current_def.log "pstack at time of jump:"+pstack.show(true)
+                  target=l[:join_node]
+                  initial_items=MFStack.new(l[:stack_items].last(l[:mark].get))
+                  loop_items=MFStack.new(pstack.items.last(initial_items.length))
+                  @current_def.log "number of items to phi for backwards-jump: #{loop_items.length}"
+                  @current_def.log "initial_items: "+initial_items.show(true)
+                  @current_def.log "loop_items: "+loop_items.show(true)
+                  # insert the edges which constitute the dataflow into the backwards-jump
+                  initial_items.each.with_index do |phi,i|
+                    graph.data_successors(phi).each do |dest|
+                      @current_def.log "adding backwards data edge"
+                      graph.add_data_edge loop_items[i], dest
+                    end
+                  end
                   graph.add_control_edge control, target
                   pstack.push :loop_case
-                  break;        # bails out of the remaining quotation
-                else
+                  break;        # bails out of the remaining quotation compilation -> TODO: warn if continuation not empty (non-tail-recursive combinator)
+                else            # recording call to inline recursive combinator
                   @current_def.log "compiling inline recursive combinator"
+                  recursive_items=pstack.items.dup
                   j=JoinNode.new(@current_def.name)
-                  @loop_labels.push [@current_def.name, j]
+                  @loop_labels.push({ :def_name => @current_def.name,
+                                      :join_node => j,
+                                      :stack_items => pstack.items.dup,
+                                      :mark => pstack.mark})
                   graph.add_control_edge control, j if control
                   control=j
                   control=compile_quotation(word.definition.body,pstack,rstack,graph,control)

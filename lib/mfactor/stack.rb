@@ -7,20 +7,26 @@ module MFactor
   class MFStack
     include GraphNode
     include DotRecord
-    def initialize(a=[])
+    attr_accessor :marks
+    def initialize(a=[],definition=nil)
       @a = a
-      @mark=nil
+      @marks=[]
+      @definition = definition
     end
     def initialize_copy(source)
       super
       @a = source.items.dup
+      @marks= source.marks.dup
     end
     def items
       @a
     end
+    def each
+      @a.each
+    end
     def swap
-      e1 = @a.pop
-      e2 = @a.pop
+      e1 = pop
+      e2 = pop
       @a.push e1
       @a.push e2
     end
@@ -30,14 +36,12 @@ module MFactor
       else
         ret = @a.pop
       end
-      if @mark && (@mark > @a.length)
-        @mark = @a.length
-      end
+      update_marks
       ret
     end
-    def drop() @a.pop; nil end
+    def drop() self.pop; nil end
     def _dup()
-      e = @a.pop
+      e = pop
       @a.push e
       @a.push e
     end
@@ -53,9 +57,7 @@ module MFactor
         else
           @a,ret=@a[0..-(n+1)],@a[-n..-1]
         end
-        if @mark && (@mark > @a.length)
-          @mark = @a.length
-        end
+        update_marks
         ret
       end
     end
@@ -63,12 +65,10 @@ module MFactor
       @a+=arr
     end
     def mark
-      @mark=items.length
-      self
-    end
-    # return number of itmes that has been changed since last call of mark
-    def get_marked
-      @a.length - @mark
+      log "marking"
+      m=Mark.new(@a.length,self)
+      @marks.push(m)
+      m
     end
     def length
       @a.length
@@ -94,6 +94,32 @@ module MFactor
     end
     def port_nodes
       items
+    end
+    private
+    def update_marks
+      #log "updating #{@marks.length} marks"
+      @marks.each do |m|
+        if (m.pos > @a.length)
+          log "setting mark to #{@a.length}"
+          m.pos = @a.length
+        end
+        m
+      end
+    end
+    def log s
+      if @definition
+        @definition.log s
+      end
+    end
+  end
+  class Mark < Struct.new :pos, :stack
+    # return number of items that has been changed since most recent
+    # call of mark, deregistering the mark
+    def get
+      l=stack.items.length - pos
+      stack.send :log, "pop mark, stack has #{stack.items.length} items, marked #{l}"
+      stack.marks.delete(self) or raise "unable to delete mark, not found in stack"
+      l
     end
   end
 end
