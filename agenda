@@ -15,8 +15,9 @@
     to allow for quick runtime word lookup (constant time)
 - DONE: revamp ruby compiler, with dictionary support and syntax error reporting
 - DONE: implement new literals
-- PARTLY DONE(no console output): graphical decompiler (should work on console, though)
-- PARTLY DONE(graphical output):ssa compiler (graphical, to_c)
+- DONE: compilation to graphs, inline recursive words not working yet
+- support inlining tail recursive combinators
+- support non-tail-recursive combinators (involves compiling the call to an "anonymous" function)
 - stopworld mark-sweep gc (should only be triggered during user input,
   so not time critical)
 
