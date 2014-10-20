@@ -123,6 +123,26 @@ module MFactor
     include GraphNode
   end
 
+  class EndNode
+    include GraphNode
+    def dot_node_shape
+      "Mrecord"
+    end
+    def dot_label
+      "End"
+    end
+  end
+
+  class StartNode
+    include GraphNode
+    def dot_node_shape
+      "Mrecord"
+    end
+    def dot_label
+      "Start"
+    end
+  end
+
   class JoinNode < Struct.new(:dot_label)
     include GraphNode
     def dot_node_shape

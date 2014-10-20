@@ -71,8 +71,10 @@ module MFactor
       pstack = MFStack.new inputs
       rstack = MFStack.new
       if d.normal_word?
-        compile_quotation(d.body,pstack,rstack,d.graph)
+        start=StartNode.new
+        last_computation=compile_quotation(d.body,pstack,rstack,d.graph,start)
         outputs=pstack
+        d.graph.add_control_edge(last_computation,EndNode.new)
         d.log "final_p:"+pstack.show(true)
         d.log "final_r:"+rstack.show(true)
         raise CompileError, "#{d.err_loc}: `#{d.name}` leaves quotations on stack, not supported yet" if
@@ -98,7 +100,7 @@ module MFactor
         raise CompileError, "word not normal: #{d.name}"
       end
     end
-    def compile_quotation(q,pstack,rstack,graph,control=nil)
+    def compile_quotation(q,pstack,rstack,graph,control)
       @current_def.log "compiling quotation: "+MFactor::see_word(q)
       q.each do |word|
         @current_def.log("p:"+pstack.show(true))
