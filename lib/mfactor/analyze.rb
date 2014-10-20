@@ -1,5 +1,5 @@
 require 'mfactor/image'
-require 'mfactor/dot'
+require 'mfactor/graph'
 require 'mfactor/stack'
 require 'parslet'
 

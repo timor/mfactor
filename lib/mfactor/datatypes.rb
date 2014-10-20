@@ -1,5 +1,5 @@
 # data types that are used in compilation
-require 'mfactor/dot.rb'
+require 'mfactor/graph.rb'
 
 module MFactor
   # integer literal

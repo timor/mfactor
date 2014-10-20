@@ -1,4 +1,4 @@
-require 'mfactor/dot'
+require 'mfactor/graph'
 require 'mfactor/datatypes'
 
 module MFactor

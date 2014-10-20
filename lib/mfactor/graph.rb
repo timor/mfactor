@@ -7,12 +7,13 @@
 module MFactor
   def dot_escape(str)
     # str.to_s.gsub(/[-+.><*=]/,{
-    str.to_s.gsub(/[><]/,{
+    str.to_s.gsub(/[><|]/,{
                     # '+' => 'plus',
                     #  '-' => 'minus',
                     #  '.' => 'dot',
-                    '>' => 'gt',
-                    '<' => 'lt',
+                    '>' => '\>',
+                    '<' => '\<',
+                    '|' => '\|',
                     # '*' => 'times',
                     # '=' => 'equalp',
                   })
@@ -217,6 +218,11 @@ END
       end
       io.puts "}"
       self
+    end
+    
+    # return all nodes that are followers of a given node (TODO: check performance)
+    def data_successors node
+      @data_edges.find_all{ |s,d| s == node }.map{ |s,d| d}
     end
     private
     def draw_transition(s,d,io,attrs={})
