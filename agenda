@@ -16,8 +16,9 @@
 - DONE: revamp ruby compiler, with dictionary support and syntax error reporting
 - DONE: implement new literals
 - DONE: compilation to graphs, inline recursive words not working yet
-- support inlining tail recursive combinators
-- support non-tail-recursive combinators (involves compiling the call to an "anonymous" function)
+- DONE: inlining tail recursive combinators
+- ensure that mutual tail-recursive combinators work
+- support non-tail-recursive combinators (involves generating an "anonymous" function for every usage of the combinator)
 - stopworld mark-sweep gc (should only be triggered during user input,
   so not time critical)
 

@@ -130,8 +130,6 @@ module MFactor
             graph.add_control_edge(control,cnode) if control
             thenstack=pstack.dup
             elsestack=pstack
-            thenmark=thenstack.mark
-            elsemark=elsestack.mark
             @current_def.log "compiling then branch"
             res_then=compile_quotation(thencode,thenstack,rstack.dup,graph,cnode)
             @current_def.log "compiling else branch"
@@ -152,12 +150,12 @@ module MFactor
             else
               raise CompileError, "#{word.err_loc}:Error: alternatives not stack effect compatible in `if`" unless
                 thenstack.length == elsestack.length
-              num_phis=[thenmark.get,elsemark.get].max
-              @current_def.log("need to phi #{num_phis} elements")
-              phi=MFPhiNode.new(condition,[thenstack.items.last(num_phis),elsestack.items.last(num_phis)])
-              num_phis.times do |i|
-                graph.add_data_edge thenstack.items[-(num_phis-i)], phi.phi_inputs[i]
-                graph.add_data_edge elsestack.items[-(num_phis-i)], phi.phi_inputs[i]
+              phi_indices=thenstack.diff_index(elsestack)
+              @current_def.log("need to phi elements: #{phi_indices}")
+              phi=MFPhiNode.new(condition,[thenstack.items.values_at(*phi_indices),elsestack.items.values_at(*phi_indices)])
+              phi_indices.each_with_index do |i,phi_i|
+                graph.add_data_edge thenstack.items[i], phi.phi_inputs[phi_i]
+                graph.add_data_edge elsestack.items[i], phi.phi_inputs[phi_i]
               end
               if_j=JoinNode.new("if")
               graph.add_control_edge(res_then, if_j)
@@ -175,16 +173,13 @@ module MFactor
                   @current_def.log "resolving inline recursive jump"
                   @current_def.log "pstack at time of jump:"+pstack.show(true)
                   target=l[:join_node]
-                  initial_items=MFStack.new(l[:stack_items].last(l[:mark].get))
-                  loop_items=MFStack.new(pstack.items.last(initial_items.length))
-                  @current_def.log "number of items to phi for backwards-jump: #{loop_items.length}"
-                  @current_def.log "initial_items: "+initial_items.show(true)
-                  @current_def.log "loop_items: "+loop_items.show(true)
+                  changed_inds=l[:entry_stack].diff_index(pstack)
+                  @current_def.log "items to phi for backwards-jump: #{changed_inds}"
                   # insert the edges which constitute the dataflow into the backwards-jump
-                  initial_items.each.with_index do |phi,i|
-                    graph.data_successors(phi).each do |dest|
+                  changed_inds.each do |i|
+                    graph.data_successors(l[:entry_stack].items[i]).each do |dest|
                       @current_def.log "adding backwards data edge"
-                      graph.add_data_edge loop_items[i], dest
+                      graph.add_data_edge pstack.items[i], dest
                     end
                   end
                   graph.add_control_edge control, target
@@ -192,12 +187,10 @@ module MFactor
                   break;        # bails out of the remaining quotation compilation -> TODO: warn if continuation not empty (non-tail-recursive combinator)
                 else            # recording call to inline recursive combinator
                   @current_def.log "compiling inline recursive combinator"
-                  recursive_items=pstack.items.dup
                   j=JoinNode.new(@current_def.name)
                   @loop_labels.push({ :def_name => @current_def.name,
                                       :join_node => j,
-                                      :stack_items => pstack.items.dup,
-                                      :mark => pstack.mark})
+                                      :entry_stack => pstack.dup})
                   graph.add_control_edge control, j if control
                   control=j
                   control=compile_quotation(word.definition.body,pstack,rstack,graph,control)

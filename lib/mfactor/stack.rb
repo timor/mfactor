@@ -10,13 +10,11 @@ module MFactor
     attr_accessor :marks
     def initialize(a=[],definition=nil)
       @a = a
-      @marks=[]
       @definition = definition
     end
     def initialize_copy(source)
       super
       @a = source.items.dup
-      @marks= source.marks.dup
     end
     def items
       @a
@@ -36,7 +34,6 @@ module MFactor
       else
         ret = @a.pop
       end
-      update_marks
       ret
     end
     def drop() self.pop; nil end
@@ -57,18 +54,11 @@ module MFactor
         else
           @a,ret=@a[0..-(n+1)],@a[-n..-1]
         end
-        update_marks
         ret
       end
     end
     def push_n(arr)
       @a+=arr
-    end
-    def mark
-      log "marking"
-      m=Mark.new(@a.length,self)
-      @marks.push(m)
-      m
     end
     def length
       @a.length
@@ -95,31 +85,16 @@ module MFactor
     def port_nodes
       items
     end
-    private
-    def update_marks
-      #log "updating #{@marks.length} marks"
-      @marks.each do |m|
-        if (m.pos > @a.length)
-          log "setting mark to #{@a.length}"
-          m.pos = @a.length
-        end
-        m
-      end
+    def diff_index(other)
+      raise "trying to diff inconsistent stack lengths" unless
+        other.length == items.length
+      items.each_index.select { |i| items[i] != other.items[i] }
     end
+    private
     def log s
       if @definition
         @definition.log s
       end
-    end
-  end
-  class Mark < Struct.new :pos, :stack
-    # return number of items that has been changed since most recent
-    # call of mark, deregistering the mark
-    def get
-      l=stack.items.length - pos
-      stack.send :log, "pop mark, stack has #{stack.items.length} items, marked #{l}"
-      stack.marks.delete(self) or raise "unable to delete mark, not found in stack"
-      l
     end
   end
 end
