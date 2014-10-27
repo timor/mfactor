@@ -47,7 +47,12 @@ module MFactor
   end
   module_function :filename_escape
 
+  # signaled during Compilation error
   class CompileError < StandardError
+  end
+
+  # signaled when current Function is not compilable
+  class UncompilableError < CompileError
   end
 
   class MFStaticCompiler
@@ -77,9 +82,9 @@ module MFactor
         d.graph.add_control_edge(last_computation,EndNode.new)
         d.log "final_p:"+pstack.show(true)
         d.log "final_r:"+rstack.show(true)
-        raise CompileError, "#{d.err_loc}: `#{d.name}` leaves quotations on stack, not supported yet" if
+        raise UncompilableError, "`#{d.name}` leaves quotations on stack, not supported yet" if
           outputs.items.any?{|i| i.is_a? Array}
-        raise CompileError, "#{d.err_loc}: number of defined outputs (#{d.effect.outputs.length}) does not match with computed (#{outputs.length})" unless
+        raise CompileError, "Number of defined outputs (#{d.effect.outputs.length}) does not match with computed (#{outputs.length})" unless
           d.effect.outputs.length == outputs.length
         output_items=outputs.items.map.with_index do |x,i|
           o=Output.new(d.effect.outputs[i].name)
@@ -97,7 +102,7 @@ module MFactor
         @compiled_definitions[d]=d.graph # needed?
         return d.graph                   # maybe better return definition?
       else
-        raise CompileError, "word not normal: #{d.name}"
+        raise UncompilableError, "word not normal: #{d.name}"
       end
     end
     def compile_quotation(q,pstack,rstack,graph,control)
@@ -116,14 +121,14 @@ module MFactor
           when "call" then
             @current_def.log "inlining literal quotation call"
             called_q=pstack.pop
-            raise CompileError, "#{word.err_loc}:Error: call must be compiled with literal quotation on stack" unless called_q.is_a? Array
+            raise UncompilableError, "Call must be compiled with literal quotation on stack. (Did you forget 'inline' declaration?)" unless called_q.is_a? Array
             control=compile_quotation(called_q,pstack,rstack,graph,control)
           when "if" then
             @current_def.log "compiling `if`"
             elsecode=pstack.pop
             thencode=pstack.pop
             condition=pstack.pop
-            raise CompileError, "#{word.err_loc}:Error: `if` needs two literal quotations" unless
+            raise CompileError, "`if` needs two literal quotations" unless
               (elsecode.is_a?(Array)) && (thencode.is_a?(Array))
             cnode=ChoiceNode.new("if")
             graph.add_data_edge condition,cnode
@@ -148,7 +153,7 @@ module MFactor
                 control=res_then
               end
             else
-              raise CompileError, "#{word.err_loc}:Error: alternatives not stack effect compatible in `if`" unless
+              raise CompileError, "Error: alternatives not stack compatible in `if`" unless
                 thenstack.length == elsestack.length
               phi_indices=thenstack.diff_index(elsestack)
               @current_def.log("need to phi elements: #{phi_indices}")

@@ -176,12 +176,16 @@ task :compile_all => "generated/cfg" do
         dotfile= File.new(dotfname,"w")
         a.definition_dot_graph d, dotfile
         dotfile.close
-      rescue MFactor::CompileError => msg
-        puts "ERROR: compilation of '#{d.name}' failed, reason: "
+      rescue MFactor::UncompilableError => msg
+        puts "#{d.err_loc}:Warning: cannot compile '#{d.name}', reason: "
         puts msg
-        puts d.err_loc
+      rescue MFactor::CompileError => msg
+        puts "#{d.err_loc}:Error While compiling `#{d.name}`:"
+        puts msg
+        puts "Compilation Log:"
+        puts d.compile_log
+        raise
       rescue Exception
-        puts "#{d.err_loc}:While compiling `#{d.name}`:"
         puts "Compilation Log:"
         puts d.compile_log
         raise
