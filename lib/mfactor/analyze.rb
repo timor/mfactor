@@ -62,6 +62,7 @@ module MFactor
       @compiled_definitions={}
       @current_def=nil
       @loop_labels=[]
+      @loop_label_num='0'
     end
     def infer_word(name)
       infer mf.find_name(name).body
@@ -77,7 +78,8 @@ module MFactor
       rstack = MFStack.new [],d
       if d.normal_word?
         start=StartNode.new
-        last_computation=compile_quotation(d.body,pstack,rstack,d.graph,start)
+        pstack,rstack,last_computation=compile_quotation(d.body,pstack,rstack,d.graph,start)
+        raise CompileError, "Retain Stack not empty" unless rstack.items.empty?
         outputs=pstack
         d.graph.add_control_edge(last_computation,EndNode.new)
         d.log "final_p:"+pstack.show(true)
@@ -122,7 +124,7 @@ module MFactor
             @current_def.log "inlining literal quotation call"
             called_q=pstack.pop
             raise UncompilableError, "Call must be compiled with literal quotation on stack. (Did you forget 'inline' declaration?)" unless called_q.is_a? Array
-            control=compile_quotation(called_q,pstack,rstack,graph,control)
+            pstack,rstack,control=compile_quotation(called_q,pstack,rstack,graph,control)
           when "if" then
             @current_def.log "compiling `if`"
             elsecode=pstack.pop
@@ -133,40 +135,40 @@ module MFactor
             cnode=ChoiceNode.new("if")
             graph.add_data_edge condition,cnode
             graph.add_control_edge(control,cnode) if control
-            thenstack=pstack.dup
-            elsestack=pstack
             @current_def.log "compiling then branch"
-            res_then=compile_quotation(thencode,thenstack,rstack.dup,graph,cnode)
+            then_pstack,then_rstack,res_then=compile_quotation(thencode,pstack.dup,rstack.dup,graph,cnode)
             @current_def.log "compiling else branch"
-            res_else=compile_quotation(elsecode,elsestack,rstack,graph,cnode)
+            else_pstack,else_rstack,res_else=compile_quotation(elsecode,pstack,rstack,graph,cnode)
             @current_def.log "returning to if"
-            @current_def.log "thenstack: "+thenstack.show(true)
-            @current_def.log "elsestack: "+elsestack.show(true)
+            @current_def.log "thenstack: "+then_pstack.show(true)
+            @current_def.log "elsestack: "+else_pstack.show(true)
             #TODO: maybe insert crazy stack correctnes checking here
-            if (thenstack.items.last == :loop_case) || (elsestack.items.last == :loop_case)
-              @current_def.log "loop case found"
-              if thenstack.items.last == :loop_case # select correct stack to continue
-                pstack=elsestack
+            if (then_pstack.items.last == :loop_case) || (else_pstack.items.last == :loop_case)
+              @current_def.log "loop case found, discarding branch"
+              if then_pstack.items.last == :loop_case # select correct stack to continue
+                pstack=else_pstack
+                rstack=else_rstack
                 control=res_else
               else
-                pstack=thenstack
+                pstack=then_pstack
+                rstack=else_rstack
                 control=res_then
               end
             else
               raise CompileError, "Error: alternatives not stack compatible in `if`" unless
-                thenstack.length == elsestack.length
-              phi_indices=thenstack.diff_index(elsestack)
+                (then_pstack.length == else_pstack.length) && (then_rstack.length == else_rstack.length)
+              phi_indices=then_pstack.diff_index(else_pstack)
               @current_def.log("need to phi elements: #{phi_indices}")
-              phi=MFPhiNode.new(condition,[thenstack.items.values_at(*phi_indices),elsestack.items.values_at(*phi_indices)])
+              phi=MFPhiNode.new(condition,[then_pstack.items.values_at(*phi_indices),else_pstack.items.values_at(*phi_indices)])
               phi_indices.each_with_index do |i,phi_i|
-                graph.add_data_edge thenstack.items[i], phi.phi_inputs[phi_i]
-                graph.add_data_edge elsestack.items[i], phi.phi_inputs[phi_i]
+                graph.add_data_edge then_pstack.items[i], phi.phi_inputs[phi_i]
+                graph.add_data_edge else_pstack.items[i], phi.phi_inputs[phi_i]
               end
               if_j=JoinNode.new("endif")
               graph.add_control_edge(res_then, if_j)
               graph.add_control_edge(res_else, if_j)
               control = if_j
-              pstack.pop_n(thenstack.length)
+              pstack.pop_n(then_pstack.length)
               pstack.push_n phi.outputs
             end
           else                  # word call
@@ -192,21 +194,22 @@ module MFactor
                   break;        # bails out of the remaining quotation compilation -> TODO: warn if continuation not empty (non-tail-recursive combinator)
                 else            # recording call to inline recursive combinator
                   @current_def.log "compiling inline recursive combinator"
+                  @current_def.log "pstack at entry: "+pstack.show(true)
                   j=JoinNode.new(@current_def.name+@loop_label_num.succ!)
                   @loop_labels.push({ :def_name => @current_def.name,
                                       :join_node => j,
                                       :entry_stack => pstack.dup})
                   graph.add_control_edge control, j if control
                   control=j
-                  control=compile_quotation(word.definition.body,pstack,rstack,graph,control)
+                  pstack,rstack,control=compile_quotation(word.definition.body,pstack,rstack,graph,control)
                   @loop_labels.pop
                 end
               else
-                control=compile_quotation(word.definition.body,pstack,rstack,graph,control)
+                pstack,rstack,control=compile_quotation(word.definition.body,pstack,rstack,graph,control)
               end
             elsif pstack.items.last(word.definition.effect.inputs.length).any?{|i| i.is_a? Array }
               @current_def.log "auto-inlining `#{word.definition.name}` with quotation inputs"
-              control=compile_quotation(word.definition.body,pstack,rstack,graph,control)
+              pstack,rstack,control=compile_quotation(word.definition.body,pstack,rstack,graph,control)
             else
               control=compile_word_call(word,pstack,graph,control)
             end
@@ -218,7 +221,8 @@ module MFactor
         else raise CompileError, "unable to compile word of type: #{word.class}"
         end
       end
-      control                      # return control
+      @current_def.log "return control from quotation"
+      return pstack,rstack,control                      # return updated stacks and control
     end
     def compile_word_call(word,pstack,graph,control)
       # todo: type inference here!
