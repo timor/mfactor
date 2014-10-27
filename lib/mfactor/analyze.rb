@@ -209,6 +209,7 @@ module MFactor
         when MFIntLit then pstack.push word
         when MFByteLit then pstack.push word
         when Array then pstack.push word
+        when MFStringLit then pstack.push word
         else raise CompileError, "unable to compile word of type: #{word.class}"
         end
       end

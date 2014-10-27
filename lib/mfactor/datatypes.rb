@@ -22,6 +22,18 @@ module MFactor
     end
   end
 
+  class MFStringLit < Struct.new(:value)
+    include GraphNode
+    def see
+      value.inspect
+    end
+    def dot_label
+      '\"'+value+'\"'
+    end
+    def dot_node_shape
+      "none"
+    end
+  end
   class MFWord < Struct.new(:name,:definition,:is_tail)
     def initialize(*a)
       super *a

@@ -100,7 +100,7 @@ module MFactor
     #   (num > 255 ? MFIntLit : MFByteLit).new(num)
     # }
     rule(:char => simple(:c)) { MFByteLit.new(c.to_s.ord) }
-    rule(:string => simple(:s)) { s.to_s }
+    rule(:string => simple(:s)) { MFStringLit.new(s.to_s) }
     rule(:word_or_number => simple(:name)) { if name.to_s =~ /^(0[xX][0-9a-fA-F]+|[0-9]+)$/
                                                num=Integer(name)
                                                (num > 255 ? MFIntLit : MFByteLit).new(num)
