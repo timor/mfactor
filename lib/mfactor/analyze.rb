@@ -157,7 +157,7 @@ module MFactor
                 graph.add_data_edge thenstack.items[i], phi.phi_inputs[phi_i]
                 graph.add_data_edge elsestack.items[i], phi.phi_inputs[phi_i]
               end
-              if_j=JoinNode.new("if")
+              if_j=JoinNode.new("endif")
               graph.add_control_edge(res_then, if_j)
               graph.add_control_edge(res_else, if_j)
               control = if_j
@@ -187,7 +187,7 @@ module MFactor
                   break;        # bails out of the remaining quotation compilation -> TODO: warn if continuation not empty (non-tail-recursive combinator)
                 else            # recording call to inline recursive combinator
                   @current_def.log "compiling inline recursive combinator"
-                  j=JoinNode.new(@current_def.name)
+                  j=JoinNode.new(@current_def.name+@loop_label_num.succ!)
                   @loop_labels.push({ :def_name => @current_def.name,
                                       :join_node => j,
                                       :entry_stack => pstack.dup})

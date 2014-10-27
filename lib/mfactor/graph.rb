@@ -159,11 +159,11 @@ module MFactor
         OpenStruct.new(name: n.node_name,
                        label: MFactor::dot_escape(n.dot_label))
       end
-      io << node_name << " [label=\"{"
+      io << node_name << " [label=\"{{"
       io << portinfos.map do |p|
         "<#{p.name}> #{p.label}"
       end.join(" | ")
-      io << "}\"]\n"
+      io << "}}\"]\n"
     end
   end
   # control flow and data flow, enough information to generate some code (after de-SSA-ing)
@@ -179,7 +179,20 @@ module MFactor
     end
     def add_control_edge(s,d)
       add_transition s,d
-      @control_edges.push [s,d]
+      label=nil
+      # Check if we come from choice node.  If yes, label the correspondig edges
+      if s.class == ChoiceNode
+        if s.else_edge
+          raise "choice node has more than one outgoing edge"
+        elsif s.then_edge
+          s.else_edge = true
+          label="else"
+        else
+          s.then_edge = true
+          label="then"
+        end
+      end
+      @control_edges.push [s,d,label]
     end
     def add_data_edge(s,d)
       add_transition s,d
@@ -190,8 +203,9 @@ module MFactor
       # puts "drawing"
       io << <<END
 digraph test_definition {
-graph [ rankdir=LR ]
+graph [ rankdir=TB ]
 node [shape=record,fontname=helvetica]
+edge [fontname=helvetica, arrowsize=0.5]
 END
       # nodes,transitions = collect_nodes
       #      transitions.to_a.flatten.to_set.each do |n|
@@ -200,7 +214,8 @@ END
         if n.is_record?          # if we are a record, call specialized function
           n.dot_code(io)
         else
-          attrs={:label => '"'+n.dot_label+'"'}
+          label_sym = (n.class == JoinNode ? :xlabel : :label)
+          attrs={label_sym => '"'+n.dot_label+'"'}
           if n.respond_to? :dot_node_shape
             attrs[:shape]='"'+n.dot_node_shape+'"'
           end
@@ -210,8 +225,10 @@ END
           io.puts "#{n.node_name} [#{attr_string}]"
         end
       end
-      @control_edges.each do |s,d|
-        draw_transition(s,d,io,{color: "red"})
+      @control_edges.each do |s,d,label|
+        attrs={color:"red",fontcolor:"red"}
+        attrs[:label] = '"'+label+'"' if label
+        draw_transition(s,d,io,attrs)
       end
       @data_edges.each do |s,d|
         draw_transition(s,d,io,{color: "green"})
@@ -249,6 +266,7 @@ END
                     end
       io.puts "#{sname} -> #{dname}#{attr_string}"
     end
+    # register nodes if necessary
     def add_transition(source,dest)
       add_node source
       add_node dest

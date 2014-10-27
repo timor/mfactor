@@ -12,7 +12,7 @@ module MFactor
       value.to_s
     end
     def dot_node_shape
-      "circle"
+      "none"
     end
   end
   # special case: byte-sized literal
@@ -162,7 +162,7 @@ module MFactor
     end
   end
 
-  class ChoiceNode < Struct.new(:label)
+  class ChoiceNode < Struct.new(:label,:then_edge,:else_edge)
     include GraphNode
     def dot_label
       label
