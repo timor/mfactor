@@ -206,7 +206,7 @@ module MFactor
   #     label
   #   end
   # end
-  
+
   class PhiResult < Struct.new(:phi,:index)
     include GraphNode
     def dot_label
@@ -244,7 +244,7 @@ module MFactor
     end
     # used as nodes for graphing
   end
-  
+
   # input nodes of compiled call
   class CallInput < Struct.new(:label)
     include GraphNode
