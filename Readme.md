@@ -3,10 +3,71 @@
 Mfactor is a small interpreter based on a simple VM with some Mfactor
 boot code.  It is portable and currently has drivers for linux and
 Cortex-M.  The name Mfactor hints at 'embedded Factor' since it aims to
-port Factor <http://factorcode.org> to embedded platforms.
+port Factor <http://factorcode.org> to embedded platforms.  No memory management is required
+
+# differences to factor
+- no namestack, so no dynamic variables (may change, but high
+  performance impact for embedded systems)
+- vocabulary search is simplified, vocabulary foo would be found in
+  <any-vocab-root>/foo.mfactor, vocabulary foo.bar would be found in
+  <any-vocab-root>/foo/bar.mfactor.
+
+# compilation #
+
+## to-source ##
+Compilation (to graphs, and later source code) works by "virtual interpretation", a technique for compiling
+stack-based languages described here: http://www.complang.tuwien.ac.at/projects/rafts.html
+
+Right now, a combined Control-/Dataflow graph is constructed, which is
+used as intermediate representation. This graph can be output in dot format for
+visual inspection of the workings of a word.  All combinators are inlined automatically.
+This is because the target output is C, which does not support higher order functions.
+
+There will be support for handling CSP-Style concurrency at compilation level.
+If this will work for interpreted code, or only for compiled code is still unclear.
+
+# build notes #
+
+- build system: rake
+- several ENV vars influence compilation:
+  - ONHOST: if set, will be compiled for host system
+  - NOPRIVATE: if set, dictionary entries will be generated even for
+    words only used internally, useful for tracing (see below)
+  - NOTAIL: disable tail calls at start, can be switched on and off
+    with `tail` and `notail` instructions nonetheless
+- compile time switches:
+  - TRACE_LEVEL: controls execution trace information on standard output
+    - 0: no trace output
+    - 1: word lookup and basic execution tracing
+    - 2: full execution tracing
+- example to build and run on linux host:
+
+        rake ONHOST=1 NOPRIVATE=1
+        ./mfactor
+
+- to build on embedded system (currently supported: cortex-m cores
+  either call rake from make, or include the stdlib task in existing
+  rake file, and make sure to compile at least `interpreter.c` and the
+  reader, as well as the target specific c sources into the final application
+
+# debugging #
+
+- current tools include: using TRACE_LEVEL
+- incorporate 'st' calls to print current stack status
+- "message" print debugging
+- calling `notail` which disables tail calls, thus leaving the return
+  stack completely intact
+  - NOTE: if necessary, increase VM_RETURNSTACK (either on command
+    line or in interpreter.h", since currently all looping constructs
+    including the top level listener are implemented with tail recursion
+  - tail calling can be reactivated with `tail`
+
+# caveats #
+- At the moment the gc is not implemented yet, so you will eventually
+  run out of memory if not careful.  Current memory usage can be
+  checked with the word `usage`
 
 # design notes
-
 - non-portable-byte-code interpreter, although mnemonics are portable
 - position-independent when using base-relative addressing (stdlib
   only supports base-relative)
@@ -32,6 +93,20 @@ port Factor <http://factorcode.org> to embedded platforms.
   instruction
 - last call in a word should always be a tailcall instruction (btcall,
   atcall, stcall), but this is the responsibility of the compiler
+
+## cross compilation ##
+
+The host implementation currently contains a bootstrapping ruby
+loader, which is able to parse simple source files containing only
+`:`, `SYNTAX:` and `PRIM:` definitions.  Once these are used to
+generate a minimal image, other immediate words can be used.  This
+usage is typically restricted to operating the parser stack.  In
+essence, while creating the image, a parse-time specialized image is
+used to build the actual image.  Once the image is built, it can be
+converted to bytecode form.  This byte code form can either be
+compiled to a c array suitable for interpretation, compiled to
+statically typed c source code (TBD) or executed in ruby, essentially
+providing a simulator for the VM.
 
 ## data memory ##
 - The only memory handling available in the kernel is getting the
@@ -109,61 +184,11 @@ port Factor <http://factorcode.org> to embedded platforms.
 
 ### retain stack ###
 - general purpose stack
-- _should_ be empty after word exits (TODO: include balance checks in parser)
+- must be empty after word definition is done
+- must be balanced inside a definition, may be unbalanced inside a
+  definition (e.g. `1 >r [ r> 1 +] [ r> 4 + ]`)
 
 ### return stack ###
 - saves return information as well as beginning of word information
   for debugging
 
-# compilation #
-Compilation works by "virtual interpretation", a technique for compiling
-stack-based languages described here: http://www.complang.tuwien.ac.at/projects/rafts.html
-
-Right now, a combined Control-/Dataflow graph is constructed, which is
-used as intermediate representation. This graph can be output in dot format for
-visual inspection of the workings of a word.  All combinators are inlined automatically.
-This is because the target output is C, which does not support higher order functions.
-
-There will be support for handling CSP-Style concurrency at compilation level.
-If this will work for interpreted code, or only for compiled code is still unclear.
-
-# build notes #
-
-- build system: rake
-- several ENV vars influence compilation:
-  - ONHOST: if set, will be compiled for host system
-  - NOPRIVATE: if set, dictionary entries will be generated even for
-    words only used internally, useful for tracing (see below)
-  - NOTAIL: disable tail calls at start, can be switched on and off
-    with `tail` and `notail` instructions nonetheless
-- compile time switches:
-  - TRACE_LEVEL: controls execution trace information on standard output
-    - 0: no trace output
-    - 1: word lookup and basic execution tracing
-    - 2: full execution tracing
-- example to build and run on linux host:
-
-        rake ONHOST=1 NOPRIVATE=1
-        ./mfactor
-
-- to build on embedded system (currently supported: cortex-m cores
-  either call rake from make, or include the stdlib task in existing
-  rake file, and make sure to compile at least `interpreter.c` and the
-  reader, as well as the target specific c sources into the final application
-
-# debugging #
-
-- current tools include: using TRACE_LEVEL
-- incorporate 'st' calls to print current stack status
-- "message" print debugging
-- calling `notail` which disables tail calls, thus leaving the return
-  stack completely intact
-  - NOTE: if necessary, increase VM_RETURNSTACK (either on command
-    line or in interpreter.h", since currently all looping constructs
-    including the top level listener are implemented with tail recursion
-  - tail calling can be reactivated with `tail`
-
-# caveats #
-- At the moment the gc is not implemented yet, so you will eventually
-  run out of memory if not careful.  Current memory usage can be
-  checked with the word `usage`

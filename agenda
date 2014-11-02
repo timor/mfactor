@@ -17,8 +17,15 @@
 - DONE: implement new literals
 - DONE: compilation to graphs, inline recursive words not working yet
 - DONE: inlining tail recursive combinators
+- DOING: split code into platform dependent and platform independent parts
+- DOING: demote ruby vocab loader to bootstrapping, switching to
+  parsing primitives after base system is loaded.  This might incur a
+  performance hit, depending on how Parslet's performance compares to
+  forward parsing using generated image.
 - ensure that mutual tail-recursive combinators work
-- support non-tail-recursive combinators (involves generating an "anonymous" function for every usage of the combinator)
-- stopworld mark-sweep gc (should only be triggered during user input,
+- support non-tail-recursive combinators (involves generating an
+  "anonymous" function for every usage of the combinator), also
+  support no-inlining of combinators when stack effects are given
+- stopworld compacting precise mark-sweep gc (should only be triggered during user input,
   so not time critical)
 
