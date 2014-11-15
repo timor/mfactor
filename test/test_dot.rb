@@ -1,8 +1,9 @@
 require 'test/unit'
-require 'mfactor/dot'
+require 'mfactor/graph'
 require 'mfactor/stack'
 require 'tempfile'
 require 'fileutils'
+require 'tmpdir'
 include FileUtils
 
 class TestNode < Struct.new(:label,:shape)
@@ -51,6 +52,12 @@ class DotTest < Test::Unit::TestCase
     @g.add_control_edge @n4, @n3
     @g.add_control_edge @n1, @n4
   end
+  def test_dot_available
+    assert_nothing_raised do
+      puts "if this test failed, graphviz is not installed"
+      sh "dot -h"
+    end
+  end
   def test_creation
     n1=TestNode.new("asd")
     assert_block do
@@ -75,9 +82,9 @@ class DotTest < Test::Unit::TestCase
     tf=Tempfile.open(["test","dot"]) do |f|
       graph.dot(f)
       f.close
-      df="d:/temp/test_dot_#{fname}.dot"
+      df="#{Dir.tmpdir}/test_dot_#{fname}.dot"
       cp f.path, df
-      `dot -Tpng #{df} -o d:/temp/test_dot_#{fname}.png`
+      `dot -Tpng #{df} -o #{Dir.tmpdir}/test_dot_#{fname}.png`
     end
   end
   def test_simple_graph
