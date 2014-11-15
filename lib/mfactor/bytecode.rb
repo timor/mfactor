@@ -226,7 +226,7 @@ module MFactor
             3
           end
         else
-          raise "unknown element size: #{elt} of #{elt.class}" unless s
+          raise "unknown element size: #{elt} of #{elt.class}"
         end
       end
       def inst_base() 0xa0 end
