@@ -103,7 +103,7 @@ module MFactor
     # element size
     def element_size(elt)
       case elt
-      when String then header_length + elt.chars.to_a.length
+      when MFStringLit then header_length + elt.value.chars.to_a.length
       when Array then 2 + elt.map{|e| element_size(e)}.reduce(:+)
       when MFLitSequence then header_length + elt.element_size * elt.content.length
       else atom_size(elt)
@@ -118,9 +118,9 @@ module MFactor
     # generate byte code for one word, append to image
     def word_bytecode(word,image)
       case word
-      when String then
-        inline_seq_header(SEQ_ELT_DATA,1,word.chars.to_a.length,image)
-        image.concat word.chars.map{|c| c.ord}
+      when MFStringLit then
+        inline_seq_header(SEQ_ELT_DATA,1,word.value.chars.to_a.length,image)
+        image.concat word.value.chars.map{|c| c.ord}
       when Array then
         image << prim(:qstart)
         word.map{|w| word_bytecode(w,image)}
