@@ -11,7 +11,11 @@ IN: memory
 ! : setmem8 ( val addr -- ) _setbyte ;
 
 ! apply q to value in memory and update memory location
-: changemem ( addr q: ( old -- new ) -- ) [ [ getmem ] keep ] dip dip setmem ;
+: changemem ( addr q: ( old -- new ) -- )
+    [ [ getmem ] keep ] dip ! oldval addr q
+    dip                     ! newval addr
+    setmem ;
+
 ! incf memory address
 : +@ ( n addr -- ) [ + ] changemem ;
 
