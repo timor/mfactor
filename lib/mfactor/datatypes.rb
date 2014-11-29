@@ -71,7 +71,7 @@ module MFactor
     end
     def compilable?
       (definer == ":") &&
-        !(mods.member?("inline")) &&
+        # !(mods.member?("inline")) &&
         !(mods.member?("nocompile"))
     end
     def inline?
