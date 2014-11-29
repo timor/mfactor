@@ -55,7 +55,7 @@ class DotTest < Test::Unit::TestCase
   def test_dot_available
     assert_nothing_raised do
       puts "if this test failed, graphviz is not installed"
-      sh "dot -h"
+      sh "dot -V"
     end
   end
   def test_creation
@@ -79,6 +79,7 @@ class DotTest < Test::Unit::TestCase
     assert_respond_to g1, :add_node
   end
   def gen_dot_file(graph,fname)
+    puts "output dir for tests: #{Dir.tmpdir}"
     tf=Tempfile.open(["test","dot"]) do |f|
       graph.dot(f)
       f.close
