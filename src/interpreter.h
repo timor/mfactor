@@ -12,7 +12,7 @@ typedef uintptr_t cell;                 /* memory cell must at least hold pointe
 
 #include "generated/stdlib_size.h"
 
-inst stdlib[STDLIB_SIZE];
+const inst const stdlib[STDLIB_SIZE];
 
 /* data memory (affects non-transient data) in cells*/
 #ifndef VM_MEM
