@@ -11,7 +11,7 @@ IN: kernel
 : dupd ( x y -- x x y ) >r dup r> ; inline
 : over ( x y -- x y x ) dupd swap ; inline
 : pick ( x y z -- x y z x ) >r over r> swap ; inline
-: -rot ( x y z -- z x y ) swap >r swap r> ; ! deprecated
+: -rot ( x y z -- z x y ) swap >r swap r> ; inline ! deprecated
 : 2swap ( a b x y -- x y a b ) [ -rot ] dip -rot ; inline
 : 2over ( x y z -- x y z x y ) pick pick ; inline
 : 2dup ( a b  -- a b a b ) over over ; inline
