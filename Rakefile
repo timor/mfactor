@@ -19,7 +19,6 @@ CFLAGS << " -DTRACE_INTERPRETER=#{trace_level}"
 CFLAGS << " -DDEBUG=#{ENV['DEBUG']}" if ENV['DEBUG']
 START_WORD="top"
 if hostp
-  INSTBASE=0x80
   CC="gcc"
   GDB="gdb"
   LDFLAGS << "-lrt -Wl,-Map=#{MAP}"
@@ -28,7 +27,6 @@ if hostp
   CFLAGS << " -DVM_RETURNSTACK=256 "
   GENERATOR='MF_Linux64'
 else
-  INSTBASE=0xa0
   PTRSIZE=32
   # CODEMEM=0x2000ef6c
   LDFLAGS << " -Wl,-Map=#{MAP} --specs=nano.specs -lc -lnosys -flto -Wl,--gc-sections -Wl,--cref -nostartfiles -mcpu=cortex-m3 -mthumb"

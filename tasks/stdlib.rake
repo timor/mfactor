@@ -7,6 +7,12 @@ require_relative '../lib/mfactor/analyze'
 
 THISDIR=File.dirname(__FILE__)
 ISETFILE=File.join(THISDIR,"../instructionset.yml")
+INSTBASE=
+  if GENERATOR == "Cortex"
+    0xa0
+  elsif GENERATOR == "Linux64"
+    0x80
+  end
 
 # generate the mfactor side of the ff code
 def ff_mfactor (yaml,out)
@@ -41,7 +47,7 @@ def ff_code (yaml,out)
   yaml.each do |cname,opts|
     out << "(cell)&#{cname},\n"
   end
-    out << "}\n;"
+    out << "};\n"
 end
 
 directory "generated"
@@ -67,12 +73,12 @@ def build_stdlib
   end
   File.open("generated/stdlib.code.h","w") do |f|
     ff_code(ffyaml || [],f)
-    f.write "inst stdlib[#{mf.bytecode_size}]= {\n"
+    f.write "const inst const stdlib[#{mf.bytecode_size}]= {\n"
     mf.write_bytecode_image f
     f.write "};\n"
   end
   File.open("generated/stdlib.dict.h","w") do |f|
-    f.write "dict_entry dict[VM_DICT] __attribute((aligned(1))) = {\n"
+    f.write "const dict_entry const dict[VM_DICT] __attribute((aligned(1))) = {\n"
     mf.write_dictionary_entries f
     f.write "};\n"
   end
@@ -107,7 +113,7 @@ STDLIB_FILES.each do |f|
 end
 
 # make target application's object file depend on the generated stuff
-MFACTOR_DEPENDING_OBJECT ||= nil
+MFACTOR_DEPENDING_OBJECT ||= "mfactor/src/interpreter.c"
 if MFACTOR_DEPENDING_OBJECT
   file MFACTOR_DEPENDING_OBJECT => STDLIB_FILES
   file MFACTOR_DEPENDING_OBJECT => "generated/inst_enum.h"
