@@ -22,6 +22,8 @@
   parsing primitives after base system is loaded.  This might incur a
   performance hit, depending on how Parslet's performance compares to
   forward parsing using generated image.
+- get rid of phi functions in generated cdfg (either only in output,
+  or don't generate phis at all, depending on difficulty of variable naming)
 - ensure that mutual tail-recursive combinators work
 - support non-tail-recursive combinators (involves generating an
   "anonymous" function for every usage of the combinator), also
