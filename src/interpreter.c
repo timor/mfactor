@@ -442,7 +442,7 @@ void interpreter(unsigned int start_base_address) {
           break;
         case scall:
 	 _scall:
-          /* check if call is primitive, if yes, substitute execution (tail call), since call only
+          /* check if call target is primitive, if yes, substitute execution (tail call), since call only
              applies to quotations */
           x = ppop();
           if (x >= INSTBASE_CELL) {
