@@ -178,7 +178,7 @@ module MFactor
                 graph.add_data_edge then_pstack.items[i], phi.phi_inputs[phi_i]
                 graph.add_data_edge else_pstack.items[i], phi.phi_inputs[phi_i]
               end
-              if_j=JoinNode.new("endif")
+              if_j=IfJoinNode.new("endif")
               graph.add_control_edge(res_then, if_j)
               graph.add_control_edge(res_else, if_j)
               control = if_j
@@ -213,7 +213,7 @@ module MFactor
                   @current_def.log "compiling inline recursive combinator"
                   @current_def.log "pstack at entry: "+pstack.show(true)
                   @current_def.log "rstack at entry: "+rstack.show(true)
-                  j=JoinNode.new(@current_def.name+@loop_label_num.succ!)
+                  j=LoopJoinNode.new(@current_def.name+@loop_label_num.succ!)
                   @loop_labels.push({ :def_name => @current_def.name,
                                       :join_node => j,
                                       :entry_stack => pstack.dup})

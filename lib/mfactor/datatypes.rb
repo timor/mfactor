@@ -168,6 +168,15 @@ module MFactor
     end
   end
 
+  class IfJoinNode < JoinNode
+  end
+
+  class LoopJoinNode < JoinNode
+    def dot_label
+    "repeat"
+    end
+  end
+
   # jump is either nil,:then or :else
   class ChoiceNode < Struct.new(:label,:then_edge,:else_edge,:jump)
     include GraphNode
