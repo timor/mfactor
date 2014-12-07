@@ -147,12 +147,16 @@ module MFactor
             @current_def.log "elsestack: "+else_pstack.show(true)
             #TODO: maybe insert crazy stack correctnes checking here
             if (then_pstack.items.last == :loop_case) || (else_pstack.items.last == :loop_case)
-              @current_def.log "loop case found, discarding branch"
+              @current_def.log "loop case found"
               if then_pstack.items.last == :loop_case # select correct stack to continue
+                @current_def.log "discarding then_branch"
+                cnode.jump = :then
                 pstack=else_pstack
                 rstack=else_rstack
                 control=res_else
               else
+                @current_def.log "discarding else_branch"
+                cnode.jump = :else
                 pstack=then_pstack
                 rstack=else_rstack
                 control=res_then
