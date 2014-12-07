@@ -28,6 +28,7 @@ module MFactor
     require 'ostruct'
     @@unique='1'
     attr_accessor :record
+    attr_accessor :control_out
     # def add_child(*clist)
     #   puts "maybe add child to #{node_name}..."
     #   @child_nodes ||= []
@@ -218,6 +219,7 @@ module MFactor
           label="then"
         end
       end
+      s.control_out=d
       @control_edges.push [s,d,label]
     end
     def add_data_edge(s,d)
