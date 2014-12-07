@@ -39,6 +39,9 @@ module MFactor
       super *a
       @file=$current_mfactor_file
     end
+    def inspect
+      "#<Word:#{definition.vocab}:#{name}>"
+    end
     def see
       name.to_s.downcase
     end
@@ -88,6 +91,9 @@ module MFactor
     def see
       ": #{name} #{effect} "+
         body.map{ |elt| see_word(elt) }.join(" ")
+    end
+    def inspect
+      "#<MFDefinition:#{name}"
     end
     # TODO: move out of here, into emitter
     def convert_tailcalls(b)

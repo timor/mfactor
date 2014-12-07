@@ -185,7 +185,9 @@ module MFactor
                 # first check if this is a recursive call
                 if (l=@loop_labels.detect {|x| x[:def_name] == @current_def.name})
                   @current_def.log "resolving inline recursive jump"
+                  @current_def.log "pstack at time of entry:"+l[:entry_stack].show(true)
                   @current_def.log "pstack at time of jump:"+pstack.show(true)
+                  @current_def.log "rstack at time of jump:"+rstack.show(true)
                   target=l[:join_node]
                   changed_inds=l[:entry_stack].diff_index(pstack)
                   @current_def.log "items to phi for backwards-jump: #{changed_inds}"
@@ -196,12 +198,14 @@ module MFactor
                       graph.add_data_edge pstack.items[i], dest
                     end
                   end
+                  @current_def.log "adding backwards control edge"
                   graph.add_control_edge control, target
                   pstack.push :loop_case
                   break;        # bails out of the remaining quotation compilation -> TODO: warn if continuation not empty (non-tail-recursive combinator)
                 else            # recording call to inline recursive combinator
                   @current_def.log "compiling inline recursive combinator"
                   @current_def.log "pstack at entry: "+pstack.show(true)
+                  @current_def.log "rstack at entry: "+rstack.show(true)
                   j=JoinNode.new(@current_def.name+@loop_label_num.succ!)
                   @loop_labels.push({ :def_name => @current_def.name,
                                       :join_node => j,
