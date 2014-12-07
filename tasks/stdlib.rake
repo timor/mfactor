@@ -4,6 +4,7 @@ require 'yaml'
 # set up load path
 $:.unshift(File.join(File.dirname(__FILE__),"..","lib"))
 require_relative '../lib/mfactor/analyze'
+require_relative '../lib/mfactor/c_emitter'
 
 THISDIR=File.dirname(__FILE__)
 ISETFILE=File.join(THISDIR,"../instructionset.yml")
@@ -160,10 +161,11 @@ end
 task :mftest => "generated"
 
 directory "generated/cfg"
+directory "generated/ccode"
 
 # iterate through all vocabularies
 # generate a subdir in generated for each vocabulary, generate a control flow graphic for each word, if applicable
-task :compile_all => "generated/cfg" do
+task :compile_all => ["generated/cfg","generated/ccode"] do
   $stdout.sync=true
   if defined? $mfactor_ff
     ffyaml=YAML.load_file($mfactor_ff)
@@ -172,6 +174,7 @@ task :compile_all => "generated/cfg" do
   mf=MFactor::Image.new([MFACTOR_SRC_DIR,"generated"])
   mf.load_vocab(MFACTOR_ROOT_VOCAB)
   a=MFactor::MFStaticCompiler.new(mf)
+  e=MFactor::CEmitter.new
   mf.dictionary.each do |name,vocab|
     dir="generated/cfg/#{name}"
     mkdir_p dir
@@ -200,8 +203,20 @@ task :compile_all => "generated/cfg" do
         File.open(dotfname.ext('log'),"w") do |f|
           f.puts d.compile_log
         end
-
       end
+    end
+    # call the c code emitter for all vocabularies
+    cfile="generated/ccode/#{name}.c"
+    f= File.open(cfile,"w")
+    begin
+      vocab.definitions.each do |d|
+        if d.compiled and (not d.inline?)
+          e.emit(d,f)
+        end
+      end
+    ensure
+      f.flush
+      f.close
     end
   end
 end
