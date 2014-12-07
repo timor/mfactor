@@ -249,22 +249,17 @@ module MFactor
       inputs=pstack.pop_n(d.effect.inputs.length) # actual parameters
       inputs ||= []
       @current_def.log "number of inputs: #{inputs.length}"
-      call=MFCompiledCall.new(d)
       params=d.effect.inputs.map.with_index do |effectitem,i|
         @current_def.log "input #{i}"
         p=CallParameter.new(effectitem.name,i)
         graph.add_data_edge(inputs[i], p)
-        call.add_port p
         p
       end
-      call.add_port LabelNode.new(d.name),true
       @current_def.log "number of outputs: #{d.effect.outputs.length}"
       outputs=d.effect.outputs.map.with_index do |e,i|
-        o=MFCallResult.new(call,i)
-        call.add_port o
-        o
+        MFCallResult.new(e, i)
       end
-      call.inputs=params; call.outputs=outputs
+      call=MFCompiledCall.new(d,params,outputs)
       if control
         graph.add_control_edge control, call
       else

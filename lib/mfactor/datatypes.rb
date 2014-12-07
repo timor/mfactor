@@ -201,11 +201,23 @@ module MFactor
   #   end
   # end
 
-  class MFCompiledCall < Struct.new(:definition,:inputs,:outputs)
+  class MFCompiledCall
     include GraphNode
     include DotRecord
-    def port_nodes
-      inputs+[LabelNode.new(definition.name)]+outputs
+    attr_reader :definition
+    attr_reader :inputs
+    attr_reader :outputs
+    def initialize(definition, inputs, outputs)
+      @definition=definition
+      @inputs=inputs
+      @outputs=outputs
+      inputs.each do |i|
+        add_port i
+      end
+      add_port LabelNode.new(definition.name)
+      outputs.each do |o|
+        add_port o
+      end
     end
   end
 
@@ -276,13 +288,13 @@ module MFactor
   # That is a result of a call to another word, which points to the corresponding call.
   # Index associates this result with the corresponding element in call's output stack
   # effect sequence.
-  class MFCallResult < Struct.new(:call,:index)
+  class MFCallResult < Struct.new(:output_effect, :index)
     include GraphNode
     def name
-      call.definition.effect.outputs[index][:name]
+      output_effect[:name]
     end
     def type
-      call.definition.effect.outputs[index][:type]
+      output_effect[:type]
     end
     def see
       name
