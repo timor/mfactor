@@ -164,7 +164,7 @@ module MFactor
                 @current_def.log "discarding else_branch"
                 cnode.jump = :else
                 pstack=then_pstack
-                rstack=else_rstack
+                rstack=then_rstack
                 control=res_then
                 graph.once_branch=:then
               end
