@@ -200,10 +200,10 @@ module MFactor
                   @current_def.log "items to phi for backwards-jump: #{changed_inds}"
                   # insert the edges which constitute the dataflow into the backwards-jump
                   changed_inds.each do |i|
-                    graph.data_successors(l[:entry_stack].items[i]).each do |dest|
-                      @current_def.log "adding backwards data edge"
-                      graph.add_data_edge pstack.items[i], dest
-                    end
+                    #graph.data_successors(l[:entry_stack].items[i]).each do |dest|
+                    @current_def.log "adding backwards data edge"
+                    graph.add_data_edge pstack.items[i], l[:entry_stack].items[i]
+                    #end
                   end
                   @current_def.log "adding backwards control edge"
                   graph.add_control_edge control, target
