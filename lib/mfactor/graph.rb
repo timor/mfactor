@@ -168,10 +168,17 @@ module MFactor
   end
   # control flow and data flow, enough information to generate some code (after de-SSA-ing)
   class CDFG
+    attr_accessor :inputs
+    attr_accessor :outputs
+    attr_accessor :start
+    attr_accessor :end
     def initialize
       @nodes=[]
       @control_edges=[]
       @data_edges=[]
+      @inputs=[]
+      @outputs=[]
+      @start,@end=nil
     end
     # this needs only to be used when there is a node without a transition in the graph
     def add_node(n)

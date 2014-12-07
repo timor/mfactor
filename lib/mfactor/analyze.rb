@@ -73,28 +73,30 @@ module MFactor
       d.graph=CDFG.new
       $stdout.flush
       inputs=d.effect.inputs.map{|i| MFInput.new(i.name,i.type)}
-      saved_inputs=inputs.dup
+      d.graph.inputs=inputs.dup
       pstack = MFStack.new inputs,d
       rstack = MFStack.new [],d
       if d.normal_word?
-        start=StartNode.new
-        pstack,rstack,last_computation=compile_quotation(d.body,pstack,rstack,d.graph,start)
-        raise CompileError, "Retain Stack not empty" unless rstack.items.empty?
-        outputs=pstack
-        d.graph.add_control_edge(last_computation,EndNode.new)
+        d.graph.start=StartNode.new
+        pstack,rstack,last_computation=compile_quotation(d.body,pstack,rstack,d.graph,d.graph.start)
         d.log "final_p:"+pstack.show(true)
         d.log "final_r:"+rstack.show(true)
+        raise CompileError, "Retain Stack not empty" unless rstack.items.empty?
+        outputs=pstack
+        d.graph.end=EndNode.new
+        d.graph.add_control_edge(last_computation,d.graph.end)
         raise UncompilableError, "`#{d.name}` leaves quotations on stack, not supported yet" if
           outputs.items.any?{|i| i.is_a? Array}
         raise CompileError, "Number of defined outputs (#{d.effect.outputs.length}) does not match with computed (#{outputs.length})" unless
           d.effect.outputs.length == outputs.length
         output_items=outputs.items.map.with_index do |x,i|
-          o=Output.new(d.effect.outputs[i].name)
+          o=Output.new(d.effect.outputs[i].name,d.effect.outputs[i].type)
           d.graph.add_data_edge(x,o)
           o
         end
-        input_record=MFStack.new(saved_inputs,d)
-        d.graph.add_node input_record unless saved_inputs.empty?
+        d.graph.outputs=output_items
+        input_record=MFStack.new(d.graph.inputs,d)
+        d.graph.add_node input_record unless d.graph.inputs.empty?
         output_record=MFStack.new(output_items,d)
         d.graph.add_node output_record unless output_items.empty?
         # dummy calls to compute ports, workaround so that ports are
@@ -102,6 +104,7 @@ module MFactor
         output_record.get_port_nodes
         input_record.get_port_nodes
         @compiled_definitions[d]=d.graph # needed?
+        d.compiled = true
         return d.graph                   # maybe better return definition?
       else
         raise UncompilableError, "word not normal: #{d.name}"
@@ -228,7 +231,7 @@ module MFactor
       # todo: type inference here!
       @current_def.log "compiling call to #{word.definition.name}"
       d=word.definition
-      inputs=pstack.pop_n(d.effect.inputs.length)
+      inputs=pstack.pop_n(d.effect.inputs.length) # actual parameters
       inputs ||= []
       @current_def.log "number of inputs: #{inputs.length}"
       call=MFCompiledCall.new(d)

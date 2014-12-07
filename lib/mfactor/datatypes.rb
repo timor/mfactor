@@ -55,7 +55,7 @@ module MFactor
   # Definition object, which can be moved into dictionary
   # file: source file of the definition
   # graph: if set, points to the graph resulted by partial evaluation.  basis for code generation and petri-net simulation
-  class MFDefinition < Struct.new(:name,:definer,:effect,:body,:mods,:vocabulary,:file,:graph,:compile_log)
+  class MFDefinition < Struct.new(:name,:definer,:effect,:body,:mods,:vocabulary,:file,:graph,:compile_log,:compiled)
     def initialize(*args)
       super(*args)
       convert_tailcalls(body)
