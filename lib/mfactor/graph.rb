@@ -269,13 +269,8 @@ END
     def data_successors node
       @data_edges.find_all{ |s,d| s == node }.map{ |s,d| d}
     end
-    def data_predecessor node
-      edge=@data_edges.find{ |s,d| d == node }
-      if edge
-        edge[0]
-      else
-        nil
-      end
+    def data_predecessors node
+      @data_edges.find_all{ |s,d| d == node }.map{ |s,d| s}
     end
     private
     def draw_transition(s,d,io,attrs={})
