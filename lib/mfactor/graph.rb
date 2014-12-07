@@ -172,6 +172,7 @@ module MFactor
     attr_accessor :outputs
     attr_accessor :start
     attr_accessor :end
+    attr_reader :nodes
     attr_writer :once_branch
     def initialize
       @nodes=[]
