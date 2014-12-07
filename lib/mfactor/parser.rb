@@ -105,7 +105,7 @@ module MFactor
                                                num=Integer(name)
                                                (num > 255 ? MFIntLit : MFByteLit).new(num)
                                              else
-                                               MFWord.new(name)
+                                               MFWord.new(name.to_s)
                                              end
     }
     rule(:quotation_body => subtree(:b)) { b }
@@ -122,7 +122,7 @@ module MFactor
          :name => simple(:name),
          :effect => subtree(:effect),
          :definition_body => subtree(:body),
-         :definition_mods => sequence(:mods)) { MFDefinition.new(name,definer,effect,body,mods)}
+         :definition_mods => sequence(:mods)) { MFDefinition.new(name.to_s,definer,effect,body,mods)}
     rule(:used_dict_name => simple(:dname)) { dname.to_s }
     rule(:using => simple(:junk)) { MFSearchPath.new([]) }
     rule(:using => sequence(:vocabs)) {MFSearchPath.new(vocabs.map{|v| v.to_s})}

@@ -134,7 +134,7 @@ module MFactor
           pp search_vocabs.map{|v| v.name} if $mf_verbose == true
         when MFDefinition then
           d.file=file
-          name = d.name.to_s
+          name = d.name
           if old_def=find_name(name,[current_vocab] + search_vocabs)
             raise "#{d.err_loc}:Error: word already exists: #{name}
 #{old_def.err_loc}:Note: Location of previous definition"
@@ -146,7 +146,7 @@ module MFactor
           current_vocab.add d    # need to add here because of recursion
           # find all used words in vocabularies
           d.body.flatten.select{|w| w.is_a?(MFWord)}.each do |word|
-            wname=word.name.to_s
+            wname=word.name
             def_of_w = find_name(wname,[current_vocab]+search_vocabs)
             raise "#{d.err_loc}:Error: word '#{wname}' not found on #{search_vocabs.map{|s| s.name}}" unless def_of_w
             word.definition=def_of_w
