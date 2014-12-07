@@ -139,9 +139,14 @@ module MFactor
             graph.add_data_edge condition,cnode
             graph.add_control_edge(control,cnode) if control
             @current_def.log "compiling then branch"
-            then_pstack,then_rstack,res_then=compile_quotation(thencode,pstack.dup,rstack.dup,graph,cnode)
+            then_pstack,then_rstack,res_then,else_pstack,else_rstack,res_else = nil
+            graph.in_branch :then do
+              then_pstack,then_rstack,res_then=compile_quotation(thencode,pstack.dup,rstack.dup,graph,cnode)
+            end
             @current_def.log "compiling else branch"
-            else_pstack,else_rstack,res_else=compile_quotation(elsecode,pstack,rstack,graph,cnode)
+            graph.in_branch :else do
+              else_pstack,else_rstack,res_else=compile_quotation(elsecode,pstack,rstack,graph,cnode)
+            end
             @current_def.log "returning to if"
             @current_def.log "thenstack: "+then_pstack.show(true)
             @current_def.log "elsestack: "+else_pstack.show(true)
@@ -154,12 +159,14 @@ module MFactor
                 pstack=else_pstack
                 rstack=else_rstack
                 control=res_else
+                graph.once_branch=:else
               else
                 @current_def.log "discarding else_branch"
                 cnode.jump = :else
                 pstack=then_pstack
                 rstack=else_rstack
                 control=res_then
+                graph.once_branch=:then
               end
             else
               raise CompileError, "Error: alternatives not stack compatible in `if`" unless

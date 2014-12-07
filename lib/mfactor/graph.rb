@@ -172,6 +172,7 @@ module MFactor
     attr_accessor :outputs
     attr_accessor :start
     attr_accessor :end
+    attr_writer :once_branch
     def initialize
       @nodes=[]
       @control_edges=[]
@@ -179,23 +180,40 @@ module MFactor
       @inputs=[]
       @outputs=[]
       @start,@end=nil
+      @branch_stack = []             # :else or :then can be pushed when following an if choice
+      @once_branch=nil               # can be set by loop case to make
+                                     # control edge following the
+                                     # recursive `if` work
     end
     # this needs only to be used when there is a node without a transition in the graph
     def add_node(n)
       @nodes.push n unless @nodes.include? n
+    end
+    def in_branch branch
+      @branch_stack.push branch
+      yield
+      @branch_stack.pop
     end
     def add_control_edge(s,d)
       add_transition s,d
       label=nil
       # Check if we come from choice node.  If yes, label the correspondig edges
       if s.class == ChoiceNode
-        if s.else_edge
-          raise "choice node has more than one outgoing edge"
-        elsif s.then_edge
-          s.else_edge = true
-          label="else"
+        # BUG: sometimes else and then labels are swapped, seems to happen with loop cases!
+        if @once_branch
+          branch = @once_branch
+          @once_branch = nil
         else
-          s.then_edge = true
+          branch = @branch_stack[-1]
+        end
+        raise "no branch specified following choice node" unless branch
+        if branch == :else
+          raise "node has more then one else edge" if s.else_edge
+          s.else_edge = [s,d]
+          label="else"
+        elsif branch == :then
+          raise "node has more then one then edge" if s.then_edge
+          s.then_edge = [s,d]
           label="then"
         end
       end
