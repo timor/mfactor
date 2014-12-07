@@ -141,7 +141,8 @@ module MFactor
       props
       if @port_nodes.empty?
         # puts "ports lazy"
-        pnodes = self.port_nodes()
+        pnodes = self.port_nodes() # TODO: not used, but should really compute everything instead of having to add ports manually!xb
+
         pnodes.each do |n|
           add_port n
         end
@@ -177,8 +178,8 @@ module MFactor
     attr_writer :once_branch
     def initialize
       @nodes=[]
-      @control_edges=[]
-      @data_edges=[]
+      @control_edges=[]         # an edge is an array [source,dest]
+      @data_edges=[]            # an edge is an array [source,dest]
       @inputs=[]
       @outputs=[]
       @start,@end=nil
@@ -201,7 +202,9 @@ module MFactor
       label=nil
       # Check if we come from choice node.  If yes, label the correspondig edges
       if s.class == ChoiceNode
-        # BUG: sometimes else and then labels are swapped, seems to happen with loop cases!
+        # loop continuations live in else/ or then branches before
+        # inlined, to keep depth correct, continuation case is handled
+        # only once
         if @once_branch
           branch = @once_branch
           @once_branch = nil
