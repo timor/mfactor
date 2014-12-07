@@ -248,6 +248,14 @@ END
     def data_successors node
       @data_edges.find_all{ |s,d| s == node }.map{ |s,d| d}
     end
+    def data_predecessor node
+      edge=@data_edges.find{ |s,d| d == node }
+      if edge
+        edge[0]
+      else
+        nil
+      end
+    end
     private
     def draw_transition(s,d,io,attrs={})
       sname = s.node_name.to_s
