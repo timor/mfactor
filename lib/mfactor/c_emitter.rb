@@ -43,7 +43,7 @@ module MFactor
                 '*' => 'Times',
                 '=' => 'Equal',
                 ',' => 'Compile',
-                '?' => 'Test',
+                '?' => 'Flag',
                 '@' => 'At'
               })
       s
