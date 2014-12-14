@@ -194,12 +194,6 @@ module MFactor
       name
     end
   end
-  # class CallOutput < Struct.new(:label)
-  #   include GraphNode
-  #   def dot_label
-  #     label
-  #   end
-  # end
 
   class MFCompiledCall
     include GraphNode
