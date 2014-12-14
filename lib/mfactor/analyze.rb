@@ -24,14 +24,27 @@ module MFactor
   # operation.  Also, the stack effect must be updated.  When doing so, the updated stack
   # effect must be checked against the given stack effect.  This can result in upgrading
 
-  # Note on handling conditionals: when hitting if, both paths are virtually executed using
-  # a copy of the currently active parameter and return stack.  After that, both stack
-  # versions have to look the same, otherwise no compilation is possible, only execution.  A
-  # phi node is inserted for every stack element that has been modified during the execution
-  # of both possible paths.  To keep track of which stack elements need to be phi'd, the
-  # stack is instructed to track the modifications since from the beginning of the if
-  # execution part.  The stack containing the deepest modifications determines the number of
-  # arguments that have to phi'd.
+  # Note on handling conditionals: when hitting if, both paths are
+  # virtually executed using a copy of the currently active parameter
+  # and return stack.  After that, both stack versions have to look
+  # the same, otherwise no compilation is possible, only execution.  A
+  # phi node is inserted for every stack element that has been
+  # modified during the execution of both possible paths.  To keep
+  # track of which stack elements need to be phi'd, the stack is
+  # compared at the end of the respective branches' virtual
+  # interpretation.  The phi nodes are removed instantly when the
+  # results are requested by successor nodes in the data flow graph.
+
+  # Note on iteration constructs: Iteration is created whenever a tail
+  # recursive combinator is inlined.  This is sufficient for all kinds
+  # of loops.  There is one restriction regarding this: recursive
+  # calls must always be the last thing in either a `then` or an
+  # `else` branch.  When inlining the code for the combinator, the
+  # current stacks are saved, and compared with the stack at the time
+  # of the recursive invocation, which is the same as a backwards
+  # jump.  All items that differ are basically loop variables.  Data
+  # edges are inserted to indicate that data is effectively fed back
+  # to where control was at the beginning of the loop.
 
   def filename_escape(str)
     str.to_s.gsub(/[.><*=?:"]/,{
@@ -171,19 +184,15 @@ module MFactor
             else
               raise CompileError, "Error: alternatives not stack compatible in `if`" unless
                 (then_pstack.length == else_pstack.length) && (then_rstack.length == else_rstack.length)
-              phi_indices=then_pstack.diff_index(else_pstack)
-              @current_def.log("need to phi elements: #{phi_indices}")
-              phi=MFPhiNode.new(condition,[then_pstack.items.values_at(*phi_indices),else_pstack.items.values_at(*phi_indices)])
-              phi_indices.each_with_index do |i,phi_i|
-                graph.add_data_edge then_pstack.items[i], phi.phi_inputs[phi_i]
-                graph.add_data_edge else_pstack.items[i], phi.phi_inputs[phi_i]
-              end
+              changed_indices=then_pstack.diff_index(else_pstack)
+              @current_def.log("need to phi elements: #{changed_indices}")
+              phi_nodes=changed_indices.map {|i| PhiNode.new([then_pstack.items[i],else_pstack.items[i]])}
               if_j=IfJoinNode.new("endif")
               graph.add_control_edge(res_then, if_j)
               graph.add_control_edge(res_else, if_j)
               control = if_j
               pstack.pop_n(then_pstack.length)
-              pstack.push_n phi.outputs
+              pstack.push_n phi_nodes
             end
           else                  # word call
             if word.definition.inline?

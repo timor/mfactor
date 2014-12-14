@@ -68,7 +68,7 @@ module MFactor
         case x
         when MFInput then "#{x.name}(#{x.type})"
         when MFCallResult then "res[#{x.index}]"
-        when PhiResult then "phi[#{x.index}]"
+        when PhiNode then "phi"
         when MFIntLit then x.value.to_s
         when Array then "[...]"
         when Symbol then x.inspect

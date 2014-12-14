@@ -254,8 +254,9 @@ module MFactor
         node.is_a? MFInput or
         node.is_a? CallParameter or
         node.is_a? ChoiceNode or
-        node.is_a? Output or
-        node.is_a? PhiInput   # TBR
+        node.is_a? Output
+      # if this is a choice node, and no name has been computed, skip
+      return if node.is_a? ChoiceNode and !name
       if node.is_a? MFIntLit
         unless @g.data_predecessors(node).empty?
           name ||= "loopvar"+@uid.succ!

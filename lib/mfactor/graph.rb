@@ -226,8 +226,16 @@ module MFactor
       @control_edges.push [s,d,label]
     end
     def add_data_edge(s,d)
-      add_transition s,d
-      @data_edges.push [s,d]
+      # Check if source is a PhiNode.  If so, add edges directly
+      # between the inputs to the phi node and the destination.
+      if s.is_a? PhiNode
+        s.inputs.each do |i|
+          add_data_edge i,d
+        end
+      else
+        add_transition s,d
+        @data_edges.push [s,d]
+      end
     end
     # generate graph from this node on, reachability determined by self
     def dot(io)

@@ -221,56 +221,11 @@ module MFactor
     end
   end
 
-  class PhiInput < Struct.new(:name)
+  class PhiNode < Struct.new(:inputs)
     include GraphNode
     def dot_label
-      name
+       raise "Phi node not substituted by data edges!"
     end
-  end
-  # records concrete output of phi node
-  # class PhiOutput < Struct.new(:label)
-  #   include GraphNode
-  #   def dot_label
-  #     label
-  #   end
-  # end
-
-  class PhiResult < Struct.new(:phi,:index)
-    include GraphNode
-    def dot_label
-      "phi_#{index}"
-    end
-  end
-  # Input_lists is a list (actually Array) of pointers to all inputs that have to be phi'd.
-  # Input_lists usually are of the same length, one list corresponds to one alternative stack
-  # image.
-  class MFPhiNode
-    include GraphNode
-    include DotRecord
-    attr_accessor :input_lists
-    attr_reader :outputs
-    attr_accessor :condition
-    attr_reader :phi_inputs
-    def initialize(condition,input_lists)
-      @condition=condition
-      @input_lists=input_lists
-      @longest_input_list=input_lists.sort{|a,b| a.length <=> b.length}.last
-      @phi_inputs=@longest_input_list.map.with_index do |input,i|
-        phi_in=PhiInput.new("phi_i#{i}")
-        add_port phi_in
-        # @input_lists.each do |l|
-        #   phi_in.add_parent l[i]
-        # end
-        phi_in
-      end
-      add_port LabelNode.new("phi"),true
-      @outputs = @longest_input_list.map.with_index do |input,i|
-        o=PhiResult.new(self,i)
-        add_port o
-        o
-      end
-    end
-    # used as nodes for graphing
   end
 
   # input nodes of compiled call
