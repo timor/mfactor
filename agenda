@@ -17,13 +17,13 @@
 - DONE: implement new literals
 - DONE: compilation to graphs, inline recursive words not working yet
 - DONE: inlining tail recursive combinators
-- DOING: split code into platform dependent and platform independent parts
-- DOING: demote ruby vocab loader to bootstrapping, switching to
+- DONE: get rid of phi functions in generated cdfg (happens when phi'd data is requested)
+- split mfactor code into platform dependent and platform independent parts
+- demote ruby vocab loader to bootstrapping, switching to
   parsing primitives after base system is loaded.  This might incur a
   performance hit, depending on how Parslet's performance compares to
   forward parsing using generated image.
-- get rid of phi functions in generated cdfg (either only in output,
-  or don't generate phis at all, depending on difficulty of variable naming)
+- maybe move unique name generation into CDFG's realm, emitter only needs to query names
 - ensure that mutual tail-recursive combinators work
 - support non-tail-recursive combinators (involves generating an
   "anonymous" function for every usage of the combinator), also
