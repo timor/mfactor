@@ -7,6 +7,8 @@ require_relative '../lib/mfactor/analyze'
 
 THISDIR=File.dirname(__FILE__)
 ISETFILE=File.join(THISDIR,"../instructionset.yml")
+# make target application's object file depend on the generated stuff
+MFACTOR_DEPENDING_OBJECT ||= "mfactor/src/interpreter.c"
 INSTBASE=
   if GENERATOR == "Cortex"
     0xa0
@@ -112,8 +114,6 @@ STDLIB_FILES.each do |f|
   end
 end
 
-# make target application's object file depend on the generated stuff
-MFACTOR_DEPENDING_OBJECT ||= "mfactor/src/interpreter.c"
 if MFACTOR_DEPENDING_OBJECT
   file MFACTOR_DEPENDING_OBJECT => STDLIB_FILES
   file MFACTOR_DEPENDING_OBJECT => "generated/inst_enum.h"
