@@ -118,6 +118,8 @@ module MFactor
         input_record.get_port_nodes
         @compiled_definitions[d]=d.graph # needed?
         d.compiled = true
+        # compute all internal names
+        d.graph.assign_names
         return d.graph                   # maybe better return definition?
       else
         raise UncompilableError, "word not normal: #{d.name}"

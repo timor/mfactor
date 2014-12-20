@@ -30,24 +30,6 @@ module MFactor
       "pwrite"=> proc {|value| "printf(\"%d\",#{value})"},
       "pwritex"=> proc {|value| "printf(\"%\",#{value})"}
     }
-    def c_escape(str)
-      s=str.to_s.gsub(/^<(.+)>$/,'make_\1');
-      s.gsub!(/(\w)(-)(\w)/){ $1+'_'+$3 };
-      s.gsub!(/[-+.><*=,?@]/,{
-                '+' => 'Plus',
-                '-' => 'Minus',
-                '.' => 'Show',
-                '>' => 'Lt',
-                '<' => 'Gt',
-                '|' => 'Pipe',
-                '*' => 'Times',
-                '=' => 'Equal',
-                ',' => 'Compile',
-                '?' => 'Flag',
-                '@' => 'At'
-              })
-      s
-    end
     def out (str)
       @io << str
     end
@@ -60,9 +42,8 @@ module MFactor
       @block_stack.pop
     end
     def emit(definition,io)
-      @uid="0"                  # local variable suffix counter
       @emitted=[]               # keeps track of all emitted nodes to avoid endless recursion
-      @names={}           # local variable and formal parameter names in this definition
+#      @names={}           # local variable and formal parameter names in this definition
       @d=definition       # definition being emitted
       @g=definition.graph # shortcut to graph of definition being emitted
       @io=io                    # io handle which every method can output to
@@ -75,11 +56,9 @@ module MFactor
       unless outs.empty?
         ret=outs.shift
       end
-      # compute all internal names
-      assign_names
       # emit header
       rtype = ret ? ret.type : 'void'
-      line "#{rtype} #{c_escape(@d.name)}("
+      line "#{rtype} #{MFactor::c_escape(@d.name)}("
       out (@g.inputs+outs).map{|a| format_definition_param(a)}.join(", ")
       out ") {"
       in_block @do do
@@ -100,7 +79,8 @@ module MFactor
           else
             type="int8_t"
           end
-          name=@names[lit]
+#          name=@names[lit]
+          name=lit.symbol
           line "#{type} #{name} = #{lit.value};"
           # @names[lit]=name
         end
@@ -172,7 +152,7 @@ module MFactor
         else
           raise "no override defined for primitive: #{call.definition.name}" if call.definition.primitive? and
             !maybe_override
-          out c_escape(call.definition.name)+"("
+          out MFactor::c_escape(call.definition.name)+"("
           out (actuals+outs).map{|a| format_call_argument(a)}.join(", ")
           out ");"
         end
@@ -234,46 +214,11 @@ module MFactor
       # end
     end
     def get_name(element)
-      unless @names[element]
+      unless element.symbol
         raise "item not yet named: #{element.inspect}"
-        # @names[element] = c_escape(element.name)+@uid.succ!
+        # @names[element] = MFactor::c_escape(element.name)+@uid.succ!
       end
-      @names[element]
-    end
-    # iterate through nodes, mapping all connected nodes to the same name
-    def assign_names
-      @g.nodes.each do |n|
-        next if @names[n]
-        assign_arc_name(n)
-      end  
-    end
-    def assign_arc_name(node,name=nil)
-      return if @names[node]
-      return unless node.is_a? MFIntLit or
-        node.is_a? MFCallResult or
-        node.is_a? MFInput or
-        node.is_a? CallParameter or
-        node.is_a? ChoiceNode or
-        node.is_a? Output
-      # if this is a choice node, and no name has been computed, skip
-      return if node.is_a? ChoiceNode and !name
-      if node.is_a? MFIntLit
-        unless @g.data_predecessors(node).empty?
-          name ||= "loopvar"+@uid.succ!
-        else
-          name ||= node.value.to_s
-        end
-      else
-        name ||= c_escape(node.name)+@uid.succ!
-      end
-      puts "assigning '#{name}' to #{node.inspect}"
-      @names[node]=name
-      succs = @g.data_successors(node)
-      pres= @g.data_predecessors(node)
-      (pres+succs).each do |s|
-        puts "maybe assign same name: #{s.inspect}"
-        assign_arc_name s,name
-      end
+      element.symbol
     end
   end
 end

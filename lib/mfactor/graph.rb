@@ -5,6 +5,25 @@
 # optionally provide dot_record() which
 # returns [record_object, position ]
 module MFactor
+  def c_escape(str)
+    s=str.to_s.gsub(/^<(.+)>$/,'make_\1');
+    s.gsub!(/(\w)(-)(\w)/){ $1+'_'+$3 };
+    s.gsub!(/[-+.><*=,?@]/,{
+              '+' => 'Plus',
+              '-' => 'Minus',
+              '.' => 'Show',
+              '>' => 'Lt',
+              '<' => 'Gt',
+              '|' => 'Pipe',
+              '*' => 'Times',
+              '=' => 'Equal',
+              ',' => 'Compile',
+                '?' => 'Flag',
+              '@' => 'At'
+            })
+    s
+  end
+  module_function :c_escape
   def dot_escape(str)
     # str.to_s.gsub(/[-+.><*=]/,{
     str.to_s.gsub(/[><|]/,{
@@ -27,8 +46,9 @@ module MFactor
     require 'set'
     require 'ostruct'
     @@unique='1'
-    attr_accessor :record
-    attr_accessor :control_out
+    attr_accessor :record       # parent record, if this is a port node
+    attr_accessor :control_out  # successor in control graph, convenience access
+    attr_accessor :symbol       # graph-local symbol name (for use as c variable, etc)
     # overwrite equality test
     def ==(x)
       self.equal? x
@@ -117,6 +137,7 @@ module MFactor
       @once_branch=nil               # can be set by loop case to make
                                      # control edge following the
                                      # recursive `if` work
+      @uid="0"                  # local variable suffix counter
     end
     # this needs only to be used when there is a node without a transition in the graph
     def add_node(n)
@@ -213,6 +234,14 @@ END
     def data_predecessors node
       @data_edges.find_all{ |s,d| d == node }.map{ |s,d| s}
     end
+    # iterate through nodes, mapping all connected nodes to the same symbol
+    def assign_names
+      @nodes.select{|n| n.is_a? MFInput}.each { |n| assign_arc_name n}
+      @nodes.select{|n| n.is_a? Output}.each { |n| assign_arc_name n}
+      @nodes.select{|n| n.is_a? MFCallResult}.each { |n| assign_arc_name n}
+      # by now, all assigned literals (loop variables) should be named
+      @nodes.select{|n| n.is_a? MFIntLit}.each { |n| assign_arc_name n}
+    end
     private
     def draw_transition(s,d,io,attrs={})
       sname = s.node_name.to_s
@@ -247,6 +276,24 @@ END
       end
       if dest.record 
         add_node dest.record
+      end
+    end
+    def assign_arc_name(node,symbol=nil)
+      return if node.symbol
+      # if this is a choice node, and no name has been computed, skip
+      return if node.is_a? ChoiceNode and !symbol
+      if node.is_a? MFIntLit
+        symbol ||= node.value.to_s
+      else
+        symbol ||= MFactor::c_escape(node.name)+@uid.succ!
+      end
+      puts "assigning '#{symbol}' to #{node.inspect}"
+      node.symbol=symbol
+      succs = data_successors(node)
+      pres= data_predecessors(node)
+      (pres+succs).each do |s|
+        puts "maybe assign same symbol name: #{s.inspect}"
+        assign_arc_name s,symbol
       end
     end
   end
