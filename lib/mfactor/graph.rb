@@ -29,41 +29,6 @@ module MFactor
     @@unique='1'
     attr_accessor :record
     attr_accessor :control_out
-    # def add_child(*clist)
-    #   puts "maybe add child to #{node_name}..."
-    #   @child_nodes ||= []
-    #   clist.each do |c|
-    #     MFactor::assert_is_node(c)
-    #     unless @child_nodes.member? c
-    #       puts "yes"
-    #       @child_nodes.push c
-    #       c.add_parent self
-    #     end
-    #   end
-    # end
-    # def add_parent(*clist)
-    #   puts "maybe add parent to #{node_name}..."
-    #   @parent_nodes ||= []
-    #   clist.each do |c|
-    #     MFactor::assert_is_node(c)
-    #     unless @parent_nodes.member? c
-    #       puts "yes"
-    #       @parent_nodes.push c
-    #       c.add_child self
-    #     end
-    #   end
-    # end
-    # def add_sibling(*clist)
-    #   puts "sibling to #{node_name}"
-    #   @sibling_nodes ||= []
-    #   clist.each do |c|
-    #     MFactor::assert_is_node(c)
-    #     unless @sibling_nodes.member? c
-    #       @sibling_nodes.push c
-    #       c.add_sibling self
-    #     end
-    #   end
-    # end
     # overwrite equality test
     def ==(x)
       self.equal? x
@@ -81,42 +46,8 @@ module MFactor
       @name
     end
     # traverse from 1 node, collect all reachable nodes
-    # def collect_nodes(nodes=[],transitions=Set.new)
-    #   return nodes,transitions if nodes.member?(self)
-    #   @child_nodes ||= []
-    #   @parent_nodes ||= []
-    #   @sibling_nodes ||= []
-    #   self.record ||= nil
-    #   nodes.push self
-    #   puts "collected #{node_name}"
-    #   if is_record?
-    #     puts "collect port"
-    #     get_port_nodes.map do |n|
-    #       n.collect_nodes(nodes,transitions)
-    #     end
-    #   end
-    #   if self.record
-    #     puts "node in record"
-    #     self.record.collect_nodes(nodes,transitions)
-    #   end
-    #   @child_nodes.each do |n|
-    #     puts "collect child"
-    #     transitions.add [self,n]
-    #     n.collect_nodes(nodes,transitions)
-    #   end
-    #   @parent_nodes.each do |n|
-    #     puts "collect parent"
-    #     transitions.add [n,self]
-    #     n.collect_nodes(nodes,transitions)
-    #   end
-    #   @sibling_nodes.each do |n|
-    #     puts "collect sibling"
-    #     n.collect_nodes(nodes,transitions)
-    #   end
-    #   return nodes,transitions
-    # end
-
   end
+
   module DotRecord
     attr_accessor :handle_port
     def props
@@ -142,7 +73,6 @@ module MFactor
       if @port_nodes.empty?
         # puts "ports lazy"
         pnodes = self.port_nodes() # TODO: not used, but should really compute everything instead of having to add ports manually!xb
-
         pnodes.each do |n|
           add_port n
         end
