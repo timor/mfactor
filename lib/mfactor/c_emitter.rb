@@ -194,7 +194,7 @@ module MFactor
           prefix = node.jump == :then ? "" : "!"
           join = @block_stack.pop
           puts "following feedback path"
-          unless join.is_a? JoinNode and join = follow_control(feedback)
+          unless join.is_a? JoinNode and join == follow_control(feedback)
             raise "trying to recurse out of non-do-while block!"
           end
           line "} while(#{prefix}#{condition});"
