@@ -212,7 +212,7 @@ module MFactor
               follow_control(node.else_edge[1])
           end
           line "}"
-          return follow_control join
+          return follow_control join.control_out
         end
       when EndNode then 
         return node
