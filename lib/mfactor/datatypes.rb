@@ -80,6 +80,9 @@ module MFactor
     def inline?
       mods.member? "inline"
     end
+    def inline_body             # return a duplicate of body for inlining
+      dup_array body
+    end
     def recursive?
       mods.member? "recursive"
     end
@@ -113,6 +116,16 @@ module MFactor
       self.compile_log += s
       self.compile_log += "\n"
       s
+    end
+    private
+    def dup_array(a)
+      a.map do |elt|
+        if elt.is_a? Array
+          dup_array elt
+        else
+          elt.dup
+        end
+      end
     end
   end
 
