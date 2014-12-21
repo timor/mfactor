@@ -182,9 +182,12 @@ task :compile_all => ["generated/cfg","generated/ccode"] do
       next unless d.compilable?
       begin
         dotfname=dir+"/#{MFactor::filename_escape(d.name)}.dot"
-        dotfile= File.new(dotfname,"w")
-        a.definition_dot_graph d, dotfile
-        dotfile.close
+        begin
+          dotfile= File.new(dotfname,"w")
+          a.definition_dot_graph d, dotfile
+        ensure
+          dotfile.close
+        end
       rescue MFactor::UncompilableError => msg
         puts "#{d.err_loc}:Warning: cannot compile '#{d.name}', reason: "
         puts msg
