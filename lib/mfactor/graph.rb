@@ -241,6 +241,7 @@ END
       @nodes.select{|n| n.is_a? MFCallResult}.each { |n| assign_arc_name n}
       # by now, all assigned literals (loop variables) should be named
       @nodes.select{|n| n.is_a? MFIntLit}.each { |n| assign_arc_name n}
+      @nodes.select{|n| n.is_a? MFStringLit}.each { |n| assign_arc_name n} # TODO combine with other lits
     end
     private
     def draw_transition(s,d,io,attrs={})
@@ -282,11 +283,14 @@ END
       return if node.symbol
       # if this is a choice node, and no name has been computed, skip
       return if node.is_a? ChoiceNode and !symbol
-      if node.is_a? MFIntLit
-        symbol ||= node.value.to_s
-      else
-        symbol ||= MFactor::c_escape(node.name)+@uid.succ!
-      end
+      symbol ||=
+        if node.is_a? MFIntLit
+          node.value.to_s
+        elsif node.is_a? MFStringLit
+          '\"'+node.value+'\"'  # TODO escaping should be done when drawing!
+        else
+          MFactor::c_escape(node.name)+@uid.succ!
+        end
       puts "assigning '#{symbol}' to #{node.inspect}"
       node.symbol=symbol
       succs = data_successors(node)
