@@ -31,11 +31,12 @@ module MFactor
       "=" => "=="}
     @@unary_builtins = {"not" => "!", "bitnot" => "~", "getmem" => "*", "getmem8" => "*","neg" => "-"}
     @@custom_builtins = { 
-    "?" => proc {|cond,then_alt,else_alt| cond+" ? "+then_alt+" : "+else_alt},
+      "?" => proc {|cond,then_alt,else_alt| cond+" ? "+then_alt+" : "+else_alt},
       "setmem" => proc {|value, address| "*#{address} = #{value}"},
       "setmem8" => proc {|value, address| "*#{address} = #{value}"}, # WARNING: COPIED
-      "pwrite"=> proc {|value| "printf(\"%d\",#{value})"},
-      "pwritex"=> proc {|value| "printf(\"%\",#{value})"}
+      "pwrite"=> proc {|args| "printf(\"%d\",#{args[0]})"},
+      "pwritex"=> proc {|args| "printf(\"%x\",#{args[0]})"},
+      "nop" => proc{|args| ""}
     }
     @user_overrides = {}
     def initialize (user_overrides)
