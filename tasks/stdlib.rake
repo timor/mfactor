@@ -8,6 +8,7 @@ require_relative '../lib/mfactor/c_emitter'
 
 THISDIR=File.dirname(__FILE__)
 ISETFILE=File.join(THISDIR,"../instructionset.yml")
+TRANSLATION_YAML_FILE ||= nil
 INSTBASE=
   if GENERATOR == "Cortex"
     0xa0
@@ -174,7 +175,8 @@ task :compile_all => ["generated/cfg","generated/ccode"] do
   mf=MFactor::Image.new([MFACTOR_SRC_DIR,"generated"])
   mf.load_vocab(MFACTOR_ROOT_VOCAB)
   a=MFactor::MFStaticCompiler.new(mf)
-  e=MFactor::CEmitter.new
+  puts "translation file: #{TRANSLATION_YAML_FILE}" if TRANSLATION_YAML_FILE
+  e=MFactor::CEmitter.new(TRANSLATION_YAML_FILE ? YAML.load_file(TRANSLATION_YAML_FILE) : nil)
   mf.dictionary.each do |name,vocab|
     dir="generated/cfg/#{name}"
     mkdir_p dir
