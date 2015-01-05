@@ -205,11 +205,14 @@ module MFactor
           in_block node do
             join=follow_control node.then_edge[1]
           end
+          puts "then path join: "+join.object_id.to_s
           raise "then-control path did not end at if-join" unless join.is_a? IfJoinNode
           line "} else {"
+          elsejoin=nil
           in_block node do
-            raise "then and else paths did not meet at same join" unless join == 
-              follow_control(node.else_edge[1])
+            elsejoin=follow_control(node.else_edge[1])
+            puts "else path join: "+elsejoin.object_id.to_s
+            raise "then and else paths did not meet at same join" unless join == elsejoin
           end
           line "}"
           return follow_control join.control_out
