@@ -24,7 +24,7 @@ IN: memory
 ! lastname: last compiled name, used for setting flags (immediate, inline, recursive)
 : _MP ( -- MP ) memstart ;
 : _init_storage ( -- ) memstart cell + _MP setmem ;
-! temporarily different memory pointer
+! call quotation while setting MP to different address temporarily, restoring old value afterwards
 : with-MP ( addr quot -- ) swap _MP getmem [ _MP setmem call ] dip _MP setmem ;
 
 ! compilation, forward
