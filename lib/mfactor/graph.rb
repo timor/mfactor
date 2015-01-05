@@ -292,12 +292,12 @@ END
         else
           MFactor::c_escape(node.name)+@uid.succ!
         end
-      puts "assigning '#{symbol}' to #{node.inspect}"
+      puts "assigning '#{symbol}' to #{node.class}"
       node.symbol=symbol
       succs = data_successors(node)
       pres= data_predecessors(node)
       (pres+succs).each do |s|
-        puts "maybe assign same symbol name: #{s.inspect}"
+        puts "maybe assign same symbol name: #{s.class}"
         assign_arc_name s,symbol
       end
     end
