@@ -18,7 +18,16 @@
 - DONE: compilation to graphs, inline recursive words not working yet
 - DONE: inlining tail recursive combinators
 - DONE: get rid of phi functions in generated cdfg (happens when phi'd data is requested)
+- insert dummy nodes at ends of conditional branches, _before_
+  returning to main code.  This should fix empty branches not being
+  registered as then or else nodes.  Alternatively, retroactively mark
+  branches as then or else when returning from an if and creating the
+  join.  This needs some stack inspection
+- pull any and all type definition or inference out of the emitter code into the analyzer (stack checker)
+- in c_emitter, unify handling of node representation. Either generate as needed, or pre-generate everything,
+  but not both (as currently)
 - split mfactor code into platform dependent and platform independent parts
+- handle constants like functions regarding application overrides
 - demote ruby vocab loader to bootstrapping, switching to
   parsing primitives after base system is loaded.  This might incur a
   performance hit, depending on how Parslet's performance compares to
