@@ -88,7 +88,7 @@ module MFactor
     # usually loop counters.  These are substituted by initialized variables.
     def declare_assigned_literals
       @g.nodes.select {|n| n.is_a? MFIntLit}.each do |lit|
-        unless @g.data_predecessors(lit).empty?
+        unless @g.data_predecessors(lit).empty? # TODO make data_pred... private
           if lit.is_a? MFIntLit
             type="int32_t"
           else
@@ -149,7 +149,7 @@ module MFactor
         puts "have been here, returning node"
         return node
       end
-      puts "following control: #{node}"
+      puts "following control: #{node.class}"
       @emitted.push node
       case node
       when StartNode then
@@ -181,9 +181,9 @@ module MFactor
         line "do {"
         @block_stack.push node
         return follow_control node.control_out
-      when IfJoinNode then      # just record node, follow_control will return false
-                                # when join node is visited the second time
+      when IfJoinNode then      # just return the join, gets recorded for comparison
         puts "reached join"
+        puts node.object_id
         return node
       when ChoiceNode then      # either close a do-while construct or emit an if-then-else
         # if then or else control target is join node, close a do-while block with the condition

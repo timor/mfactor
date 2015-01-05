@@ -109,7 +109,7 @@ module MFactor
       props
       portinfos = get_port_nodes.map do |n|
         OpenStruct.new(name: n.node_name,
-                       label: MFactor::dot_escape(n.dot_label))
+                       label: MFactor::dot_escape(n.dot_label)+(n.symbol ? "(#{n.symbol})":""))
       end
       io << node_name << " [label=\"{{"
       io << portinfos.map do |p|
