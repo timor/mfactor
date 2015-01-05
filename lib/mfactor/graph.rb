@@ -162,7 +162,8 @@ module MFactor
         else
           branch = @branch_stack[-1]
         end
-        raise "no branch specified following choice node" unless branch
+        # raise "no branch specified following choice node" unless branch
+        puts "no branch specified following choice node,empty path?" unless branch
         if branch == :else
           raise "node has more then one else edge" if s.else_edge
           s.else_edge = [s,d]
