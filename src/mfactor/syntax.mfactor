@@ -19,8 +19,8 @@ SYNTAX: : ( -- ) read-token 0 ";" parse-until >quotation swap [ dup search nip [
 : _readstr ( -- ..bytes num ) 0 [ receive dup 34 = [ drop f ] [ swap 1 + t ] if ] loop ;
 ! allocate memory and copy bytes, return address of count byte in header!
 : _stack2string ( ..bytes num -- address )
-    [ _strhead, ] keep
-    _MP getmem [ over +
+    [ _strhead, ] keep ! .. bytes num
+    _MP getmem [ over + [ _MP setmem ] keep
         [ [ -b, ] times ] with-MP ] keep 1 - ;
 : _read-string-and-compile ( acc -- acc )
     _readstr _stack2string 5 suffix ;
