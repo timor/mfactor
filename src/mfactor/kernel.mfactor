@@ -45,7 +45,7 @@ IN: kernel
 : unless ( ..a ? false: ( ..a -- ..a ) -- ..a ) [ nop ] swap if ; inline
 
 ! call pred until it returns f
-: loop ( ... pred: ( ... -- ... ? ) -- ... ) dup >r call [ r> loop ] [ r> drop ] if ; inline recursive
+: loop ( ... pred: ( ... -- ... ? ) -- ... ) [ call ] keep swap [ loop ] [ drop ] if ; inline recursive
 : times ( ... n quot: ( ... -- ... ) -- ... ) swap dup 0 = [ 2drop ] [ [ [ call ] keep ] dip 1 - swap times ] if ; inline recursive
 : do ( pred body -- pred body ) dup 2dip ; inline
 : while ( ..a pred: ( ..a -- ..b ? ) body: ( ..b -- ..a ) -- ..b )
