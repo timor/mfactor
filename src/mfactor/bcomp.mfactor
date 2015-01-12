@@ -5,7 +5,7 @@ IN: bcomp
 ! byte code compiler functions
 
 ! compilation, reverse
-: -b, ( byteval -- ) _MP [ 1 neg swap +@ ] [ getmem setmem8 ] bi ;
+: -b, ( byteval -- ) _get-MP 1 - [ _set-MP ] [ setmem8 ] bi ;
 ! ! compile short to mem, little endian
 : -s, ( short -- ) dup 8 neg shift -b, -b, ;
 ! compile cell
@@ -21,7 +21,7 @@ IN: bcomp
           [ 6 = [ drop ] [ "compilation for item unknown" print error ] if ] if ] if ] if ] if ;
 
 ! compile parser accumulator to memory
-: _stack2code ( acc -- ) _MP getmem + [ _MP setmem ] keep [ [ _-q, ] times ] with-MP ;
+: _stack2code ( acc -- ) _get-MP + [ _set-MP ] keep [ [ _-q, ] times ] with-MP ;
 
 ! return size of word when stored in quotation
 : _wordsize ( type -- size ) dup 0 = [ drop 1 ]

@@ -16,19 +16,21 @@ IN: memory
     dip                     ! newval addr
     setmem ;
 
-! incf memory address
+! incf memory cell content
 : +@ ( n addr -- ) [ + ] changemem ;
 
 ! memory pointers:
 ! MP: make-pointer for comma operations,
 ! lastname: last compiled name, used for setting flags (immediate, inline, recursive)
-: _MP ( -- MP ) memstart ;
-: _init_storage ( -- ) memstart cell + _MP setmem ;
+! : _MP ( -- MP ) memstart ;
+: _get-MP ( -- MP ) 0 special> ;
+: _set-MP ( val -- ) 0 >special ;
+: _init_storage ( -- ) memstart cell + _set-MP ;
 ! temporarily different memory pointer
-: with-MP ( addr quot -- ) swap _MP getmem [ _MP setmem call ] dip _MP setmem ;
+: with-MP ( addr quot -- ) swap _get-MP [ _set-MP call ] dip _set-MP ;
 
 ! compilation, forward
-: b, ( byteval -- ) _MP [ getmem setmem8 ] [ 1 swap +@ ] bi ;
+: b, ( byteval -- ) _get-MP [ setmem8 ] [ 1 + _set-MP ] bi ;
 ! ! compile short to mem, little endian
 : s, ( short -- ) dup b, 8 neg shift b, ;
 ! compile cell
