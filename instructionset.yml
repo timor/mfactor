@@ -33,6 +33,10 @@ receive:
 to_r: ">r"
 # pop from retain to parameter stack
 r_from: "r>"
+# get one value from the special variables array
+get_special: "special>"
+# set one
+set_special: ">special"
 # literal sequence/complex type, followed by length, followed by content
 litc: :private
 # literal integer

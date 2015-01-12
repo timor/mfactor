@@ -32,6 +32,8 @@ PRIM: bitxor ( x x -- x ) "bitxor" ;
 PRIM: bitnot ( x -- x ) "bitnot" ;
 PRIM: neg ( x -- x ) "neg" ;
 PRIM: receive ( -- b ) "receive" ;
+PRIM: special> ( n -- val ) "get-special" ;
+PRIM: >special ( val n -- ) "set-special" ;
 PRIM: ? ( ? x x -- x ) "truefalse" ;
 PRIM: memstart ( -- addr ) "memstart" ;
 PRIM: memrange ( -- a a a a ) "memrange" ;

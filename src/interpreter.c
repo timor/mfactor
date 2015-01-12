@@ -38,6 +38,13 @@
 
 #include "seq_headers.h"
 
+/* global array of special variables:
+	0: MP memory write pointer
+	1: HANDLER handler frame location in r(etain) stack */
+#define _NumSpecials 10
+static const unsigned char NumSpecials = _NumSpecials;
+static cell special_vars[_NumSpecials];
+
 /* entry in name dictionary */
 /* TODO: ensure correct scanning direction so that skipping over entries stays trivial */
 typedef struct dict_entry
@@ -415,6 +422,28 @@ void interpreter(unsigned int start_base_address) {
         case r_from:
           ppush(retainpop());break;
           /* ( cond true false -- true/false ) */
+		  /* ( n -- val ) */
+		  case get_special:
+			  {
+				  unsigned char i = (unsigned char)ppop();
+				  if (i < NumSpecials)
+					  ppush(special_vars[i]);
+				  else {
+					  printf("illegal specials index: %d\n", i);
+					  goto _error;
+				  }
+			  } break;
+		  /* ( val n -- ) */
+		  case set_special:
+			  {
+				  unsigned char i = (unsigned char)ppop();
+				  if (i < NumSpecials)
+					  special_vars[i] = ppop();
+				  else {
+					  printf("illegal specials index: %d\n", i);
+					  goto _error;
+				  }
+			  } break;
         case truefalse:			  /* this one assumes the most about the stack right now */
         {
           cell false_cons = ppop();
