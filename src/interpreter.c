@@ -421,7 +421,15 @@ void interpreter(unsigned int start_base_address) {
           retainpush(ppop());break;
         case r_from:
           ppush(retainpop());break;
-          /* ( cond true false -- true/false ) */
+			 /* ( number of stack -- sp ) */
+		  case get_sp:
+			  switch (ppop()) {
+			  case 0 : ppush((cell)psp); break;
+			  case 1 : ppush((cell)retainsp); break;
+			  case 2 : ppush((cell)returnsp); break;
+			  default: ppush((cell)0); break;
+			  }
+			  break;
 		  /* ( n -- val ) */
 		  case get_special:
 			  {
@@ -444,6 +452,7 @@ void interpreter(unsigned int start_base_address) {
 					  goto _error;
 				  }
 			  } break;
+        /* ( cond true false -- true/false ) */
         case truefalse:			  /* this one assumes the most about the stack right now */
         {
           cell false_cons = ppop();

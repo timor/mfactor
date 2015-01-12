@@ -33,6 +33,11 @@ receive:
 to_r: ">r"
 # pop from retain to parameter stack
 r_from: "r>"
+# get the values of the stack pointer(s) for introspection:
+# 0: data stack
+# 1: retain stack
+# 2: return stack
+get_sp: "sp?"
 # get one value from the special variables array
 get_special: "special>"
 # set one
