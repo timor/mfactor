@@ -187,7 +187,7 @@ static inst * skip_to_instruction(inst* pc,inst until, inst nest_on, inst *base)
 	return ptr;
 }
 
-static void backtrace(return_entry * sp, return_entry * stack, inst * base, inst * pc) 
+static void backtrace(return_entry * sp, return_entry * stack, inst * base, inst * pc)
 {
   printf("backtrace @ %#lx:\n",(uintptr_t)(pc-base));
 	for(return_entry* ptr = sp-1;ptr >= stack;ptr--)
@@ -249,7 +249,7 @@ extern cell DATA_END;
 
 
 void interpreter(unsigned int start_base_address) {
-  	static bool tailcall = true;
+	static bool tailcall = true;
 	/* parameter stack */
 	static cell pstack[VM_PSTACK]={0};
 	cell* psp = &pstack[0];
@@ -281,7 +281,7 @@ void interpreter(unsigned int start_base_address) {
     #endif
 	returnpush(start_entry);
     while(1) {
-		inst i;
+		 inst i;
 	next:
 		__attribute__((unused))
         IFTRACE2(printf("\n"));
