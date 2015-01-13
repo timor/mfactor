@@ -37,7 +37,10 @@ r_from: "r>"
 # 0: data stack
 # 1: retain stack
 # 2: return stack
-get_sp: "sp?"
+#( n -- addr )
+get_sp: "get-sp"
+#( addr n -- val )
+set_sp: "set-sp"
 # get one value from the special variables array
 get_special: "special>"
 # set one
