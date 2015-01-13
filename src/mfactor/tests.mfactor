@@ -14,6 +14,9 @@ IN: tests
 : _test-ia ( -- ia ) I{ 1 2 } 10 [ dup getmem8 pwritex ' ' emit 1 + ] times drop nl ;
 : _test-ia-each ( -- ) I{ 5 4 3 2 1 } [ '0' + emit ] ia-each 0 . ;
 : _test-times ( -- ) '!' 3 [ dup emit ] times drop nl ;
+: _test_bcomp ( -- ) _get-MP 'a' b, 'b' b, 'c' b, 3 [ dup getmem8 emit 1 + ] times drop ;
+: _test_bcomp_rev ( -- ) 'f' -b, 'e' -b, 'd' -b, _get-MP 3 [ dup getmem8 emit 1 + ] times drop ;
+: _test_bcomp_both ( -- ) _test_bcomp _test_bcomp_rev nl ;
 : _test-string ( -- ) "abcde" 7 [ [ getmem8 pwritex ' ' emit ] [ 1 + ] bi ] times drop nl ;
 : _test-receive-until ( -- ) "enter stuff, end with 'x'" print nl [ 'x' = ] [ receive ] do until ;
 : _test-stack2string ( -- ) 'h' 'e' 'l' 'l' 'o' 5 _stack2string print nl ;
@@ -31,6 +34,7 @@ IN: tests
     _test-times _lcheck         ! prints "!!!"
     _test-while _lcheck         ! prints 543210
     _test-string _lcheck        ! prints 0x5 0x61 0x62 0x63 x64 0x65 and another byte
+    _test_bcomp_both _lcheck         ! prints abcdef
     _test-stack2string _lcheck  ! prints hello
     ! _test-string-reader _lcheck
     ! _test-receive-until
