@@ -35,6 +35,8 @@ PRIM: neg ( x -- x ) "neg" ;
 PRIM: receive ( -- b ) "receive" ;
 PRIM: special> ( n -- val ) "get_special" ;
 PRIM: >special ( val n -- ) "set_special" ;
+PRIM: get-sp ( n -- addr ) "get_sp" ;
+PRIM: set-sp ( addr n -- ) "set_sp" ;
 PRIM: ? ( ? x x -- x ) "truefalse" ;
 PRIM: memstart ( -- addr ) "memstart" ;
 PRIM: memrange ( -- a a a a ) "memrange" ;

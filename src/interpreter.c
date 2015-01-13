@@ -433,6 +433,17 @@ void interpreter(unsigned int start_base_address) {
 			  default: ppush((cell)0); break;
 			  }
 			  break;
+		  /* ( val n -- ) */
+		  case set_sp:
+		  {
+			  unsigned char n = (unsigned char)ppop();
+			  cell* newsp = (cell*)ppop();
+			  switch (n) {
+			  case 0 : psp = newsp; break;
+			  case 1 : retainsp = newsp; break;
+			  case 2 : returnsp = newsp; break;
+			  } break;
+		  }
 		  /* ( n -- val ) */
 		  case get_special:
 			  {
