@@ -117,6 +117,7 @@ getmem8:
 # prettywrite ( value -- )
 _pwrite: "pwrite"
 pwritex:
+writex:
 # call quotation in code (absolute)
 acall: :private
 # call quotation in code (absolute, tail call)

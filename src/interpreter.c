@@ -383,6 +383,9 @@ void interpreter(unsigned int start_base_address) {
         case pwritex:
           printf("%#lx",ppop());
           break;
+		  case writex:
+			  printf("%lx",ppop());
+			  break;
         case emit:
           putchar(ppop());
           fflush(stdout);			/* TODO remove eventually */

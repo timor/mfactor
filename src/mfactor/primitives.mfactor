@@ -18,6 +18,7 @@ PRIM: > ( x x -- ? ) "lt" ;
 PRIM: emit ( x -- ) "emit" ;
 PRIM: pwrite ( x -- ) "pwrite" ;
 PRIM: pwritex ( x -- ) "pwritex" ;
+PRIM: writex ( x -- ) "writex" ;
 PRIM: cell ( -- i ) "cell" ;
 PRIM: + ( x x -- x ) "add" ;
 PRIM: - ( x x -- x ) "sub" ;
