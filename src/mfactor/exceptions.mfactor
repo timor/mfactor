@@ -1,0 +1,37 @@
+!-*- mode: factor -*-
+USING: kernel ;
+IN: exceptions
+
+!! exceptions (eForth style)
+
+: _get-handler ( -- addr )
+    1 special> ;
+
+: _set-handler ( addr -- )
+    1 >special ;
+
+! SP@, RP@, SP!, RP! are emulated with get-sp and set-sp.  Data stack is 0, retain stack is 1 and return stack is 2.
+
+! Set up error frame and execute quot in it.  Error frames are stored on retain stack  as ( psp returnsp prev-handler)
+! contain a snapshot of data-stack and return-stack pointers.  HANDLER points into retain
+! stack, not return stack.
+: catch ( quot -- errcode )
+    0 get-sp >r                 ! save data stack pointer
+    2 get-sp >r                 ! save return stack pointer
+    _get-handler >r             ! save old handler
+    1 get-sp _set-handler       ! save current retainsp in handler
+    call                        ! call quot
+    r> _set-handler             ! restore handler
+    r> 2 set-sp                 ! restore return stack pointer
+    r> drop                     ! discard saved sp
+    0 ;
+
+! throw an error inside catch frame
+: throw ( errcode -- errcode )
+    _get-handler 1 set-sp         ! unwind retain stack to handler frame
+    r> _set-handler               ! unlink handler frame
+    r> 2 set-sp                   ! restore return stack
+    r> swap >r                    ! get data stack pointer, save error code on retain
+    0 set-sp                      ! rewind data stack
+    drop r>                       ! drop original quotation, put error code back on top
+;
