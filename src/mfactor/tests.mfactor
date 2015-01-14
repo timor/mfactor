@@ -1,5 +1,5 @@
 ! -*- mode: factor -*-
-USING: kernel sequences listener memory bcomp io prettyprint syntax ;
+USING: kernel sequences listener memory bcomp io prettyprint syntax exceptions ;
 IN: tests
 
 ! some unit tests
@@ -55,3 +55,22 @@ IN: tests
 ! recursive, but not tail-recursive
 : testfact ( n -- n ) dup 0 = [ drop 1 ] [ dup 1 - testfact * ] if ;
 : testwhile ( n -- ) [ dup 0 = not ] [ 1 - dup pwrite ] while ;
+
+!! exception testing
+
+: _showpointers ( -- )
+ "dstack: " print 0 get-sp pwritex nl
+ "retainstack: " print 1 get-sp pwritex nl
+ "returnstack: " print 2 get-sp pwritex nl
+ "handler: " print 1 special> pwritex nl
+ st
+;
+
+! interactive test only, need to factor into an assertion
+: _test_throw ( -- ? )
+ "testing nocatch" print nl _showpointers
+ [ "leaving 5 on stack" print nl 5 _showpointers ] catch "back after catch" print nl _showpointers
+ . .
+ "testing catching" print nl _showpointers
+ [ 1 [ "throwing 5" print nl 5 _showpointers throw ] call drop ] catch "caught" print nl _showpointers
+ 5 = [ "caught 5" print nl t ] [ "did'nt catch 5!" f ] if ;
