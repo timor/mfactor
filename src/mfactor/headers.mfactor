@@ -18,5 +18,6 @@ IN: headers
 ! (would increase code size _substantially_)
 : _qhead, ( length-in-bytes -- ) drop oplit qstart , ;
 
+! put string header into memory
 : _strhead, ( length -- ) 0 0 _seqhead, ;
 
