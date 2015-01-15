@@ -33,5 +33,8 @@ IN: bcomp
 
 ! determine size of quotation accumulated, careful: not tail recursive, return stack must be able to hold number of elements, retain stack must hold twice the number of elements in accumulator
 ! reminder: acc === .. item type n
-: _accum-quotation-size-worker ( acc x -- acc x ) over 0 = not [ pick _wordsize + rot >r rot >r [ 1 - ] dip _accum-quotation-size-worker [ 1 + ] dip r> -rot r> -rot ] when ;
+: _accum-quotation-size-worker ( acc x -- acc x )
+    over 0 = not
+    [ pick _wordsize + rot >r rot >r [ 1 - ] dip _accum-quotation-size-worker [ 1 + ] dip r> -rot r> -rot ]
+    when ;
 : _accum-quotation-size ( acc -- acc x ) 0 _accum-quotation-size-worker ;
