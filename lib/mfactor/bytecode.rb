@@ -170,6 +170,13 @@ module MFactor
         io << "#{cname} = 0x#{(num+inst_base).to_s(16)}, /* #{name} */\n"
       end
     end
+    # output select locations directly as defines
+    def write_word_positions(wordhash,io="")
+      wordhash.each do |factorname, cname|
+        io << "#define " << cname << " (&(stdlib[" << get_word_address(factorname) << "]))\n"
+#        io << "#define " << cname << " " << get_word_address(factorname) << "\n"
+      end
+    end
     def bytecode_size
       maybe_generate
       @size

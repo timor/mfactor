@@ -9,6 +9,9 @@ THISDIR=File.dirname(__FILE__)
 ISETFILE=File.join(THISDIR,"../instructionset.yml")
 # make target application's object file depend on the generated stuff
 MFACTOR_DEPENDING_OBJECT ||= "mfactor/src/interpreter.c"
+# can be a hash table that contains pairs of the form (mfactor-word -> name-of-c-define)
+MFACTOR_C_WORDS ||= {}
+puts "no c translations" if MFACTOR_C_WORDS == {}
 INSTBASE=
   if GENERATOR == "Cortex"
     0xa0
@@ -84,6 +87,10 @@ def build_stdlib
     mf.write_dictionary_entries f
     f.write "};\n"
   end
+  File.open("generated/mfactor_words.h","w") do |f|
+    f.puts "extern char stdlib[];"
+    mf.write_word_positions(MFACTOR_C_WORDS,f)
+  end
   mf
 end
 
@@ -99,7 +106,7 @@ task :see_dict => "generated" do
   puts build_stdlib.see
 end
 
-STDLIB_FILES=["generated/stdlib.code.h","generated/stdlib.dict.h","generated/stdlib_size.h"]
+STDLIB_FILES=["generated/stdlib.code.h","generated/stdlib.dict.h","generated/stdlib_size.h","generated/mfactor_words.h"]
 # file "generated/_generated_" => STDLIB_FILES+["generated/inst_enum.h"] do
 #   touch "generated/_generated_"
 # end
@@ -140,7 +147,7 @@ END
 end
 
 desc "build the mfactor code"
-task :stdlib => ["generated/stdlib.code.h","generated/stdlib.dict.h","generated/stdlib_size.h",__FILE__]
+task :stdlib => STDLIB_FILES+[__FILE__]
 
 require 'pp'
 
