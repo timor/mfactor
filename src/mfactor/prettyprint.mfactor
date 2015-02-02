@@ -4,8 +4,8 @@ IN: prettyprint
 
 : . ( thing -- ) pwrite nl ;
 : .x ( thing -- ) pwritex nl ;
-: bits ( -- const ) cell 8 * ;
+: _cell-bits ( -- const ) cell 8 * ;
 : _do-print-bits ( n i -- )
-    [ [ 8 mod 0 = [ 32 emit ] when ] keep bits swap - 1 - neg over swap shift 0x1 bitand 0x30 + emit ] each-integer nl drop ;
-: .b ( n -- ) bits _do-print-bits ;
+    [ [ 8 mod 0 = [ 32 emit ] when ] keep _cell-bits swap - 1 - neg over swap shift 0x1 bitand 0x30 + emit ] each-integer nl drop ;
+: .b ( n -- ) _cell-bits _do-print-bits ;
 : .b8 ( n -- ) 24 shift 8 _do-print-bits ;
