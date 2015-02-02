@@ -26,7 +26,7 @@
 
 char read_char(void);
 bool unread_char(char);
-char *read_token();
+char *read_token(void);
 
 
 #endif
