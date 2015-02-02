@@ -78,12 +78,12 @@ def build_stdlib
   end
   File.open("generated/stdlib.code.h","w") do |f|
     ff_code(ffyaml || [],f)
-    f.write "const inst const stdlib[#{mf.bytecode_size}]= {\n"
+    f.write "inst stdlib[#{mf.bytecode_size}]= {\n"
     mf.write_bytecode_image f
     f.write "};\n"
   end
   File.open("generated/stdlib.dict.h","w") do |f|
-    f.write "const dict_entry const dict[VM_DICT] __attribute((aligned(1))) = {\n"
+    f.write "dict_entry dict[VM_DICT] __attribute((aligned(1))) = {\n"
     mf.write_dictionary_entries f
     f.write "};\n"
   end
