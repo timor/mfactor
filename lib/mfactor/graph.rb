@@ -48,6 +48,7 @@ module MFactor
     @@unique='1'
     attr_accessor :record       # parent record, if this is a port node
     attr_accessor :control_out  # successor in control graph, convenience access
+    attr_accessor :control_in_edge  # predecessor in control graph, only valid for non-join nodes (these have two)
     attr_accessor :symbol       # graph-local symbol name (for use as c variable, etc)
     # overwrite equality test
     def ==(x)
@@ -125,7 +126,6 @@ module MFactor
     attr_accessor :start
     attr_accessor :end
     attr_reader :nodes
-    attr_writer :once_branch
     attr_writer :logger
     def initialize
       @nodes=[]
@@ -135,9 +135,6 @@ module MFactor
       @outputs=[]
       @start,@end=nil
       @branch_stack = []             # :else or :then can be pushed when following an if choice
-      @once_branch=nil               # can be set by loop case to make
-                                     # control edge following the
-                                     # recursive `if` work
       @uid="0"                  # local variable suffix counter
       @logger=nil               # proc |msg| can be supplied for logging
     end
@@ -150,39 +147,24 @@ module MFactor
          @logger.call msg
       end
     end
-    def in_branch branch
-      @branch_stack.push branch
-      yield
-      @branch_stack.pop
+    def backwards_annotate_last(node, tag, target)
+      # move upwards through graph until target, tag the last edge that was follwed
+      log "looking back at: #{node}"
+      if node.control_in_edge[0] == target
+        log "target found, tagging edge"
+        node.control_in_edge[2] = tag
+      else
+        backwards_annotate_last(node.control_in_edge[0],tag,target)
+      end
     end
     def add_control_edge(s,d)
       add_transition s,d
       label=nil
-      # Check if we come from choice node.  If yes, label the correspondig edges
-      if s.class == ChoiceNode
-        # loop continuations live in else/ or then branches before
-        # inlined, to keep depth correct, continuation case is handled
-        # only once
-        if @once_branch
-          branch = @once_branch
-          @once_branch = nil
-        else
-          branch = @branch_stack[-1]
-        end
-        # raise "no branch specified following choice node" unless branch
-        puts "no branch specified following choice node,empty path?" unless branch
-        if branch == :else
-          raise "node has more then one else edge" if s.else_edge
-          s.else_edge = [s,d]
-          label="else"
-        elsif branch == :then
-          raise "node has more then one then edge" if s.then_edge
-          s.then_edge = [s,d]
-          label="then"
-        end
-      end
       s.control_out=d
-      @control_edges.push [s,d,label]
+      e = [s,d,label]
+      log "adding non-unique control-in edge!" if d.is_a? IfJoinNode
+      d.control_in_edge = e
+      @control_edges.push e
     end
     def add_data_edge(s,d)
       # Check if source is a PhiNode.  If so, add edges directly
@@ -236,7 +218,9 @@ END
       io.puts "}"
       self
     end
-    
+    def control_out_edges node
+      @control_edges.find_all{ |s,d| s == node}
+    end
     # return all nodes that are followers of a given node (TODO: check performance)
     def data_successors node
       @data_edges.find_all{ |s,d| s == node }.map{ |s,d| d}

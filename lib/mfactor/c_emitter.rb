@@ -190,34 +190,50 @@ module MFactor
       when ChoiceNode then      # either close a do-while construct or emit an if-then-else
         # if then or else control target is join node, close a do-while block with the condition
         condition = get_representation(node)
-        if node.jump            # loop case
-          feedback = (node.jump == :else)? node.else_edge[1] : node.then_edge[1]
-          cont = (node.jump == :else)? node.then_edge[1] : node.else_edge[1]
-          prefix = node.jump == :then ? "" : "!"
-          join = @block_stack.pop
+        b1, b2 = @g.control_out_edges node
+        if (b1[2] == :break) or (b2[2] == :break) # if any branch is a break branch, bail out here
+          loop_rest, break_branch = b1, b2
+          unless break_branch[2] == :break
+            loop_rest, break_branch = break_branch, loop_rest
+          end
+          prefix = (loop_rest[2] == :then ? "!" : "")
+          line "if (#{prefix}#{condition}) break ;"
+          join = @block_stack.last
           puts "following feedback path"
-          unless join.is_a? JoinNode and join == follow_control(feedback)
+          fb_control = follow_control(loop_rest[1])
+          puts "fb stopped at #{fb_control.object_id}"
+          unless join.is_a? JoinNode and join == fb_control
             raise "trying to recurse out of non-do-while block!"
           end
-          line "} while(#{prefix}#{condition});"
-          return follow_control cont
+          @block_stack.pop
+          line "} while(1);"
+          return follow_control break_branch[1]
         else                    # normal split case
+          then_edge, else_edge = b1, b2
+          unless then_edge[2] == :then
+            then_edge, else_edge = else_edge, then_edge
+          end
           line "if ("+condition+"){"
           join=nil
           in_block node do
-            join=follow_control node.then_edge[1]
+            join=follow_control then_edge[1]
           end
           puts "then path join: "+join.object_id.to_s
-          raise "then-control path did not end at if-join" unless join.is_a? IfJoinNode
+          raise "then-control path did not end at join" unless join.is_a? JoinNode
           line "} else {"
           elsejoin=nil
           in_block node do
-            elsejoin=follow_control(node.else_edge[1])
+            elsejoin=follow_control else_edge[1]
             puts "else path join: "+elsejoin.object_id.to_s
             raise "then and else paths did not meet at same join" unless join == elsejoin
           end
           line "}"
-          return follow_control join.control_out
+          # if the join is a loop starting join, return it, otherwise continue after the join
+          if join.is_a? LoopJoinNode
+            return join
+          else
+            return follow_control join.control_out
+          end
         end
       when EndNode then 
         return node

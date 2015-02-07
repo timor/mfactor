@@ -165,33 +165,37 @@ module MFactor
             graph.add_control_edge(control,cnode) if control
             log "compiling then branch"
             then_pstack,then_rstack,res_then,else_pstack,else_rstack,res_else = nil
-            graph.in_branch :then do
-              then_pstack,then_rstack,res_then=compile_quotation(thencode,pstack.dup,rstack.dup,graph,cnode)
-            end
-            graph.in_branch :else do
-              else_pstack,else_rstack,res_else=compile_quotation(elsecode,pstack,rstack,graph,cnode)
-            end
+            then_pstack,then_rstack,res_then=compile_quotation(thencode,pstack.dup,rstack.dup,graph,cnode)
+            log "backwards annotate then"
+            graph.backwards_annotate_last(res_then,:then,cnode)
             log "compiling else branch"
+            else_pstack,else_rstack,res_else=compile_quotation(elsecode,pstack,rstack,graph,cnode)
+            log "backwards annotate else"
+            graph.backwards_annotate_last(res_else,:else,cnode)
             log "returning to if"
             log "thenstack: "+then_pstack.show(true)
             log "elsestack: "+else_pstack.show(true)
             #TODO: maybe insert crazy stack correctnes checking here
             if (then_pstack.items.last == :loop_case) || (else_pstack.items.last == :loop_case)
               log "loop case found"
+              loopjoin = @loop_labels[-1][:join_node]
               if then_pstack.items.last == :loop_case # select correct stack to continue
                 log "discarding then_branch"
-                cnode.jump = :then
                 pstack=else_pstack
                 rstack=else_rstack
                 control=res_else
-                graph.once_branch=:else
+                # move up towards to the choice node join, only
+                # annotate the last edge (the first, as seen from the
+                # loopjoin)
+                graph.backwards_annotate_last(res_then,:loop,loopjoin)
+                graph.backwards_annotate_last(res_else,:break,cnode) unless else_pstack.items.last == :loop_case
               else
                 log "discarding else_branch"
-                cnode.jump = :else
                 pstack=then_pstack
                 rstack=then_rstack
                 control=res_then
-                graph.once_branch=:then
+                graph.backwards_annotate_last(res_else,:loop,loopjoin)
+                graph.backwards_annotate_last(res_then,:break,cnode) unless then_pstack.items.last == :loop_case
               end
             else
               raise CompileError, "Error: alternatives not stack compatible in `if`" unless
