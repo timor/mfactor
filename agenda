@@ -23,6 +23,7 @@
   registered as then or else nodes.  Alternatively, retroactively mark
   branches as then or else when returning from an if and creating the
   join.  This needs some stack inspection
+- c_emitter should generate all representations for nodes, maybe inline, and then collect based on graph traversal, emitting when done
 - pull any and all type definition or inference out of the emitter code into the analyzer (stack checker)
 - in c_emitter, unify handling of node representation. Either generate as needed, or pre-generate everything,
   but not both (as currently)
@@ -32,7 +33,6 @@
   parsing primitives after base system is loaded.  This might incur a
   performance hit, depending on how Parslet's performance compares to
   forward parsing using generated image.
-- maybe move unique name generation into CDFG's realm, emitter only needs to query names
 - ensure that mutual tail-recursive combinators work
 - support non-tail-recursive combinators (involves generating an
   "anonymous" function for every usage of the combinator), also
