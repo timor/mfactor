@@ -18,7 +18,7 @@
 - DONE: compilation to graphs, inline recursive words not working yet
 - DONE: inlining tail recursive combinators
 - DONE: get rid of phi functions in generated cdfg (happens when phi'd data is requested)
-- insert dummy nodes at ends of conditional branches, _before_
+- DONE: insert dummy nodes at ends of conditional branches, _before_
   returning to main code.  This should fix empty branches not being
   registered as then or else nodes.  Alternatively, retroactively mark
   branches as then or else when returning from an if and creating the

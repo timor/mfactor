@@ -181,6 +181,16 @@ module MFactor
     end
   end
 
+  class NopNode
+    include GraphNode
+    def dot_node_shape
+      "point"
+    end
+    def dot_label
+      ""
+    end
+  end
+
   class IfJoinNode < JoinNode
   end
 

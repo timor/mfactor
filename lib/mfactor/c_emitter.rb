@@ -154,6 +154,8 @@ module MFactor
       case node
       when StartNode then
         return follow_control node.control_out
+      when NopNode then
+        return follow_control node.control_out
       when MFCompiledCall then  # emit function call, follow body
         call = node
         outs = call.outputs.dup

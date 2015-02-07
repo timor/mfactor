@@ -136,6 +136,7 @@ module MFactor
     end
     def compile_quotation(q,pstack,rstack,graph,control)
       log "compiling quotation: "+MFactor::see_word(q)
+      initial_control=control
       q.each do |word|
         log("p:"+pstack.show(true))
         log("r:"+rstack.show(true))
@@ -258,6 +259,12 @@ module MFactor
         when MFStringLit then pstack.push word
         else raise CompileError, "unable to compile word of type: #{word.class}"
         end
+      end
+      if control == initial_control
+        log "quotation had no control nodes, inserting nop"
+        nopnode = NopNode.new
+        graph.add_control_edge control, nopnode
+        control = nopnode
       end
       log "return control from quotation"
       return pstack,rstack,control                      # return updated stacks and control
