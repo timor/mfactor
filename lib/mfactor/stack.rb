@@ -7,7 +7,6 @@ module MFactor
   class MFStack
     include GraphNode
     include DotRecord
-    attr_accessor :marks
     def initialize(a=[],definition=nil)
       @a = a
       @definition = definition
