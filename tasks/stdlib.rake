@@ -200,13 +200,17 @@ task :compile_all => ["generated/cfg","generated/ccode"] do
         puts d.compile_log
         raise
       rescue Exception
-        puts "Compilation Log:"
+        puts "general Exception! Compilation Log:"
         puts d.compile_log
         raise
       ensure
-        sh "dot -Tpng #{dotfname} -o #{dotfname.ext('png')} " if File.exist?(dotfname)
-        File.open(dotfname.ext('log'),"w") do |f|
-          f.puts d.compile_log
+        begin                   # if dot fails, tell so and contiue
+          sh "dot -Tpng #{dotfname} -o #{dotfname.ext('png')} " if File.exist?(dotfname)
+          File.open(dotfname.ext('log'),"w") do |f|
+            f.puts d.compile_log
+          end
+        rescue
+          puts "unable to produce graph"
         end
       end
     end
