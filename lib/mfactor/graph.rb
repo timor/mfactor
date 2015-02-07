@@ -126,6 +126,7 @@ module MFactor
     attr_accessor :end
     attr_reader :nodes
     attr_writer :once_branch
+    attr_writer :logger
     def initialize
       @nodes=[]
       @control_edges=[]         # an edge is an array [source,dest]
@@ -138,10 +139,16 @@ module MFactor
                                      # control edge following the
                                      # recursive `if` work
       @uid="0"                  # local variable suffix counter
+      @logger=nil               # proc |msg| can be supplied for logging
     end
     # this needs only to be used when there is a node without a transition in the graph
     def add_node(n)
       @nodes.push n unless @nodes.include? n
+    end
+    def log (msg)
+      if @logger
+         @logger.call msg
+      end
     end
     def in_branch branch
       @branch_stack.push branch
@@ -191,7 +198,7 @@ module MFactor
     end
     # generate graph from this node on, reachability determined by self
     def dot(io)
-      # puts "drawing"
+      log "drawing graph "
       io << <<END
 digraph test_definition {
 graph [ rankdir=TB ]
@@ -217,11 +224,13 @@ END
         end
       end
       @control_edges.each do |s,d,label|
+        log "adding control edge: [#{s},#{d},#{label}]"
         attrs={color:"red",fontcolor:"red"}
         attrs[:label] = '"'+label+'"' if label
         draw_transition(s,d,io,attrs)
       end
       @data_edges.each do |s,d|
+        log "adding data edge"
         draw_transition(s,d,io,{color: "green"})
       end
       io.puts "}"
@@ -292,12 +301,12 @@ END
         else
           MFactor::c_escape(node.name)+@uid.succ!
         end
-      puts "assigning '#{symbol}' to #{node.class}"
+      log "assigning '#{symbol}' to #{node.class}"
       node.symbol=symbol
       succs = data_successors(node)
       pres= data_predecessors(node)
       (pres+succs).each do |s|
-        puts "maybe assign same symbol name: #{s.class}"
+        log "maybe assign same symbol name: #{s.class}"
         assign_arc_name s,symbol
       end
     end
