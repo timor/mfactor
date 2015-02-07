@@ -242,15 +242,8 @@ module MFactor
       raise "Congratulations, you just saved the continuation and bailed out"
     end
     def get_representation(element)
-      # if element.is_a? MFIntLit
-      #   if @names[element]
-      #     @names[element]
-      #   else
-      #     element.value.to_s
-      #   end
-      # else
-        get_name element
-      # end
+      # TODO: if element is only used once, generate inline call instead of temporary variable
+      get_name element
     end
     def get_name(element)
       unless element.symbol
