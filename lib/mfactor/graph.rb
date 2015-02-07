@@ -111,11 +111,16 @@ module MFactor
         OpenStruct.new(name: n.node_name,
                        label: MFactor::dot_escape(n.dot_label)+(n.symbol ? "(#{n.symbol})":""))
       end
-      io << node_name << " [label=\"{{"
-      io << portinfos.map do |p|
-        "<#{p.name}> #{p.label}"
-      end.join(" | ")
-      io << "}}\"]\n"
+      label= '"{{'
+      label << (portinfos.map do |p|
+                  "<#{p.name}> #{p.label}"
+                end.join(" | "))
+      label << '}}"'
+      attrs={:label => label}
+      attr_string=attrs.map do |k,v|
+        "#{k.to_s}=#{v}"
+      end.join(", ")
+      io << node_name << ' ' << '[' << attr_string << "]\n"
     end
   end
   # control flow and data flow, enough information to generate some code (after de-SSA-ing)
@@ -207,7 +212,7 @@ END
       @control_edges.each do |s,d,label|
         log "adding control edge: [#{s},#{d},#{label}]"
         attrs={color:"red",fontcolor:"red"}
-        attrs[:label] = '"'+label+'"' if label
+        attrs[:label] = '"'+label.to_s+'"' if label
         draw_transition(s,d,io,attrs)
       end
       @data_edges.each do |s,d|
