@@ -66,7 +66,6 @@ module MFactor
       # @name||=gensym("node")
       @name
     end
-    # traverse from 1 node, collect all reachable nodes
   end
 
   module DotRecord
