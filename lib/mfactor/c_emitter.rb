@@ -146,7 +146,7 @@ module MFactor
     end
     def follow_control(node)    # returns false if node was already visited
       if @emitted.member? node
-        puts "have been here, returning node"
+        puts "have been here, returning node: #{node.object_id}"
         return node
       end
       puts "following control: #{node.class}"
@@ -179,13 +179,12 @@ module MFactor
         end
         return follow_control(call.control_out)
       when LoopJoinNode then    # open a do-while construct
-        puts "following down loop recursion path"
+        puts "following down loop recursion path from #{node.object_id}"
         line "do {"
         @block_stack.push node
         return follow_control node.control_out
       when IfJoinNode then      # just return the join, gets recorded for comparison
-        puts "reached join"
-        puts node.object_id
+        puts "reached join: #{node.object_id}"
         return node
       when ChoiceNode then      # either close a do-while construct or emit an if-then-else
         # if then or else control target is join node, close a do-while block with the condition
@@ -238,7 +237,7 @@ module MFactor
       when EndNode then 
         return node
       else
-        raise "No Emitter implemented for #{node}"
+        raise "No Emitter implemented for #{node} (#{node.class})"
       end
       raise "Congratulations, you just saved the continuation and bailed out"
     end
