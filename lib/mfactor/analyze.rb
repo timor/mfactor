@@ -46,6 +46,11 @@ module MFactor
   # edges are inserted to indicate that data is effectively fed back
   # to where control was at the beginning of the loop.
 
+  # When branching of into either an if construct or loop, all edges
+  # will be back-annotated when the respective join (or in case of
+  # loop, split) has been hit. That way, all control flow edges are
+  # reliably tagged.
+
   def filename_escape(str)
     str.to_s.gsub(/[.><*=?:"]/,{
                     '.' => 'dot',
