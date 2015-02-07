@@ -200,6 +200,9 @@ END
         else
           label_sym = (n.is_a?(JoinNode) ? :xlabel : :label)
           attrs={label_sym => '"'+n.dot_label+'"'}
+          # if n.symbol
+          #   attrs[:xlabel]=n.symbol
+          # end
           if n.respond_to? :dot_node_shape
             attrs[:shape]='"'+n.dot_node_shape+'"'
           end
