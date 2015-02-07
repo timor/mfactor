@@ -200,8 +200,7 @@ module MFactor
     end
   end
 
-  # jump is either nil,:then or :else
-  class ChoiceNode < Struct.new(:label,:then_edge,:else_edge,:jump)
+  class ChoiceNode < Struct.new(:label)
     include GraphNode
     def dot_label
       label
