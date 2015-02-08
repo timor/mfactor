@@ -96,8 +96,8 @@ module MFactor
       $stdout.flush
       inputs=d.effect.inputs.map{|i| MFInput.new(i.name,i.type)}
       d.graph.inputs=inputs.dup
-      pstack = MFStack.new inputs,d
-      rstack = MFStack.new [],d
+      pstack = MFStack.new inputs
+      rstack = MFStack.new []
       if d.normal_word?
         d.graph.start=StartNode.new
         pstack,rstack,last_computation=compile_quotation(d.body,pstack,rstack,d.graph,d.graph.start)
@@ -117,9 +117,9 @@ module MFactor
           o
         end
         d.graph.outputs=output_items
-        input_record=MFStack.new(d.graph.inputs,d)
+        input_record=MFStack.new(d.graph.inputs)
         d.graph.add_node input_record unless d.graph.inputs.empty?
-        output_record=MFStack.new(output_items,d)
+        output_record=MFStack.new(output_items)
         d.graph.add_node output_record unless output_items.empty?
         # dummy calls to compute ports, workaround so that ports are
         # sure to have their record fields set to avoid false duplicates when drawing

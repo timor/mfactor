@@ -2,14 +2,12 @@ require 'mfactor/graph'
 require 'mfactor/datatypes'
 
 module MFactor
-
   # stack for virtual interpretation
   class MFStack
     include GraphNode
     include DotRecord
-    def initialize(a=[],definition=nil)
+    def initialize(a=[])
       @a = a
-      @definition = definition
     end
     def initialize_copy(source)
       super
@@ -89,12 +87,6 @@ module MFactor
       raise "trying to diff inconsistent stack lengths" unless
         other.length == items.length
       items.each_index.select { |i| items[i] != other.items[i] }
-    end
-    private
-    def log s
-      if @definition
-        @definition.log s
-      end
     end
   end
 end
