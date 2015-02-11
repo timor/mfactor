@@ -88,7 +88,7 @@ module MFactor
       line "#{rtype} #{MFactor::c_escape(@d.name)}("
       out (@g.inputs+outs).map{|a| format_definition_param(a)}.join(", ")
       out ") {"
-      in_block @do do
+      in_block :top do
         follow_control @g.start
         # if there are any assigned literals, define them first
         declare_assigned_literals # TODO: replace with general declaration statement
