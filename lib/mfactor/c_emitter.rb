@@ -67,7 +67,7 @@ module MFactor
       @d.log msg
     end
     def emit(definition,io)
-      @emitted=[]               # keeps track of all emitted nodes to avoid endless recursion
+      @visited=[] # keeps track of all emitted nodes to avoid endless recursion
 #      @names={}           # local variable and formal parameter names in this definition
       @declarations=[]    # collected declarations are emitted first
       @statements=[]      # collected statemets are emmited afterwards
@@ -157,12 +157,12 @@ module MFactor
       end
     end
     def follow_control(node)    # returns false if node was already visited
-      if @emitted.member? node
+      if @visited.member? node
         log "have been here, returning node: #{node.object_id}"
         return node
       end
       log "following control: #{node.class}"
-      @emitted.push node
+      @visited.push node
       case node
       when StartNode then
         return follow_control node.control_out
