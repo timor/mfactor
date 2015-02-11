@@ -279,14 +279,13 @@ module MFactor
       d=word.definition
       inputs=pstack.pop_n(d.effect.inputs.length) # actual parameters
       inputs ||= []
-      log "number of inputs: #{inputs.length}"
+      log "inputs: #{d.effect.inputs.map {|x| x.name.to_s }}"
       params=d.effect.inputs.map.with_index do |effectitem,i|
-        log "input #{i}"
         p=CallParameter.new(effectitem.name,i)
         graph.add_data_edge(inputs[i], p)
         p
       end
-      log "number of outputs: #{d.effect.outputs.length}"
+      log "outputs: #{d.effect.outputs.map {|x| x.name.to_s }}"
       outputs=d.effect.outputs.map.with_index do |e,i|
         MFCallResult.new(e, i)
       end
