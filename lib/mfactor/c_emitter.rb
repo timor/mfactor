@@ -28,7 +28,7 @@ module MFactor
       "+" => "+","-" => "-","*" => "*","/" => "/", "asr" => ">>",
       "asl" => "<<", "mod" => "%", "bitand" => "&", "bitor" => "|",
       "bitxor" => "^", "and" => "&&", "or" => "||", ">" => ">", "<" => "<",
-      "=" => "=="}
+      "=" => "==", "<=" => "<=", ">=" => ">=" }
     @@unary_builtins = {"not" => "!", "bitnot" => "~", "getmem" => "*", "getmem8" => "*","neg" => "-"}
     @@custom_builtins = { 
       "?" => proc {|cond,then_alt,else_alt| cond+" ? "+then_alt+" : "+else_alt},
