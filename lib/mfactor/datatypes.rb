@@ -2,17 +2,19 @@
 require 'mfactor/graph.rb'
 
 module MFactor
-  # integer literal
-  class MFIntLit < Struct.new(:value)
+  class Literal < Struct.new(:value)
     include GraphNode
-    def see
-      "#I#{value}"
-    end
     def dot_label
       value.to_s
     end
     def dot_node_shape
       "none"
+    end
+  end
+  # integer literal
+  class MFIntLit < Literal
+    def see
+      "#I#{value}"
     end
   end
   # special case: byte-sized literal
@@ -21,17 +23,12 @@ module MFactor
       "#B#{value}"
     end
   end
-
-  class MFStringLit < Struct.new(:value)
-    include GraphNode
+  class MFStringLit < Literal
     def see
       value.inspect
     end
     def dot_label
       '\"'+value+'\"'
-    end
-    def dot_node_shape
-      "none"
     end
   end
   class MFWord < Struct.new(:name,:definition,:is_tail)
