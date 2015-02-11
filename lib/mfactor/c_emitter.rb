@@ -62,6 +62,10 @@ module MFactor
       yield
       @block_stack.pop
     end
+    def log msg
+      raise "nowhere to log to!" unless @d
+      @d.log msg
+    end
     def emit(definition,io)
       @emitted=[]               # keeps track of all emitted nodes to avoid endless recursion
 #      @names={}           # local variable and formal parameter names in this definition
@@ -71,10 +75,10 @@ module MFactor
       @g=definition.graph # shortcut to graph of definition being emitted
       @io=io                    # io handle which every method can output to
       @block_stack=[]           # keeps track of nested blocks
-      puts "emitting code for #{@d.name}"
-      puts "formals: ",@g.inputs
+      log "emitting code for #{@d.name}"
+      log "formals: #{@g.inputs}"
       outs=@g.outputs.dup
-      # puts "output: ",outs
+      # log "output: ",outs
       ret=nil
       unless outs.empty?
         ret=outs.shift
@@ -125,22 +129,22 @@ module MFactor
     end    # follows control path, emits on the way
     def get_override_representation(name, inputs)
       rep = if @user_overrides[:functions] and @user_overrides[:functions][name]
-              puts "user function override"
+              log "user function override"
               fname, arity = @user_overrides[:functions][name]
               fname+"("+inputs[0..arity-1].join(", ")+")"
             elsif @@constant_builtins.member? name
-              puts "constant override"
+              log "constant override"
               raise "constant cannot have arguments" unless inputs.empty?
               name.upcase
             elsif @@binary_builtins[name]
-              puts "binary override"
+              log "binary override"
               inputs.join(" "+@@binary_builtins[name]+" ")
             elsif @@unary_builtins[name]
-              puts "unary override"
+              log "unary override"
               raise "unary operator called with too many actuals" unless inputs.length == 1
               @@unary_builtins[name]+inputs[0]
             elsif @@custom_builtins[name]
-              puts "custom override: #{@@custom_builtins[name]}"
+              log "custom override: #{@@custom_builtins[name]}"
               self.instance_exec(inputs, &@@custom_builtins[name])
             else
               nil
@@ -148,16 +152,16 @@ module MFactor
       if rep
         "("+rep+");"
       else
-        puts "no rep found"
+        log "no rep found"
         nil
       end
     end
     def follow_control(node)    # returns false if node was already visited
       if @emitted.member? node
-        puts "have been here, returning node: #{node.object_id}"
+        log "have been here, returning node: #{node.object_id}"
         return node
       end
-      puts "following control: #{node.class}"
+      log "following control: #{node.class}"
       @emitted.push node
       case node
       when StartNode then
@@ -185,12 +189,12 @@ module MFactor
         statement s
         return follow_control(call.control_out)
       when LoopJoinNode then    # open a do-while construct
-        puts "following down loop recursion path from #{node.object_id}"
+        log "following down loop recursion path from #{node.object_id}"
         statement "do {"
         @block_stack.push node
         return follow_control node.control_out
       when IfJoinNode then      # just return the join, gets recorded for comparison
-        puts "reached join: #{node.object_id}"
+        log "reached join: #{node.object_id}"
         return node
       when ChoiceNode then      # either close a do-while construct or emit an if-then-else
         # if then or else control target is join node, close a do-while block with the condition
@@ -204,9 +208,9 @@ module MFactor
           prefix = (loop_rest[2] == :then ? "!" : "")
           statement "if (#{prefix}#{condition}) break ;"
           join = @block_stack.last
-          puts "following feedback path"
+          log "following feedback path"
           fb_control = follow_control(loop_rest[1])
-          puts "fb stopped at #{fb_control.object_id}"
+          log "fb stopped at #{fb_control.object_id}"
           unless join.is_a? JoinNode and join == fb_control
             raise "trying to recurse out of non-do-while block!"
           end
@@ -223,13 +227,13 @@ module MFactor
           in_block node do
             join=follow_control then_edge[1]
           end
-          puts "then path join: "+join.object_id.to_s
+          log "then path join: "+join.object_id.to_s
           raise "then-control path did not end at join" unless join.is_a? JoinNode
           statement "} else {"
           elsejoin=nil
           in_block node do
             elsejoin=follow_control else_edge[1]
-            puts "else path join: "+elsejoin.object_id.to_s
+            log "else path join: "+elsejoin.object_id.to_s
             raise "then and else paths did not meet at same join" unless join == elsejoin
           end
           statement "}"
