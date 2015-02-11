@@ -48,8 +48,14 @@ module MFactor
     def out (str)
       @io << str
     end
-    def line (str="")
-      @io << "\n" << (" " * 2 * @block_stack.length) << str
+    def line str
+      @io << "\n" << str
+    end
+    def statement (str)
+      @statements << ((" " * 2 * @block_stack.length) << str)
+    end
+    def declaration (str)
+      @declarations << str
     end
     def in_block block
       @block_stack.push block
@@ -59,6 +65,8 @@ module MFactor
     def emit(definition,io)
       @emitted=[]               # keeps track of all emitted nodes to avoid endless recursion
 #      @names={}           # local variable and formal parameter names in this definition
+      @declarations=[]    # collected declarations are emitted first
+      @statements=[]      # collected statemets are emmited afterwards
       @d=definition       # definition being emitted
       @g=definition.graph # shortcut to graph of definition being emitted
       @io=io                    # io handle which every method can output to
@@ -77,10 +85,12 @@ module MFactor
       out (@g.inputs+outs).map{|a| format_definition_param(a)}.join(", ")
       out ") {"
       in_block @do do
+        follow_control @g.start
         # if there are any assigned literals, define them first
         declare_assigned_literals # TODO: replace with general declaration statement
-        # actual body code generated here
-        follow_control @g.start
+        @declarations.each {|d| line d }
+        # actual body emitted here
+        @statements.each {|s| line s }
       end
       line "}\n"
     end
@@ -94,10 +104,8 @@ module MFactor
           else
             type="int8_t"
           end
-#          name=@names[lit]
-          name=lit.symbol
-          line "#{type} #{name} = #{lit.value};"
-          # @names[lit]=name
+          name=get_name(OpenStruct.new(name: "i"))
+          declaration "#{type} #{name} = #{lit.value};"
         end
       end
     end
@@ -159,28 +167,26 @@ module MFactor
       when MFCompiledCall then  # emit function call, follow body
         call = node
         outs = call.outputs.dup
-        # puts "call inputs: #{call.inputs}"
-        # puts "call outputs: #{outs}"
         actuals = call.inputs
-        # puts "call actuals: #{actuals}"  # could actually be more than one, so not using!
-        line
-        if !outs.empty?
-          out get_name(outs.shift)+" = "
+        s=""
+        if !outs.empty?         # TODO: check here if only one result and used exactly once. If so, do not generate statement but store call as inline representation
+          s << get_name(outs.shift)+" = "
         end
         maybe_override = get_override_representation(call.definition.name, actuals.map{|i| get_representation(i)})
         if maybe_override
-          out maybe_override
+          s << maybe_override
         else
           raise "no override defined for primitive: #{call.definition.name}" if call.definition.primitive? and
             !maybe_override
-          out MFactor::c_escape(call.definition.name)+"("
-          out (actuals+outs).map{|a| format_call_argument(a)}.join(", ")
-          out ");"
+          s << MFactor::c_escape(call.definition.name)+"("
+          s << (actuals+outs).map{|a| format_call_argument(a)}.join(", ")
+          s << ");"
         end
+        statement s
         return follow_control(call.control_out)
       when LoopJoinNode then    # open a do-while construct
         puts "following down loop recursion path from #{node.object_id}"
-        line "do {"
+        statement "do {"
         @block_stack.push node
         return follow_control node.control_out
       when IfJoinNode then      # just return the join, gets recorded for comparison
@@ -196,7 +202,7 @@ module MFactor
             loop_rest, break_branch = break_branch, loop_rest
           end
           prefix = (loop_rest[2] == :then ? "!" : "")
-          line "if (#{prefix}#{condition}) break ;"
+          statement "if (#{prefix}#{condition}) break ;"
           join = @block_stack.last
           puts "following feedback path"
           fb_control = follow_control(loop_rest[1])
@@ -205,28 +211,28 @@ module MFactor
             raise "trying to recurse out of non-do-while block!"
           end
           @block_stack.pop
-          line "} while(1);"
+          statement "} while(1);"
           return follow_control break_branch[1]
         else                    # normal split case
           then_edge, else_edge = b1, b2
           unless then_edge[2] == :then
             then_edge, else_edge = else_edge, then_edge
           end
-          line "if ("+condition+"){"
+          statement "if ("+condition+"){"
           join=nil
           in_block node do
             join=follow_control then_edge[1]
           end
           puts "then path join: "+join.object_id.to_s
           raise "then-control path did not end at join" unless join.is_a? JoinNode
-          line "} else {"
+          statement "} else {"
           elsejoin=nil
           in_block node do
             elsejoin=follow_control else_edge[1]
             puts "else path join: "+elsejoin.object_id.to_s
             raise "then and else paths did not meet at same join" unless join == elsejoin
           end
-          line "}"
+          statement "}"
           # if the join is a loop starting join, return it, otherwise continue after the join
           if join.is_a? LoopJoinNode
             return join
