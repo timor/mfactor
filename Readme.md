@@ -36,6 +36,8 @@ This is because the target output is C, which does not support higher order func
 
 # build notes #
 
+## usage ##
+
 To build on embedded system (currently supported: cortex-m cores)
 - Either call rake from make, or include the `stdlib` task in existing
   rake file.  When including the `stdlib` file, several ruby constants
@@ -53,7 +55,22 @@ To build on embedded system (currently supported: cortex-m cores)
   rake call.
 - Calling rake with the `--trace` option causes verbose output during compilation.
 
-Other Notes:
+## interfacing to existing c code ##
+- Special global variable `mfactor_ff` can be set to a yaml file for
+  "importing" existing c functions into the interpreter's namespace (Foreign function interface).
+  entries are in the form of
+
+        c_name:
+			name: "mfactor-name"
+			call: <callspec>
+
+  where <callspec> describes the function's arguments, e.g. "iis" for a function like `fn( int, int, int)`.
+  Currently supported values are:
+  - `v` -> fn(void)
+  - `lit` -> for variables
+  - `i`, `b`, `bi`, `iis`, `iii` where `i` is `int`, `b` is `int8` and `s` is `int16`
+
+## Other Notes ##
 - build system: rake
 - several ENV vars influence compilation:
   - ONHOST: if set, will be compiled for host system
