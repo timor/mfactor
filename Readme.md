@@ -19,6 +19,8 @@ Major differences:
 - words beginning with underscore(`_`) are not stored in the
   dictionary.  This prevents helper functions from consuming
   dictionary space.
+- no continuations, no quotation compositions(yet)
+- simplified exception handling with `catch` and `throw`
 
 # compilation #
 
