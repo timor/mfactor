@@ -224,26 +224,8 @@ static void print_error(char * str)
 
 #define peek_n(sp,nth) (*(sp-nth))
 
-/* writes are only allowed into dedicated memory area for now */
-#define assert_memwrite(x) if ((x < memory) || (x >= (memory+VM_MEM))) {printf("prevented memory access at %#lx\n",x); BACKTRACE();return;}
-/* reads are only allowed inside data space */
-#if __linux
-#define DATA_START __data_start
-#define DATA_END end
-#elif (PROCESSOR_EXPERT)
-#define DATA_START _sdata
-#define DATA_END end
-#elif (CORTEX_M)
-#define DATA_START __data_start__
-#define DATA_END end
-#else
-#error "no data segment information"
-#endif
-
 extern cell DATA_START;
 extern cell DATA_END;
-
-#define assert_memread(x) if ((x < &DATA_START)||(x >= &DATA_END)) {printf("prevented memory read at %#lx\n",x); BACKTRACE(); return;}
 
 static void init_specials() {
   special_vars[0] = (cell)memory; /* start of user memory */
@@ -500,7 +482,6 @@ void interpreter(unsigned int start_base_address) {
             i=(x>>(8*(sizeof(inst*)-sizeof(inst))));
             goto dispatch;
           } else {
-            /* assert_memread((cell *)x); */
             if (debug_lvl(2)) printf("scall: inmem word\n");
             goto nested_call;
           } break;
@@ -512,7 +493,6 @@ void interpreter(unsigned int start_base_address) {
             i=(x>>(8*(sizeof(inst*)-sizeof(inst))));
             goto dispatch;      /* already a tail call */
           } else {
-            /* assert_memread((cell *)x); */
             if (debug_lvl(2)) printf("stcall: inmem word\n");
             goto tail_call;
           } break;
@@ -528,7 +508,6 @@ void interpreter(unsigned int start_base_address) {
 			  ppush(psp-pstack); break;
         case parsenum: {
           char *str = (char *)ppop();
-          /* assert_memread((cell *)str); */
           cell num = 0xa5a5a5a5;
           bool success=parse_number(str+1,&num);
           ppush(success ? num : (cell) str);
@@ -546,24 +525,20 @@ void interpreter(unsigned int start_base_address) {
           /* ( value address -- ) */
         case setmem:
           x=ppop();
-          /* assert_memwrite((cell *)x); */
           *((cell*)x)=(ppop());
           break;
         case setmem8:
           x=ppop();
-          /* assert_memwrite((cell*)x); */
           *((char*)x)=((ppop()&0xff));
           break;
           /*  (address -- value )) */
         case getmem: {
           cell *addr=(cell *)ppop();
-          /* assert_memread(addr); */
           x = *addr;
           ppush(x);
         } break;
         case getmem8: {
           char *addr=(char *)ppop();
-          /* assert_memread((cell *)addr); */
           x = (cell)(*(addr));
           ppush(x);
         } break;
