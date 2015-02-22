@@ -34,10 +34,6 @@ inst stdlib[STDLIB_SIZE];
 #ifndef VM_RETAINSTACK
 #define VM_RETAINSTACK 32
 #endif
-/* catch stack size (affects nesting of exception handlers)*/
-#ifndef VM_CSTACK
-#define VM_CSTACK 64
-#endif
 
 #ifndef TRACE_INTERPRETER
 #define TRACE_INTERPRETER 0

@@ -259,10 +259,6 @@ void interpreter(unsigned int start_base_address) {
 	/* retain stack */
 	static cell retainstack[VM_RETAINSTACK]={0};
 	cell* retainsp =&retainstack[0];
-	/* catch stack */
-	/* static cell cstack[VM_CSTACK]={0}; */
-	/* static cell* csp = &cstack[0]; */
-	/* TODO: name stack */
 	cell x;								/* temporary value for operations */
     static inst *base=stdlib;  /* base address for base-relative short calls */
     inst *pc = &stdlib[(start_base_address ? : START_WORD_OFFSET)];
