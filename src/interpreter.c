@@ -37,6 +37,9 @@
 static const unsigned char NumSpecials = _NumSpecials;
 static cell special_vars[_NumSpecials];
 
+/* main memory to work with */
+static cell memory[VM_MEM];
+
 /* entry in name dictionary */
 /* TODO: ensure correct scanning direction so that skipping over entries stays trivial */
 typedef struct dict_entry
@@ -221,8 +224,6 @@ static void print_error(char * str)
 
 #define peek_n(sp,nth) (*(sp-nth))
 
-
-static cell memory[VM_MEM];
 /* writes are only allowed into dedicated memory area for now */
 #define assert_memwrite(x) if ((x < memory) || (x >= (memory+VM_MEM))) {printf("prevented memory access at %#lx\n",x); BACKTRACE();return;}
 /* reads are only allowed inside data space */
