@@ -25,6 +25,7 @@ IN: memory
 ! : _MP ( -- MP ) memstart ;
 : _get-MP ( -- MP ) 0 special> ;
 : _set-MP ( val -- ) 0 >special ;
+! reinitializes storage effectively invalidating all existing allocations
 : _init_storage ( -- ) memstart cell + _set-MP ;
 ! temporarily different memory pointer
 : with-MP ( addr quot -- ) swap _get-MP [ _set-MP call ] dip _set-MP ;
