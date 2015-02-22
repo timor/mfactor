@@ -244,6 +244,9 @@ extern cell DATA_END;
 
 #define assert_memread(x) if ((x < &DATA_START)||(x >= &DATA_END)) {printf("prevented memory read at %#lx\n",x); BACKTRACE(); return;}
 
+static void init_specials() {
+  special_vars[0] = (cell)memory; /* start of user memory */
+}
 
 void interpreter(unsigned int start_base_address) {
 	static bool tailcall = true;
@@ -272,6 +275,7 @@ void interpreter(unsigned int start_base_address) {
     #if DEBUG
     debug_mode=true;
     #endif
+	init_specials();
 	returnpush(start_entry);
     while(1) {
 		 inst i;
