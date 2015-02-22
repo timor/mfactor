@@ -21,17 +21,6 @@
 	#include <stdio.h>
 	#include <stdbool.h>
 
-	#if TRACE_INTERPRETER >= 1
-		#define IFTRACE1(expr) expr
-	#else
-		#define IFTRACE1(expr)
-	#endif
-#if TRACE_INTERPRETER >= 2
-#define IFTRACE2(expr) expr
-#else
-#define IFTRACE2(expr)
-#endif
-
 /* target specific stuff */
 #include "runtime.h"
 #include "reset_system.h"
@@ -39,8 +28,11 @@
 #include "seq_headers.h"
 
 /* global array of special variables:
-	0: MP memory write pointer
-	1: HANDLER handler frame location in r(etain) stack */
+	0: MP - memory write pointer
+	1: HANDLER - handler frame location in r(etain) stack (dynamic chain for catch frames)
+	2: DEBUG_LEVEL - 0 to turn off, increasing will produce more verbose debug output
+	3: ON_ERROR - address of word to call when internal error occurred 
+        4: STEP_HANDLER - address of handler which can be used for single stepping */
 #define _NumSpecials 10
 static const unsigned char NumSpecials = _NumSpecials;
 static cell special_vars[_NumSpecials];
@@ -66,6 +58,11 @@ typedef struct return_entry {
 /* dictionary grows up*/
 #include "generated/stdlib.dict.h"
 
+/* check if current value of debug is greater or equal to val */
+static bool debug_lvl(unsigned int val) {
+  return (special_vars[2] >= val);
+}
+
 /* check if name in dictionary entry is a null-terminated string */
 static unsigned char dict_entry_real_length( dict_entry * e) 
 {
@@ -78,20 +75,20 @@ static unsigned char dict_entry_real_length( dict_entry * e)
 /* returns NULL if not found, otherwise points to dictionary entry */
 static dict_entry * find_by_name(char *fname, unsigned char length)
 {
-  IFTRACE1(printf("looking for '%s'(%d) ", fname,length));
+  if (debug_lvl(1)) printf("looking for '%s'(%d) ", fname,length);
   for(char * ptr=(char*)dict;
 		(ptr < ((char*)dict+sizeof(dict)))&&(((dict_entry*)ptr)->name_length > 0);
 		ptr += (((dict_entry*)ptr)->name_length + 3*sizeof(unsigned char) + sizeof(void*))) {
 	 dict_entry *dptr = (dict_entry*)ptr;
      unsigned char rl = dict_entry_real_length(dptr);
-	 IFTRACE1(printf("comparing to (%#lx): %s(%d); ",(uintptr_t)dptr->name,dptr->name,rl));
+     if (debug_lvl(1)) printf("comparing to (%#lx): %s(%d); ",(uintptr_t)dptr->name,dptr->name,rl);
      if (length != rl) continue;
 	 if (strncmp(fname,dptr->name,length)==0) {
-		IFTRACE1(printf("found at: %#lx\n",(cell)dptr->address));
+		if (debug_lvl(1)) printf("found at: %#lx\n",(cell)dptr->address);
 		return dptr;
 	 }
   }
-  IFTRACE1(printf("not found\n"));
+  if (debug_lvl(1)) printf("not found\n");
   return (dict_entry *) NULL;
 }
 
@@ -112,14 +109,14 @@ static char* find_by_address( inst * word)
 
 static bool parse_number(char *str, cell * number){
   int num;
-  IFTRACE1(printf("trying to read '%s' as number...",str));
+  if (debug_lvl(1)) printf("trying to read '%s' as number...",str);
   unsigned int read = sscanf(str,"%i",&num);
   if (read == 1) {
-    IFTRACE1(printf("got %d\n",num));
+    if (debug_lvl(1)) printf("got %d\n",num);
     *number=(cell)num;
     return true;
   } else {
-    IFTRACE1(printf("failed\n"));
+    if (debug_lvl(1)) printf("failed\n");
     return false;
   }
 }
@@ -155,7 +152,7 @@ static inst * skip_to_instruction(inst* pc,inst until, inst nest_on, inst *base)
 	inst *ptr=pc;
     for(inst i= *ptr; (i != until); i=*(++ptr)) {
       /* ptr still pointing to i here! */
-		  IFTRACE2(printf("skipping over %#x, ",i));
+	  if (debug_lvl(2)) printf("skipping over %#x, ",i);
           if (i == nest_on)
             ptr=skip_to_instruction(ptr+1, until, nest_on, base);
             else
@@ -183,7 +180,7 @@ static inst * skip_to_instruction(inst* pc,inst until, inst nest_on, inst *base)
                 break;
               }
     }
-    IFTRACE2(printf("skipped until %#lx\n",(uintptr_t)ptr-(uintptr_t)base));
+    if (debug_lvl(2)) printf("skipped until %#lx\n",(uintptr_t)ptr-(uintptr_t)base);
 	return ptr;
 }
 
@@ -280,12 +277,12 @@ void interpreter(unsigned int start_base_address) {
 		 inst i;
 	next:
 		__attribute__((unused))
-        IFTRACE2(printf("\n"));
-		IFTRACE2(printstack(psp,pstack));
-		IFTRACE2(printstack(retainsp,retainstack));
-		/* IFTRACE2(print_return_stack(returnsp,returnstack)); */
-		i= (*pc++);
-
+	  if (debug_lvl(2)) {
+	      printf("\n");
+	      printstack(psp,pstack);
+	      printstack(retainsp,retainstack);
+	    }
+	  i= (*pc++);
     dispatch:
 		if (debug_mode) {
 			  printf("\n");
@@ -473,7 +470,7 @@ void interpreter(unsigned int start_base_address) {
         /* ( -- countedstring ) */
         case token: {
           char *tok = read_token();
-          IFTRACE1(printf("got token:%s\n",tok+1));
+          if (debug_lvl(1)) printf("got token:%s\n",tok+1);
           if (tok) {
             ppush((cell)tok);
           } else {
@@ -494,24 +491,24 @@ void interpreter(unsigned int start_base_address) {
              applies to quotations */
           x = ppop();
           if (x >= INSTBASE_CELL) {
-            IFTRACE2(printf("s(t)call: prim\n"));
+            if (debug_lvl(2)) printf("s(t)call: prim\n");
             i=(x>>(8*(sizeof(inst*)-sizeof(inst))));
             goto dispatch;
           } else {
             /* assert_memread((cell *)x); */
-            IFTRACE2(printf("scall: inmem word\n"));
+            if (debug_lvl(2)) printf("scall: inmem word\n");
             goto nested_call;
           } break;
         case stcall:            /* WARNING: copied code above */
 			  if (!tailcall) goto _scall;
           x = ppop();
           if (x >= INSTBASE_CELL) {
-            IFTRACE2(printf("stcall: prim\n"));
+            if (debug_lvl(2)) printf("stcall: prim\n");
             i=(x>>(8*(sizeof(inst*)-sizeof(inst))));
             goto dispatch;      /* already a tail call */
           } else {
             /* assert_memread((cell *)x); */
-            IFTRACE2(printf("stcall: inmem word\n"));
+            if (debug_lvl(2)) printf("stcall: inmem word\n");
             goto tail_call;
           } break;
         case stack_show:
@@ -570,7 +567,7 @@ void interpreter(unsigned int start_base_address) {
 		 break;
           /* skip over to end of quotation , leave starting address on parameter stack*/
         case qstart:
-          IFTRACE2(printf("qstart saving %#lx\n",(uintptr_t)pc-(uintptr_t)base));
+          if (debug_lvl(2)) printf("qstart saving %#lx\n",(uintptr_t)pc-(uintptr_t)base);
           ppush((cell)pc);
           pc=skip_to_instruction(pc,qend,qstart,base);
           pc+=1;
@@ -721,10 +718,10 @@ void interpreter(unsigned int start_base_address) {
         {
           inst *next_word = (inst *) x;
 	#if (TRACE_INTERPRETER >= 1)
-          IFTRACE2(printf("w:%#lx\n",(cell)next_word-(uintptr_t)base));
+          if (debug_lvl(2)) printf("w:%#lx\n",(cell)next_word-(uintptr_t)base);
           char * name = find_by_address(next_word);
           if (name) {
-            IFTRACE1(printf("-> %s\n",name));
+            if (debug_lvl(1)) printf("-> %s\n",name);
             fflush(stdout);
           }
 	#endif
@@ -742,10 +739,10 @@ void interpreter(unsigned int start_base_address) {
         {
           inst *next_word = (inst *) x;
 	#if (TRACE_INTERPRETER >= 1)
-          IFTRACE2(printf("w:%#lx\n",(cell)next_word-(uintptr_t)base));
+          if (debug_lvl(2)) printf("w:%#lx\n",(cell)next_word-(uintptr_t)base);
           char * name = find_by_address(next_word);
           if (name) {
-            IFTRACE2(printf("..-> %s\n",name));
+            if (debug_lvl(2)) printf("..-> %s\n",name);
             fflush(stdout);
           }
 	#endif
