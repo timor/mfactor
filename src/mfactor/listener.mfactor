@@ -1,5 +1,5 @@
 !-*- mode: factor -*-
-USING: kernel parser vocabs prettyprint io memory exceptions ;
+USING: kernel parser vocabs prettyprint io memory exceptions syntax ;
 IN: listener
 
 ! listener, the interactive frontend
