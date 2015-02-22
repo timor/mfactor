@@ -498,7 +498,7 @@ void interpreter(unsigned int start_base_address) {
             i=(x>>(8*(sizeof(inst*)-sizeof(inst))));
             goto dispatch;
           } else {
-            assert_memread((cell *)x);
+            /* assert_memread((cell *)x); */
             IFTRACE2(printf("scall: inmem word\n"));
             goto nested_call;
           } break;
@@ -510,7 +510,7 @@ void interpreter(unsigned int start_base_address) {
             i=(x>>(8*(sizeof(inst*)-sizeof(inst))));
             goto dispatch;      /* already a tail call */
           } else {
-            assert_memread((cell *)x);
+            /* assert_memread((cell *)x); */
             IFTRACE2(printf("stcall: inmem word\n"));
             goto tail_call;
           } break;
@@ -526,7 +526,7 @@ void interpreter(unsigned int start_base_address) {
 			  ppush(psp-pstack); break;
         case parsenum: {
           char *str = (char *)ppop();
-          assert_memread((cell *)str);
+          /* assert_memread((cell *)str); */
           cell num = 0xa5a5a5a5;
           bool success=parse_number(str+1,&num);
           ppush(success ? num : (cell) str);
