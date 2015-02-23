@@ -51,7 +51,7 @@ PRIM: parsenum ( str -- num/str success? ) "parsenum" ;
 PRIM: token ( -- str ) "token" ;
 PRIM: st ( -- ) "stack_show" ;
 PRIM: level ( -- i ) "stack_level" ;
-PRIM: search ( cstr -- dictentry/name found? ) "search" ;
+PRIM: search ( str -- dictentry/name found? ) "search" ;
 PRIM: setmem ( x loc -- ) "setmem" ;
 PRIM: setmem8 ( x loc -- ) "setmem8" ;
 PRIM: getmem ( loc -- x ) "getmem" ;

@@ -11,7 +11,7 @@ module MFactor
     def write_dict_entry(bytecode,io="")
       loc = definition.primitive? ? "0x#{(location << (8*(bytecode.cell_width-1))).to_s(16)}" : "&stdlib+#{location.to_s}"
       io <<
-        "{ .address = (inst *)#{loc}, .flags = #{flags}, .name = #{definition.name.to_s.inspect}, .name_length=#{definition.name.to_s.length + 1}}"
+        "{ .address = (inst *)#{loc}, .flags = #{flags}, .name = #{definition.name.to_s.inspect}, .name_length=#{definition.name.to_s.length}}"
     end
   end
 

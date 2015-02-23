@@ -81,7 +81,7 @@ static dict_entry * find_by_name(char *fname, unsigned char length)
   if (debug_lvl(1)) printf("looking for '%s'(%d) ", fname,length);
   for(char * ptr=(char*)dict;
 		(ptr < ((char*)dict+sizeof(dict)))&&(((dict_entry*)ptr)->name_length > 0);
-		ptr += (((dict_entry*)ptr)->name_length + 3*sizeof(unsigned char) + sizeof(void*))) {
+		ptr += (((dict_entry*)ptr)->name_length + 4*sizeof(unsigned char) + sizeof(void*))) {
 	 dict_entry *dptr = (dict_entry*)ptr;
      unsigned char rl = dict_entry_real_length(dptr);
      if (debug_lvl(1)) printf("comparing to (%#lx): %s(%d); ",(uintptr_t)dptr->name,dptr->name,rl);
