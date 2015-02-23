@@ -18,12 +18,15 @@ IN: vocabs
 
 ! dictionary entry considered valid if
 : dict-valid? ( dict-entry -- ? ) _name>> strlen 0 = not ;
-: dict-map ( q: ( ... dict-entry -- ... ) -- )
+
+! apply q to each dictionary entry
+: dict-each ( q: ( ... dict-entry -- ... ) -- )
     dictstart [ dup dict-valid? ] [ [ swap call ] 2keep dict-next ] while 2drop ;
+
 : _free-name ( -- addr ) dictstart [ dup dict-valid? ] [ dict-next ] while ;
 
 ! test dictionary access by enumerating all dictionary entries
-! : dict-enum ( -- ) [ [ _name>> print ": " print ] [ .x ] bi ] dict-map ;
+! : dict-enum ( -- ) [ [ _name>> print ": " print ] [ .x ] bi ] dict-each ;
 
 ! word lookup in dictionary
 ! return matching dictionary entry if found, string address otherwise
