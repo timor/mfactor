@@ -115,12 +115,21 @@ module MFactor
       raise "element size not a power of 2: #{elt_size}" if size_indicator.denominator != 1
       image << prim(:litc) << (0 | (elt_type << 3) | size_indicator.numerator) << count
     end
+    # escape c chars
+    def escape_c_char c
+      n = c.ord
+      if (n < 33) or (n == 39) or (n == 92)
+        "\\x#{c.ord.to_s(16)}"
+      else
+        c
+      end
+    end
     # generate byte code for one word, append to image
     def word_bytecode(word,image)
       case word
       when MFStringLit then
         inline_seq_header(SEQ_ELT_DATA,1,word.value.chars.to_a.length,image)
-        image.concat word.value.chars.map{|c| c.ord}
+        image.concat word.value.chars.map{|c| "'#{escape_c_char(c)}'"}
       when Array then
         image << prim(:qstart)
         word.map{|w| word_bytecode(w,image)}
@@ -133,7 +142,7 @@ module MFactor
       when MFWord then
         if word.definition.primitive?
           if word.is_tail && word.name == "call"
-            image << prim("stcall")
+            image << prim(:stcall)
           else
             image << prim(word.name)
           end
@@ -149,7 +158,7 @@ module MFactor
       @prims[name.to_s]
     end
     def prim(name)
-      @prims[name.to_s] || raise( "unknown primitive: #{name}")
+      ISET[name.to_s] || raise( "unknown primitive: #{name}")
     end
     # c code generation:
     # c99 initiailizers for the dictionary
@@ -185,8 +194,8 @@ module MFactor
       maybe_generate
       @compiled_definitions.each do |cdef|
         next if cdef.definition.primitive?
-        io << "/* #{cdef.definition.name} */ "
-        io << cdef.code.map{|w|w.to_s(16).prepend("0x")}.join(", ")
+        io << "/* #{cdef.location}: #{cdef.definition.name} */ "
+        io << cdef.code.map{|w| w.is_a?(Integer) ?  w.to_s(16).prepend("0x") : w}.join(", ")
         io << ",\n"
       end
     end
