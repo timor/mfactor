@@ -24,7 +24,7 @@ IN: parser
 
 ! parsing words have to have ( acc -- acc ) signature.
 : parse-datum ( string  -- word/number type )
-    search [ dup _quot>> prim? [ _quot>> 0 ] [ 2 ] if ]
+    dict-find [ dup _quot>> prim? [ _quot>> 0 ] [ 2 ] if ]
     [ parsenum [ 3 ] [ "parsing '" print print "' failed\! " print error ] if ] if ;
 : scan-datum ( -- item type ) token parse-datum ;
 

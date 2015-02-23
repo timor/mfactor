@@ -10,12 +10,12 @@ IN: listener
 
 : prompt ( -- ) level pwrite '>' emit ' ' emit ;
 
-: _unsafe-listener ( -- ) prompt token search [ dup parsing-word? [ _quot>> 0 swap call [ drop ] times ]
+: _unsafe-listener ( -- ) prompt token dict-find [ dup parsing-word? [ _quot>> 0 swap call [ drop ] times ]
                                         [ _quot>> call ] if ] [ unknown-token ] if _unsafe-listener ;
 
 : listener ( -- ) [ _unsafe-listener ] catch "unhandled exception: " print . listener ;
 
-SYNTAX: \ ( -- quot type ) token search [ 3 suffix ] [ _bad-input ] if ;
+SYNTAX: \ ( -- quot type ) token dict-find [ 3 suffix ] [ _bad-input ] if ;
 
 : showmem ( -- ) memstart _get-MP [ 2dup >= [ f ] [ [ dup getmem8 .x 1 + ] dip t ] if ] loop 2drop ;
 

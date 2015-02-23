@@ -25,9 +25,22 @@ IN: vocabs
 ! test dictionary access by enumerating all dictionary entries
 ! : dict-enum ( -- ) [ [ _name>> print ": " print ] [ .x ] bi ] dict-map ;
 
+! word lookup in dictionary
+! return matching dictionary entry if found, string address otherwise
+
+: _dict-find-helper ( str dict-entry -- dict-entry/str ? )
+    dup dict-valid?
+    [ 2dup _name>> str=
+      [ [ drop ] dip t ]
+      [ dict-next _dict-find-helper ] if ]
+    [ drop f ] if ;
+
+: dict-find ( str -- dict-entry/str ? )
+    dictstart _dict-find-helper ;
+
 ! save quotation in dictionary, non-immediate, name is counted string, add terminating 0 for compatibility
 : rename ( quot dictentry -- ) setmem ;
-: name ( quot name -- ) search [ rename ] [ _free-name [ swap , 0 b, 0 b, dup strlen 1 + b, [ b, ] ba-each 0 b, ] with-MP ] if ;
+: name ( quot name -- ) dict-find [ rename ] [ _free-name [ swap , 0 b, 0 b, dup strlen b, [ b, ] ba-each 0 b, ] with-MP ] if ;
 ! compare read token to header name, problem: name has terminal 0 byte which must not be checked
 : name= ( str name -- ? ) [ uncount ] bi@ [ swap ] dip 1 - over = [ mem= ] [ 3drop f ] if ;
 

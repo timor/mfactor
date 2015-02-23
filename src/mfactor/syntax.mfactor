@@ -13,7 +13,7 @@ IN: syntax
 
 ! colon compiler
 ! read in name and quotation, compile to memory, create dictionary entry
-SYNTAX: : ( -- ) read-token 0 ";" parse-until >quotation swap [ dup search nip [ "re" print ] when "defining: " print print nl ] keep name ;
+SYNTAX: : ( -- ) read-token 0 ";" parse-until >quotation swap [ dup dict-find nip [ "re" print ] when "defining: " print print nl ] keep name ;
 
 ! accumulate bytes on stack (expensive, but hey)
 : _readstr ( -- ..bytes num ) 0 [ receive dup 34 = [ drop f ] [ swap 1 + t ] if ] loop ;
