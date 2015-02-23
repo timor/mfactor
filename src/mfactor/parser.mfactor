@@ -26,16 +26,22 @@ IN: parser
 : parse-datum ( string  -- word/number type )
     dict-find [ dup _quot>> prim? [ _quot>> 0 ] [ 2 ] if ]
     [ parsenum [ 3 ] [ "parsing '" print print "' failed\! " print error ] if ] if ;
-: scan-datum ( -- item type ) token parse-datum ;
 
-! that is the actual parsing step
-: parse-until-step ( acc end -- acc ? ) scan-datum dup 2 =
-    [ rot pick _name>> name=
-      [ 2drop f ]
-      [ over parsing-word?
-        [ drop execute t ] [ [ _quot>> ] dip suffix t ] if ] if ]
-    [ [ drop ] 2dip suffix t ] if ;
-: parse-until ( acc end -- acc ) [ parse-until-step ] keep swap [ parse-until ] [ drop ] if ;
+! : scan-datum ( -- item type ) token parse-datum ;
+
+! That is the actual parsing step.  Check if string can be parsed as a word.
+! If parsing word, execute immediately.
+: parse-until-step ( acc string -- acc )
+    parse-datum dup 2 = ! ( acc word/number type normal-word? )
+    [ over parsing-word?
+      [ drop execute ] [ [ _quot>> ] dip suffix ] if ]
+    [ suffix ] if ;
+
+! Get a token, see if it is equal to end.  If not, parse the token.
+: parse-until ( acc end -- acc )
+    dup token [ str= ] keep swap ! ( acc end token ? )
+    [ 2drop ]
+    [ swap [ parse-until-step ] dip parse-until ] if ;
 
 ! loop until token matches str
 : scan-until-str ( str quot: ( tok -- ) -- )  swap [ token swap 2dup str= [ drop f ] [ [ swap [ call ] keep ] dip t ] if ] loop 2drop ;
