@@ -44,8 +44,6 @@ IN: vocabs
 ! save quotation in dictionary, non-immediate, name is counted string, add terminating 0 for compatibility
 : rename ( quot dictentry -- ) setmem ;
 : name ( quot name -- ) dict-find [ rename ] [ _free-name [ swap , 0 b, 0 b, dup strlen b, [ b, ] ba-each 0 b, ] with-MP ] if ;
-! compare read token to header name, problem: name has terminal 0 byte which must not be checked
-: name= ( str name -- ? ) [ uncount ] bi@ [ swap ] dip 1 - over = [ mem= ] [ 3drop f ] if ;
 
 ! dictionary usage
 : dsize ( -- n1 n2 ) dictend dictstart - _free-name dictstart - ;
