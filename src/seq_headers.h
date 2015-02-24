@@ -23,14 +23,15 @@ typedef unsigned char seq_header;
 /* element sizes:
  * 0 -> 1 byte
  * 1 -> 2 bytes
- * 2 -> 4 bytes
- * 3 -> 8 bytes
+ * 2 -> 3 bytes
+ * 4 -> 5 bytes
  * ...
+ * 7 -> 8 bytes
  * */
 
 SEQ_INLINE unsigned int fe_element_size(seq_header h)
 {
-  return 1<<(h & 0x3);
+  return (h & 0x3)+1;
 }
 
 /* return size, without header, second argument is pointer to count byte*/
