@@ -9,6 +9,3 @@ IN: io
 : print ( byte-array -- ) uncount _print_bytes ;
 
 : nl ( -- ) 10 emit ;
-
-
-
