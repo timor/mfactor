@@ -349,7 +349,6 @@ void interpreter(unsigned int start_base_address) {
             fflush(stdout);
 	}
 	}
-	#endif
           if (debug_mode) {
 			  if (debug_nest > 0) {
 			  printf("<- %d\n",debug_nest);
