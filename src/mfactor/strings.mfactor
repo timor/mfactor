@@ -7,6 +7,7 @@ IN: strings
 
 : uncount ( countedstr -- addr len ) dup getmem8 [ 1 + ] dip ;
 
+! TODO obsolete in favor of `length`
 : strlen ( str -- n ) getmem8 ;
 
 : str= ( str1 str2 -- ? ) dup strlen 1 + mem= ;
