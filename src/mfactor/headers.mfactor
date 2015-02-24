@@ -7,9 +7,14 @@ IN: headers
 ! headers for memory elements
 ! put a sequence header into memory
 ! sequence header layout: |type(1)|number-of-elements(1)|
-! type byte layout: |elt-type(5)|elt-size(3)|
-! actual element size is 2^(elt-size)
-! element types: 0: data, 2: references
+!  type byte layout: |elt-type(5)|elt-size(3)|
+! actual element size is (elt-size +1 ) in bytes
+! element types:
+!  0: data
+!  1: quotation
+!  2: base_relative (short) references
+!  3: absolute (long) references
+!  4: boxed data (sequence elements are |type(1)|data(4))
 
 : _seqhead, ( length elt-size elt-type -- ) 3 asl bitand b, b, ;
 
