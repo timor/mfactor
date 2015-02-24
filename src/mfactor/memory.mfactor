@@ -6,7 +6,7 @@ IN: memory
 
 ! : getmem ( addr -- ) _get ;
 ! : getmem8 ( addr -- ) _getbyte ;
-
+: getmem16 ( addr -- ) [ getmem8 ] [ 1 + getmem8 8 asl ] bi bitor ;
 ! : setmem ( val addr -- ) _set ;
 ! : setmem8 ( val addr -- ) _setbyte ;
 
@@ -49,3 +49,9 @@ IN: memory
 ! copy words
 : memcpy ( dest src n -- )
     [ [ getmem swap setmem ] 2keep [ 1 + ] bi@ ] times 2drop ;
+
+! resolve reference
+: resolve-ref ( addr -- addr )
+    dup getmem8
+    2 = [ 1 + getmem16 _code-base + ]
+        [ 0 ] if ;
