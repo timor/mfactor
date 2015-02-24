@@ -145,7 +145,7 @@ module MFactor
           end
           current_vocab.add d    # need to add here because of recursion
           # find all used words in vocabularies
-          d.body.flatten.select{|w| w.is_a?(MFWord)}.each do |word|
+          d.flatten_words.each do |word|
             wname=word.name.to_s
             def_of_w = find_name(wname,[current_vocab]+search_vocabs)
             raise "#{d.err_loc}:Error: word '#{wname}' not found on #{search_vocabs.map{|s| s.name}}" unless def_of_w

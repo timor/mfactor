@@ -18,8 +18,7 @@ module MFactor
 
   # expect to be created with already loaded MFactor instance
   class ByteCodeImage < Image
-    SEQ_ELT_DATA=0
-    SEQ_ELT_REF=1
+    HEADER_TYPES={ data: 0, quotation: 1, base_ref: 2, long_ref: 3, boxed: 4 }
     attr_accessor :compiled_definitions
     def initialize(*a)
       super *a
@@ -51,29 +50,31 @@ module MFactor
     def maybe_generate
       return if @generated
       puts "\nGenerating byte_code image" if Rake.verbose
-      image=[]
-      memloc=0
+      # image=[] # TBR?
+      @memloc=0
       def_list=@dictionary.values.map{|v| v.definitions}.flatten.reject{|d| d.primitive?}
       def_list.each do |d|
         code=[]
         cdef=MFCompiledDefinition.new
-        cdef.location=memloc
+        cdef.location=@memloc
         cdef.definition=d
         cdef.flags=(cdef.definition.definer == "SYNTAX:" ? 1 : 0)
         @compiled_definitions << cdef # adding here already although body may be empty
-        defsize=0
+        # determine code size beforehand to get offset for data segment of definition
+        defsize=d.body.map{|w| element_size(w)}.reduce(:+) +1 # final qend
+        @data=[]
+        @data_counter=@memloc+defsize # initialize data segment counter
         puts "compiling definition for #{d.name}" if Rake.verbose == true
         d.body.each do |word|
-          defsize += element_size(word)
           word_bytecode(word,code)
         end
-        code << prim(:qend)      # maybe omit, check space savings
-        puts "#{d.name} is at #{memloc}" if Rake.verbose == true
-        memloc += defsize+1
-        cdef.code=code
+        code << prim(:qend)
+        puts "#{d.name} is at #{@memloc}" if Rake.verbose == true
+        @memloc += (defsize + @data.length)
+        cdef.code=code+@data
       end
-      @size=memloc
-      puts "total bytecode size: #{memloc}" if Rake.verbose
+      @size=@memloc
+      puts "total bytecode size: #{@memloc}" if Rake.verbose
       puts "memory map:" if Rake.verbose
       @compiled_definitions.each do |d|
         puts "@#{d.location}: #{d.definition.name} #{d.definition.primitive? ? 'prim' : '' }"
@@ -83,7 +84,7 @@ module MFactor
       print ISET.keys.map{ |name| [name,prim(name)] },"\n" if Rake.verbose == true
       check_locations
       @generated = true
-      #@compiled_definitions.map{|d| d.code}.flatten
+      # @compiled_definitions.map{|d| d.code}.flatten
     end
     # check pre-compile size computations
     def check_locations
@@ -100,20 +101,22 @@ module MFactor
         loc += d.code.length
       end
     end
-    # element size
+    # element size in quotation context
     def element_size(elt)
       case elt
       when MFStringLit then header_length + elt.value.chars.to_a.length
-      when Array then 3 + elt.map{|e| element_size(e)}.reduce(:+)
+      when Quotation then 3 + elt.body.map{|e| element_size(e)}.reduce(:+)
       when MFLitSequence then header_length + elt.element_size * elt.content.length
+      when MFComplexSequence then 3
       else atom_size(elt)
       end
     end
     def inline_seq_header(elt_type, elt_size, count, image)
-      raise "inline sequences longer than 255 elements not supported!" if count >= 256
-      size_indicator=Rational(Math::log2(elt_size))
-      raise "element size not a power of 2: #{elt_size}" if size_indicator.denominator != 1
-      image << prim(:litc) << (0 | (elt_type << 3) | size_indicator.numerator) << count
+      raise "inline sequences longer than 255 elements not supported!" if count > 255
+      # size_indicator=Rational(Math::log2(elt_size))
+      size_indicator = elt_size - 1
+      raise "element size too big: #{elt_size}" if size_indicator > 7
+      image << prim(:litc) << (0 | (elt_type << 3) | size_indicator) << count
     end
     # escape c chars
     def escape_c_char c
@@ -124,21 +127,60 @@ module MFactor
         c
       end
     end
+    # generate bytecode in data segment, return address
+    def generate_data(item)
+      acc = []
+      case item
+      when MFComplexSequence
+        inline_seq_header(HEADER_TYPES[:boxed], cell_width, item.content.length, acc)
+        item.content.each do |elt|
+          if elt.is_a? MFIntLit
+            type = HEADER_TYPES[:data]
+            content = int_bytes(elt.value,cell_width)
+          else
+            type = HEADER_TYPES[:base_ref]
+            content = int_bytes(generate_data(elt),2)+[0,0]
+          end
+          acc << type
+          acc.concat content
+        end
+      when Quotation
+        puts "generating non-inline quotation: #{item} " if Rake.verbose == true
+        inline_seq_header(HEADER_TYPES[:quotation], 1, quotation_length(item.body), acc)
+        item.body.each {|w| word_bytecode(w,acc)}
+        acc << prim(:qend)
+      when MFStringLit then word_bytecode(item,acc)
+      when MFLitSequence then word_bytecode(item,acc)
+      else
+        raise "cannot generate data segment for #{item.class}"
+      end
+      loc = @data_counter
+      puts "constant data at #{loc} " if Rake.verbose == true
+      @data.concat acc
+      @data_counter += acc.length
+      return loc + 2            # referenced address should point to count byte
+    end
+    def quotation_length(arr)
+      l=arr.map{|e| element_size(e)}.reduce(:+)
+      raise "quotations with more than 255 elements unsupported" if l > 255
+      l
+    end
     # generate byte code for one word, append to image
     def word_bytecode(word,image)
       case word
       when MFStringLit then
-        inline_seq_header(SEQ_ELT_DATA,1,word.value.chars.to_a.length,image)
+        inline_seq_header(HEADER_TYPES[:data],1,word.value.chars.to_a.length,image)
         image.concat word.value.chars.map{|c| "'#{escape_c_char(c)}'"}
-      when Array then
+      when Quotation then
         image << prim(:qstart)
-        l=word.map{|e| element_size(e)}.reduce(:+)
-        raise "quotations with more than 255 elements unsupported" if l > 255
-        image << l
-        word.map{|w| word_bytecode(w,image)}
+        image << quotation_length(word.body)
+        word.body.map{|w| word_bytecode(w,image)}
         image << prim(:qend)      # maybe omit, check space savings
+      when MFComplexSequence then
+        image << prim(:bref)
+        image.concat int_bytes(generate_data(word),2)
       when MFLitSequence then
-        inline_seq_header(SEQ_ELT_DATA,word.element_size,word.content.length,image)
+        inline_seq_header(HEADER_TYPES[:data],word.element_size,word.content.length,image)
         word.content.map{|w| image.concat int_bytes(w.value,word.element_size)}
       when MFByteLit then image << prim(:litb) << word.value
       when MFIntLit then (image << prim(:liti)).concat int_bytes(word.value,cell_width)
@@ -164,7 +206,7 @@ module MFactor
       ISET[name.to_s] || raise( "unknown primitive: #{name}")
     end
     # c code generation:
-    # c99 initiailizers for the dictionary
+    # c99 initializers for the dictionary
     def write_dictionary_entries(io="")
       maybe_generate
       @compiled_definitions.each do |cdef|

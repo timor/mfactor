@@ -2,6 +2,18 @@
 require 'mfactor/graph.rb'
 
 module MFactor
+  def convert_tailcall(b)
+    if b[-1].is_a? MFWord
+      b[-1].is_tail = true
+      # puts "#{b[-1].err_loc}:Info: tailcall"
+    end
+    # b.each do |elt|
+    #   if elt.is_a?(Array)
+    #     convert_tailcalls(elt)
+    #   end
+    # end
+  end
+  module_function :convert_tailcall
   class Literal < Struct.new(:value)
     include GraphNode
     def dot_label
@@ -55,7 +67,7 @@ module MFactor
   class MFDefinition < Struct.new(:name,:definer,:effect,:body,:mods,:vocabulary,:file,:graph,:compile_log)
     def initialize(*args)
       super(*args)
-      convert_tailcalls(body)
+      MFactor::convert_tailcall(body)
     end
     def syntax_word?
       definer == "SYNTAX:"
@@ -87,23 +99,30 @@ module MFactor
         body.map{ |elt| see_word(elt) }.join(" ")
     end
     # TODO: move out of here, into emitter
-    def convert_tailcalls(b)
-      if b[-1].is_a? MFWord
-        b[-1].is_tail = true
-        # puts "#{b[-1].err_loc}:Info: tailcall"
-      end
-      b.each do |elt|
-        if elt.is_a?(Array)
-          convert_tailcalls(elt)
-        end
-      end
-    end
     # attach something to the compilation log
     def log (s)
       self.compile_log ||= ""
       self.compile_log += s
       self.compile_log += "\n"
       s
+    end
+    # return a flat list of all words that might be somehow inside
+    def flatten_words
+      res=[]
+      flatten_quotation_words(body,res)
+      res
+    end
+    private
+    def flatten_quotation_words (arr,acc=[])
+      arr.each do |elt|
+        acc.push elt if elt.is_a? MFWord
+        case elt
+          when MFComplexSequence then
+          flatten_quotation_words(elt.content,acc)
+          when Quotation then
+          flatten_quotation_words(elt.body,acc)
+        end
+      end
     end
   end
 
@@ -122,6 +141,15 @@ module MFactor
     include GraphNode
     def dot_label
       name
+    end
+  end
+
+  #parser item: represents literal quotation
+  class Quotation
+    attr_accessor :body
+    def initialize body
+      @body = body
+      MFactor::convert_tailcall(@body)
     end
   end
 

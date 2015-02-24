@@ -14,7 +14,7 @@ module MFactor
     # rule(:unsigned) { unsigned_hex | unsigned_dec }
     rule(:normal_word_char) { match['^\s:{\[\]};'] }
     rule(:normal_word) { str(')').absent? >> normal_word_char.repeat(1) }
-    rule(:sequence_opener_word) { normal_word_char.repeat(1) >> str('{') }
+    rule(:sequence_opener_word) { normal_word_char.repeat(0) >> str('{') }
     rule(:definer_word) { normal_word_char.repeat(0) >> str(':') }
     rule(:def_end) { str(';') }
     rule(:word) { sequence_opener_word | definer_word | normal_word }
@@ -65,11 +65,11 @@ module MFactor
     def initialize(type,content)
       @content=content
       case type
-      when "B{" then
+      when "B{" then            # byte literals
         content.all? {|e| e.is_a?(MFByteLit) || raise( "#{e.err_loc}: not a byte literal: #{e}") } 
         @element_type=MFByteLit
         @element_size=1
-      when "I{" then
+      when "I{" then            # integer literals
         content.all? {|e| e.is_a?(MFIntLit) || raise("#{e.err_loc}: not an int literal: #{e}") }
         content.map{|e| MFIntLit.new(e.value)} # ensure int lit element class
         @element_size=4
@@ -82,6 +82,14 @@ module MFactor
       lut={ MFByteLit => "#B{",
         MFIntLit => "#I{" }
       "#{lut[@element_type]} "+@content.map{|e| e.see}.join(" ") + " }"
+    end
+  end
+
+  # general literal sequence opened by "{"
+  class MFComplexSequence
+    attr_accessor :content
+    def initialize(content)
+      @content = content
     end
   end
 
@@ -108,9 +116,13 @@ module MFactor
                                                MFWord.new(name)
                                              end
     }
-    rule(:quotation_body => subtree(:b)) { b }
+    rule(:quotation_body => subtree(:b)) { Quotation.new(b) }
     rule(:seq_start=>simple(:opener), :content => subtree(:content)) {
-      MFLitSequence.new(opener,content) }
+      if opener.str == "{"
+        MFComplexSequence.new(content)
+      else
+        MFLitSequence.new(opener,content)
+      end}
     rule(:definition_mod => simple(:modname)) {modname}
     rule(:stack_input => subtree(:inp),
          :stack_output => subtree(:outp)) { StackEffect.new(inp,outp) }
