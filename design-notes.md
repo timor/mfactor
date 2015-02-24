@@ -27,7 +27,8 @@
 
 ## cross compilation ##
 
-- CURRENT: The host implementation currently parses a subset of 
+- CURRENT: The host implementation currently parses a subset of
+  factor's syntax word, namely: `:`, `SYNTAX:`, `B{ }`
 - PLANNED: The host implementation contains a bootstrapping ruby
   loader, which is able to parse simple source files containing only
   `:`, `SYNTAX:` and `PRIM:` definitions.  Once these are used to
@@ -65,7 +66,7 @@
   6. primitives (byte code instructions)
 
 ## boxing/sequences ##
-- fixed-element-width sequences consist of header containing sequence header (codes element type and size) byte
+- fixed-element-width sequences consist of header containing sequence header (codes element-type and -size) byte
   and sequence length (1 byte for now) preceeding the content.
 - Sequence accumulation at runtime works by collecting items on the stack until
   finished and exact size of data is known.  This should allow for
