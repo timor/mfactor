@@ -32,7 +32,8 @@
 	1: HANDLER - handler frame location in r(etain) stack (dynamic chain for catch frames)
 	2: DEBUG_LEVEL - 0 to turn off, increasing will produce more verbose debug output
 	3: ON_ERROR - address of word to call when internal error occurred 
-        4: STEP_HANDLER - address of handler which can be used for single stepping */
+        4: STEP_HANDLER - address of handler which can be used for single stepping
+	5: BASE - address of current 64k segment base */
 #define _NumSpecials 10
 static const unsigned char NumSpecials = _NumSpecials;
 static cell special_vars[_NumSpecials];
@@ -192,6 +193,7 @@ extern cell DATA_END;
 
 static void init_specials() {
   special_vars[0] = (cell)memory; /* start of user memory */
+  special_vars[5] = (cell)&stdlib; /* start of bytecode segment */
 }
 
 void interpreter(unsigned int start_base_address) {

@@ -30,6 +30,9 @@ IN: memory
 ! temporarily different memory pointer
 : with-MP ( addr quot -- ) swap _get-MP [ _set-MP call ] dip _set-MP ;
 
+: _code-base ( -- n )
+    5 special> ;
+
 ! compilation, forward
 : b, ( byteval -- ) _get-MP [ setmem8 ] [ 1 + _set-MP ] bi ;
 ! ! compile short to mem, little endian
