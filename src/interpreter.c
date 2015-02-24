@@ -340,12 +340,13 @@ void interpreter(unsigned int start_base_address) {
           return;
         case qend: {
           return_entry e = returnpop();
-	#if TRACE_INTERPRETER >= 2
+          if (debug_lvl(2)) {
           char * name = find_by_address(e.current_call);
           if (name) {
             printf("<- %s\n",name);
             fflush(stdout);
-          }
+	}
+	}
 	#endif
           if (debug_mode) {
 			  if (debug_nest > 0) {
@@ -662,14 +663,12 @@ void interpreter(unsigned int start_base_address) {
     nested_call:
         {
           inst *next_word = (inst *) x;
-	#if (TRACE_INTERPRETER >= 1)
           if (debug_lvl(2)) printf("w:%#lx\n",(cell)next_word-(uintptr_t)base);
           char * name = find_by_address(next_word);
           if (name) {
             if (debug_lvl(1)) printf("-> %s\n",name);
             fflush(stdout);
           }
-	#endif
           return_entry e = {.return_address = pc, .current_call=next_word};
           returnpush(e);
           if (debug_mode) {
@@ -683,14 +682,12 @@ void interpreter(unsigned int start_base_address) {
     tail_call:
         {
           inst *next_word = (inst *) x;
-	#if (TRACE_INTERPRETER >= 1)
           if (debug_lvl(2)) printf("w:%#lx\n",(cell)next_word-(uintptr_t)base);
           char * name = find_by_address(next_word);
           if (name) {
             if (debug_lvl(2)) printf("..-> %s\n",name);
             fflush(stdout);
           }
-	#endif
           if (debug_mode) {
             char * name = find_by_address(next_word);
             printf("tail calling: %s -> %d\n",name,debug_nest); 
