@@ -150,43 +150,6 @@ enum nesting_type {
 	nesting_list
 };
 
-/* skip over instruction stream until a certain one, supports nesting */
-static inst * skip_to_instruction(inst* pc,inst until, inst nest_on, inst *base){
-	inst *ptr=pc;
-    for(inst i= *ptr; (i != until); i=*(++ptr)) {
-      /* ptr still pointing to i here! */
-	  if (debug_lvl(2)) printf("skipping over %#x, ",i);
-          if (i == nest_on)
-            ptr=skip_to_instruction(ptr+1, until, nest_on, base);
-            else
-              switch (i) {
-              case ref:
-              case liti:
-                ptr+=sizeof(cell);
-                break;
-              case litc: {
-                seq_header h =(seq_header)*(ptr+1);
-                /* compensate for header byte */
-                ptr+=2+fe_seq_size(h,ptr+2); } break;
-              case litb:
-              case oplit:
-                ptr+=sizeof(inst);
-                break;
-              case acall:
-                ptr+=sizeof(jump_target);
-                break;
-              case bref:
-              case blitq:
-              case bcall:
-              case btcall:
-                ptr+=sizeof(short_jump_target);
-                break;
-              }
-    }
-    if (debug_lvl(2)) printf("skipped until %#lx\n",(uintptr_t)ptr-(uintptr_t)base);
-	return ptr;
-}
-
 static void backtrace(return_entry * sp, return_entry * stack, inst * base, inst * pc)
 {
   printf("backtrace @ %#lx:\n",(uintptr_t)(pc-base));
@@ -546,12 +509,14 @@ void interpreter(unsigned int start_base_address) {
 		 goto _error ;
 		 break;
           /* skip over to end of quotation , leave starting address on parameter stack*/
-        case qstart:
+        case qstart: {
+	  uint8_t l = *((uint8_t *)pc) + 1;
           if (debug_lvl(2)) printf("qstart saving %#lx\n",(uintptr_t)pc-(uintptr_t)base);
-          ppush((cell)pc);
-          pc=skip_to_instruction(pc,qend,qstart,base);
-          pc+=1;
-          break;
+	  if (debug_lvl(2)) printf("pc skipping %d bytes\n",l);
+          ppush((cell)(pc + 1));
+	  /* skip over quotation length, leaving pc after qend */
+	  pc = pc + l + 1;
+	  } break;
         case bcall: {
 			 _bcall:
           x= (cell)(base+*((short_jump_target *)pc));

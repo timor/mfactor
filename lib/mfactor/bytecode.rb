@@ -104,7 +104,7 @@ module MFactor
     def element_size(elt)
       case elt
       when MFStringLit then header_length + elt.value.chars.to_a.length
-      when Array then 2 + elt.map{|e| element_size(e)}.reduce(:+)
+      when Array then 3 + elt.map{|e| element_size(e)}.reduce(:+)
       when MFLitSequence then header_length + elt.element_size * elt.content.length
       else atom_size(elt)
       end
@@ -132,6 +132,9 @@ module MFactor
         image.concat word.value.chars.map{|c| "'#{escape_c_char(c)}'"}
       when Array then
         image << prim(:qstart)
+        l=word.map{|e| element_size(e)}.reduce(:+)
+        raise "quotations with more than 255 elements unsupported" if l > 255
+        image << l
         word.map{|w| word_bytecode(w,image)}
         image << prim(:qend)      # maybe omit, check space savings
       when MFLitSequence then
