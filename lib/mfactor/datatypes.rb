@@ -64,11 +64,7 @@ module MFactor
   # Definition object, which can be moved into dictionary
   # file: source file of the definition
   # graph: if set, points to the graph resulted by partial evaluation.  basis for code generation and petri-net simulation
-  class MFDefinition < Struct.new(:name,:definer,:effect,:body,:mods,:vocabulary,:file,:graph,:compile_log)
-    def initialize(*args)
-      super(*args)
-      MFactor::convert_tailcall(body)
-    end
+  class MFDefinition < Struct.new(:name,:definer,:effect,:code,:mods,:vocabulary,:file,:graph,:compile_log)
     def syntax_word?
       definer == "SYNTAX:"
     end
@@ -96,7 +92,7 @@ module MFactor
     end
     def see
       ": #{name} #{effect} "+
-        body.map{ |elt| see_word(elt) }.join(" ")
+        code.body.map{ |elt| see_word(elt) }.join(" ")
     end
     # TODO: move out of here, into emitter
     # attach something to the compilation log
@@ -109,7 +105,7 @@ module MFactor
     # return a flat list of all words that might be somehow inside
     def flatten_words
       res=[]
-      flatten_quotation_words(body,res)
+      flatten_quotation_words(code.body,res)
       res
     end
     private

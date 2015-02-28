@@ -70,7 +70,7 @@ module MFactor
         when MFCallResult then "res[#{x.index}]"
         when PhiResult then "phi[#{x.index}]"
         when MFIntLit then x.value.to_s
-        when Array then "[...]"
+        when Quotation then "[...]"
         when Symbol then x.inspect
         when MFStringLit then x.value.inspect
         else

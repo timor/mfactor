@@ -134,7 +134,7 @@ module MFactor
          :name => simple(:name),
          :effect => subtree(:effect),
          :definition_body => subtree(:body),
-         :definition_mods => sequence(:mods)) { MFDefinition.new(name,definer,effect,body,mods)}
+         :definition_mods => sequence(:mods)) { MFDefinition.new(name,definer,effect,Quotation.new(body),mods)}
     rule(:used_dict_name => simple(:dname)) { dname.to_s }
     rule(:using => simple(:junk)) { MFSearchPath.new([]) }
     rule(:using => sequence(:vocabs)) {MFSearchPath.new(vocabs.map{|v| v.to_s})}

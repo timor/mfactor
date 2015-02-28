@@ -78,7 +78,7 @@ module MFactor
       rstack = MFStack.new [],d
       if d.normal_word?
         start=StartNode.new
-        pstack,rstack,last_computation=compile_quotation(d.body,pstack,rstack,d.graph,start)
+        pstack,rstack,last_computation=compile_quotation(d.code,pstack,rstack,d.graph,start)
         raise CompileError, "Retain Stack not empty" unless rstack.items.empty?
         outputs=pstack
         d.graph.add_control_edge(last_computation,EndNode.new)
@@ -109,7 +109,7 @@ module MFactor
     end
     def compile_quotation(q,pstack,rstack,graph,control)
       @current_def.log "compiling quotation: "+MFactor::see_word(q)
-      q.each do |word|
+      q.body.each do |word|
         @current_def.log("p:"+pstack.show(true))
         @current_def.log("r:"+rstack.show(true))
         case word
@@ -123,7 +123,7 @@ module MFactor
           when "call" then
             @current_def.log "inlining literal quotation call"
             called_q=pstack.pop
-            raise UncompilableError, "Call must be compiled with literal quotation on stack. (Did you forget 'inline' declaration?)" unless called_q.is_a? Array
+            raise UncompilableError, "Call must be compiled with literal quotation on stack. (Did you forget 'inline' declaration?)" unless called_q.is_a? Quotation
             pstack,rstack,control=compile_quotation(called_q,pstack,rstack,graph,control)
           when "if" then
             @current_def.log "compiling `if`"
@@ -131,7 +131,7 @@ module MFactor
             thencode=pstack.pop
             condition=pstack.pop
             raise CompileError, "`if` needs two literal quotations" unless
-              (elsecode.is_a?(Array)) && (thencode.is_a?(Array))
+              (elsecode.is_a?(Quotation)) && (thencode.is_a?(Quotation))
             cnode=ChoiceNode.new("if")
             graph.add_data_edge condition,cnode
             graph.add_control_edge(control,cnode) if control
@@ -207,7 +207,7 @@ module MFactor
               else
                 pstack,rstack,control=compile_quotation(word.definition.body,pstack,rstack,graph,control)
               end
-            elsif pstack.items.last(word.definition.effect.inputs.length).any?{|i| i.is_a? Array }
+            elsif pstack.items.last(word.definition.effect.inputs.length).any?{|i| i.is_a? Quotation }
               @current_def.log "auto-inlining `#{word.definition.name}` with quotation inputs"
               pstack,rstack,control=compile_quotation(word.definition.body,pstack,rstack,graph,control)
             else
@@ -216,7 +216,7 @@ module MFactor
           end
         when MFIntLit then pstack.push word
         when MFByteLit then pstack.push word
-        when Array then pstack.push word
+        when Quotation then pstack.push word
         when MFStringLit then pstack.push word
         else raise CompileError, "unable to compile word of type: #{word.class}"
         end

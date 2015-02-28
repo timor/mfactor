@@ -20,7 +20,7 @@ module MFactor
 
   def see_word(elt)
     case elt
-    when Array then "[ "+ elt.map{|e| see_word(e)}.join(" ") + " ]"
+    when Quotation then "[ "+ elt.body.map{|e| see_word(e)}.join(" ") + " ]"
     when String then '"'+elt+'"'
     else elt.see
     end

@@ -61,11 +61,11 @@ module MFactor
         cdef.flags=(cdef.definition.definer == "SYNTAX:" ? 1 : 0)
         @compiled_definitions << cdef # adding here already although body may be empty
         # determine code size beforehand to get offset for data segment of definition
-        defsize=d.body.map{|w| element_size(w)}.reduce(:+) +1 # final qend
+        defsize=d.code.body.map{|w| element_size(w)}.reduce(:+) +1 # final qend
         @data=[]
         @data_counter=@memloc+defsize # initialize data segment counter
         puts "compiling definition for #{d.name}" if Rake.verbose == true
-        d.body.each do |word|
+        d.code.body.each do |word|
           word_bytecode(word,code)
         end
         code << prim(:qend)
