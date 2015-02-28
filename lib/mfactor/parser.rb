@@ -91,6 +91,9 @@ module MFactor
     def initialize(content)
       @content = content
     end
+    def [](i)
+      @content[i]
+    end
   end
 
   # represents a USING: entry
