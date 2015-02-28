@@ -132,7 +132,7 @@ module MFactor
       acc = []
       case item
       when MFComplexSequence
-        inline_seq_header(HEADER_TYPES[:boxed], cell_width, item.content.length, acc)
+        inline_seq_header(HEADER_TYPES[:boxed], cell_width + 1, item.content.length, acc)
         item.content.each do |elt|
           if elt.is_a? MFIntLit
             type = HEADER_TYPES[:data]
