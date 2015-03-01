@@ -141,11 +141,41 @@ module MFactor
   end
 
   #parser item: represents literal quotation
+  #hack: expand case statements here
   class Quotation
     attr_accessor :body
     def initialize body
       @body = body
       MFactor::convert_tailcall(@body)
+      convert_case_statements
+    end
+    def case_if_chain (assoc)
+      if assoc.content.length == 1
+        t_case = assoc.content.shift
+         return t_case
+      else
+        a = assoc.content.shift
+        a[1].body.unshift(MFWord.new("drop"))
+        q = Quotation.new([MFWord.new("dup"), a[0], MFWord.new("="),
+                           a[1]])
+        q.body << case_if_chain(assoc)
+        q.body << MFWord.new("if")
+        return q
+      end
+    end
+    def convert_case_statements
+      code=@body
+      case_indices = code.each_with_index.select{|x,ind|
+        x.is_a?(MFWord) and (x.name.to_s == "case") }.map{|l| l[1]}
+      case_indices.each do |i|
+        assoc = code[i - 1]
+        # remove the assoc and the case statement, insert quotation
+        new_code = case_if_chain(assoc).body
+        code.delete_at(i-1)
+        code.delete_at(i-1)
+        code.insert(i-1,*new_code)
+        puts code
+      end
     end
   end
 
