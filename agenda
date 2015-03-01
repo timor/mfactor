@@ -21,7 +21,8 @@
 - DONE: remove memory read and write asserts for now to enable better testing
 - DONE: rename trace-level to debug-level and implement as special var
 - DONE: put vocabulary lookup into user space
-- DOING: implement `cond`
+- DOING: implement `case`
+- implement symbols (SYMBOL:) and define some basic error conditions with them
 - substitute debug mode with single stepping handler
 - store length of inline quotations as first element, so one can handle it like "litc"
 - change string reading and quotation accumulation to use memory instead of stack
