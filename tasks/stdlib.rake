@@ -1,6 +1,7 @@
 # -*- mode:ruby -*-
 
 require 'yaml'
+require 'tempfile'
 # set up load path
 $:.unshift(File.join(File.dirname(__FILE__),"..","lib"))
 require_relative '../lib/mfactor/analyze'
