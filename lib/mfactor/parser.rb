@@ -42,9 +42,12 @@ module MFactor
       quotation_body.as(:definition_body) >> def_end >>
       (space >> compiler_decl.as(:definition_mod)).repeat(0).as(:definition_mods) }
     rule(:in_declaration) { str('IN:') >> space >> normal_word.as(:current_dict) }
-    rule(:using_declaration) { str('USING:') >> space >> 
+    rule(:using_declaration) { str('USING:') >> space >>
       (normal_word.as(:used_dict_name) >> space).repeat >> str(';')}
-    rule(:statement) { in_declaration | using_declaration.as(:using) | definition }
+    rule(:symbols_declaration) { str('SYMBOLS:') >> space >>
+      (normal_word.as(:symbol_name) >> space).repeat >> str(';')}
+    rule(:statement) { in_declaration | using_declaration.as(:using) |
+      symbols_declaration.as(:symbols_decl) | definition }
     rule(:program) { space? >> (statement >> space?).repeat.as(:program) }
     root(:program)
   end
@@ -96,6 +99,10 @@ module MFactor
     end
   end
 
+  # represents a SYMBOLS: entry
+  class SymbolsDecl < Struct.new(:names)
+  end
+
   # represents a USING: entry
   class MFSearchPath < Struct.new(:vocabs)
   end
@@ -141,6 +148,8 @@ module MFactor
     rule(:used_dict_name => simple(:dname)) { dname.to_s }
     rule(:using => simple(:junk)) { MFSearchPath.new([]) }
     rule(:using => sequence(:vocabs)) {MFSearchPath.new(vocabs.map{|v| v.to_s})}
+    rule(:symbol_name => simple(:n)) { n.to_s }
+    rule(:symbols_decl => sequence(:names)) {SymbolsDecl.new(names)}
     rule(:current_dict => simple(:vocab)) {MFCurrentVocab.new(vocab.to_s)}
     rule(:program => subtree(:p)) { p }
   end
