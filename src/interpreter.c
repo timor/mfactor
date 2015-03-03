@@ -188,6 +188,22 @@ static void print_error(char * str)
 
 #define peek_n(sp,nth) (*(sp-nth))
 
+/* writes are only allowed into dedicated memory area for now */
+#define assert_memwrite(x) if ((x < memory) || (x >= (memory+VM_MEM))) {printf("prevented memory access at %#lx\n",x); BACKTRACE();return;}
+/* reads are only allowed inside data space */
+#if __linux
+#define DATA_START __data_start
+#define DATA_END end
+#elif (PROCESSOR_EXPERT)
+#define DATA_START _sdata
+#define DATA_END end
+#elif (CORTEX_M)
+#define DATA_START __data_start__
+#define DATA_END end
+#else
+#error "no data segment information"
+#endif
+
 extern cell DATA_START;
 extern cell DATA_END;
 
