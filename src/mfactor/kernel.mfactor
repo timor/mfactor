@@ -36,13 +36,12 @@ IN: kernel
 : rot ( x y z -- y z x ) >r swap r> swap ; inline
 : spin ( x y z -- z y x ) swap rot ; inline
 : tuck ( x y -- y x y ) swap over ; inline
-! mine
 
 ! control flow
 : if ( ..a ? true: ( ..a -- ..b ) false: ( ..a -- ..b ) -- ..b )
     ? call ; inline
-: when ( ..a ? true: ( ..a -- ..a ) -- ..a ) [ nop ] if ; inline
-: unless ( ..a ? false: ( ..a -- ..a ) -- ..a ) [ nop ] swap if ; inline
+: when ( ..a ? true: ( ..a -- ..a ) -- ..a ) [ nop ] if ; inline nocompile
+: unless ( ..a ? false: ( ..a -- ..a ) -- ..a ) [ nop ] swap if ; inline nocompile
 
 ! call pred until it returns f
 : loop ( ... pred: ( ... -- ... ? ) -- ... ) [ call ] keep swap [ loop ] [ drop ] if ; inline recursive
