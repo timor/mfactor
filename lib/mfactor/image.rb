@@ -156,6 +156,12 @@ module MFactor
           pp search_vocabs.map{|v| v.name} if $mf_verbose == true
         when MFDefinition then
           load_def(d,file,current_vocab,search_vocabs)
+        when SymbolsDecl then
+          d.names.each do |name|
+            sym_def = MFDefinition.new(name,":",StackEffect.new([],[MFEffectItem.new("sym",:sym)]),
+                                       Quotation.new([WrappedWord.new(name)]),[])
+            load_def(sym_def,file,current_vocab,search_vocabs)
+          end
         else
           raise "don't know how to load program item #{d}"
         end
