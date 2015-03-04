@@ -15,7 +15,7 @@ Major differences:
   <any-vocab-root>/foo/bar.mfactor.
 - same-named words in different vocabularies not supported (yet)
 - built-in support only for byte-array and integer-array sequences
-- host compiler only supports a subset of syntax words: `:`, `SYNTAX:`, `B{ }`, `I{ }`,
+- host compiler only supports a subset of syntax words: `:`, `SYNTAX:`, `B{ }`, `I{ }`, `SYMBOLS:`
 - words beginning with underscore(`_`) are not stored in the
   dictionary.  This prevents helper functions from consuming
   dictionary space.
