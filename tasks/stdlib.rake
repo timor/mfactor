@@ -97,6 +97,8 @@ end
 
 desc "output parser and transformation result of [arg]"
 task :parse, :path do |t,args|
+  raise "usage: rake parse[filename]" unless args[:path]
+  raise "unknown file #{args[:path]}" unless File.exist?(args[:path])
   res=MFactor::MFP.new.parse(File.read(args[:path]))
   pp res
   pp MFactor::MFTransform.new.apply(res)
