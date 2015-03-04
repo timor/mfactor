@@ -24,7 +24,7 @@ IN: parser
 
 ! parsing words have to have ( acc -- acc ) signature.
 : parse-datum ( string  -- word/number type )
-    dict-find [ dup _quot>> prim? [ _quot>> 0 ] [ 2 ] if ]
+    dict-find [ dup definition prim? [ definition 0 ] [ 2 ] if ]
     [ parsenum [ 3 ] [ "parsing '" print print "' failed\! " print error ] if ] if ;
 
 ! : scan-datum ( -- item type ) token parse-datum ;
@@ -34,7 +34,7 @@ IN: parser
 : parse-until-step ( acc string -- acc )
     parse-datum dup 2 = ! ( acc word/number type normal-word? )
     [ over parsing-word?
-      [ drop execute ] [ [ _quot>> ] dip suffix ] if ]
+      [ drop execute ] [ [ definition ] dip suffix ] if ]
     [ suffix ] if ;
 
 ! Get a token, see if it is equal to end.  If not, parse the token.

@@ -10,8 +10,8 @@ IN: listener
 
 : prompt ( -- ) level pwrite '>' emit ' ' emit ;
 
-: _unsafe-listener ( -- ) prompt token dict-find [ dup parsing-word? [ _quot>> 0 swap call [ drop ] times ]
-                                        [ _quot>> call ] if ] [ unknown-token ] if _unsafe-listener ;
+: _unsafe-listener ( -- ) prompt token dict-find [ dup parsing-word? [ definition 0 swap call [ drop ] times ]
+                                        [ definition call ] if ] [ unknown-token ] if _unsafe-listener ;
 
 : listener ( -- ) [ _unsafe-listener ] catch "unhandled exception: " print . listener ;
 

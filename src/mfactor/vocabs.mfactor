@@ -9,12 +9,12 @@ IN: vocabs
 ! name of dict entry
 : _name>> ( dictentry -- str ) cell + 2 + ;
 : parsing-word? ( dictentry -- ? ) cell + getmem 0x01 bitand ;
-: _quot>> ( dictentry -- quot ) getmem ;
+: definition ( dictentry -- quot ) getmem ;
 ! find next free dictionary entry (check for first name byte = 0)
 : dict-next ( dict-entry -- dict-entry ) _name>> dup strlen + 2 + ;
 
 ! actually call the quotation associated with word
-: execute ( word -- effect ) _quot>> call ; nocompile
+: execute ( word -- effect ) definition call ; nocompile
 
 ! dictionary entry considered valid if
 : dict-valid? ( dict-entry -- ? ) _name>> strlen 0 = not ;
