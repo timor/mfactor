@@ -201,15 +201,15 @@ module MFactor
                                       :entry_stack => pstack.dup})
                   graph.add_control_edge control, j if control
                   control=j
-                  pstack,rstack,control=compile_quotation(word.definition.body,pstack,rstack,graph,control)
+                  pstack,rstack,control=compile_quotation(word.definition.code,pstack,rstack,graph,control)
                   @loop_labels.pop
                 end
               else
-                pstack,rstack,control=compile_quotation(word.definition.body,pstack,rstack,graph,control)
+                pstack,rstack,control=compile_quotation(word.definition.code,pstack,rstack,graph,control)
               end
             elsif pstack.items.last(word.definition.effect.inputs.length).any?{|i| i.is_a? Quotation }
               @current_def.log "auto-inlining `#{word.definition.name}` with quotation inputs"
-              pstack,rstack,control=compile_quotation(word.definition.body,pstack,rstack,graph,control)
+              pstack,rstack,control=compile_quotation(word.definition.code,pstack,rstack,graph,control)
             else
               control=compile_word_call(word,pstack,graph,control)
             end
