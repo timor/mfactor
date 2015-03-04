@@ -159,7 +159,7 @@ module MFactor
         q = Quotation.new([MFWord.new("dup"), a[0], MFWord.new("="),
                            a[1]])
         q.body << case_if_chain(assoc)
-        q.body << MFWord.new("if")
+        q.body << MFWord.new("if",nil,true)
         return q
       end
     end
@@ -174,7 +174,6 @@ module MFactor
         code.delete_at(i-1)
         code.delete_at(i-1)
         code.insert(i-1,*new_code)
-        puts code
       end
     end
   end
