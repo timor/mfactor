@@ -179,6 +179,12 @@ module MFactor
     end
   end
 
+  class WrappedWord < Struct.new(:name)
+    def see
+      "\\ #{self.name}"
+    end
+  end
+
   class MFEffectItem < Struct.new(:name,:type)
   end
 

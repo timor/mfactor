@@ -30,6 +30,7 @@ module MFactor
         # TODO: actually use the provided definitions
         @compiled_definitions << MFCompiledDefinition.new(MFDefinition.new(elt[0],"PRIM:",nil,[]),inst_base+i,[],2)
       end
+      @dict_positions={}    # store dictionary addresses
       @generated                    # flag for on-demand bytecode generation
       @size                         # store bytecode size here after generation
     end
@@ -82,6 +83,17 @@ module MFactor
         puts ";" if d.code
       end if Rake.verbose == true
       print ISET.keys.map{ |name| [name,prim(name)] },"\n" if Rake.verbose == true
+      # need to actually generate the dictionary here, and do a second pass substituting all wrapped words
+      calculate_dict_entries
+      # replace all placeholders with dictionary offsets
+      @compiled_definitions.each do |cdef|
+        cdef.code.each_with_index do |w,i|
+          if w.is_a? Array and w[0] == :dict_address
+            addr = @dict_positions[w[1]]
+            cdef.code[i,cell_width]=int_bytes(addr,cell_width)
+          end
+        end
+      end
       check_locations
       @generated = true
       # @compiled_definitions.map{|d| d.code}.flatten
@@ -108,6 +120,9 @@ module MFactor
       when Quotation then 3 + elt.body.map{|e| element_size(e)}.reduce(:+)
       when MFLitSequence then header_length + elt.element_size * elt.content.length
       when MFComplexSequence then 3
+      when WrappedWord then
+        # replaced by [ dictstart liti offset[0,3] + ]
+        1 + 1 + cell_width + 1
       else atom_size(elt)
       end
     end
@@ -196,6 +211,11 @@ module MFactor
           image << ( word.is_tail ? prim(:btcall) : prim(:bcall) )
           image.concat bcall_bytes(@compiled_definitions.find{|cdef| cdef.definition==word.definition}.location)
         end
+      when WrappedWord
+        # replaced by [ dictstart liti offset[0,3] + ]
+        image << prim(:dictstart) << prim(:liti) << [:dict_address, word.name]
+        image.concat Array.new(cell_width()-1,0)
+        image << prim(:+)
       else raise "don't know how to compile #{word}"
       end
     end
@@ -205,12 +225,23 @@ module MFactor
     def prim(name)
       ISET[name.to_s] || raise( "unknown primitive: #{name}")
     end
+    def calculate_dict_entries
+      i = 0
+      @compiled_definitions.each do |cdef|
+        next if cdef.definition.name.to_s[0] == "_"
+        puts "dictionary entry for #{cdef.definition.name} is at offset #{i}" if Rake.verbose == true
+        @dict_positions[cdef.definition.name.to_s] = i
+        l = cell_width+3+cdef.definition.name.to_s.length + 1
+        puts "length: #{l}" if Rake.verbose == true
+        i += l
+      end
+    end
     # c code generation:
     # c99 initializers for the dictionary
     def write_dictionary_entries(io="")
       maybe_generate
       @compiled_definitions.each do |cdef|
-        if cdef.definition.name.to_s =~ /^_.*/
+        if cdef.definition.name.to_s[0] == "_"
           puts "skipping private word: #{cdef.definition.name} " if Rake.verbose == true
         else
           io << cdef.write_dict_entry(self) << ",\n"

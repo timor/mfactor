@@ -17,14 +17,15 @@ module MFactor
     rule(:sequence_opener_word) { normal_word_char.repeat(0) >> str('{') }
     rule(:definer_word) { normal_word_char.repeat(0) >> str(':') }
     rule(:def_end) { str(';') }
-    rule(:word) { sequence_opener_word | definer_word | normal_word }
+    rule(:wrapped_word) { str('\\') >> space >> normal_word.as(:wrapped_word_name) }
+#    rule(:word) { wrapped_word | sequence_opener_word | definer_word | normal_word }
     rule(:char) { str("'") >> match["^'"].as(:char) >> str("'") }
     rule(:atom) { char | str("'").absent? >> normal_word.as(:word_or_number) }
     rule(:string) { str('"') >>
       ((str('\\')>>any)|(str('"').absent? >> any)).repeat(0).as(:string) >>
       str('"') }
     rule(:quotation_body) {
-      ((quotation | string | literal_sequence | atom) >> space).repeat }
+      ((quotation | wrapped_word | string | literal_sequence | atom) >> space).repeat }
     rule(:literal_sequence) { sequence_opener_word.as(:seq_start) >> space >>
       quotation_body.as(:content) >> str('}') }
     rule(:quotation) { str('[') >> space >>
@@ -148,6 +149,7 @@ module MFactor
     rule(:used_dict_name => simple(:dname)) { dname.to_s }
     rule(:using => simple(:junk)) { MFSearchPath.new([]) }
     rule(:using => sequence(:vocabs)) {MFSearchPath.new(vocabs.map{|v| v.to_s})}
+    rule(:wrapped_word_name => simple(:n)) {WrappedWord.new(n.to_s)}
     rule(:symbol_name => simple(:n)) { n.to_s }
     rule(:symbols_decl => sequence(:names)) {SymbolsDecl.new(names)}
     rule(:current_dict => simple(:vocab)) {MFCurrentVocab.new(vocab.to_s)}
