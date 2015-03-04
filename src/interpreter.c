@@ -197,6 +197,9 @@ static void print_error(char * str)
 #elif (PROCESSOR_EXPERT)
 #define DATA_START _sdata
 #define DATA_END end
+#elif (ATOLLIC_TRUESTUDIO)
+#define DATA_START _sdata
+#define DATA_END _edata
 #elif (CORTEX_M)
 #define DATA_START __data_start__
 #define DATA_END end
