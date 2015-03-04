@@ -101,6 +101,28 @@ module MFactor
       @vocab_roots.map{|path| Dir.glob("#{path}/#{vocab_name}.mfactor")}.flatten.first ||
         raise("vocabulary not found: #{vocab_name} (in #{$current_mfactor_file})")
     end
+    # load one colon definition
+    def load_def (d,file,current_vocab,search_vocabs)
+      d.file=file
+      name = d.name.to_s
+      if old_def=find_name(name,[current_vocab] + search_vocabs)
+        raise "#{d.err_loc}:Error: word already exists: #{name}
+#{old_def.err_loc}:Note: Location of previous definition"
+      end
+      # hack: assume kernel vocab is present, add all primitives to kernel
+      if d.primitive?
+        @dictionary["kernel"].add d
+      end
+      current_vocab.add d    # need to add here because of recursion
+      # find all used words in vocabularies
+      d.flatten_words.each do |word|
+        wname=word.name.to_s
+        def_of_w = find_name(wname,[current_vocab]+search_vocabs)
+        raise "#{d.err_loc}:Error: word '#{wname}' not found on #{search_vocabs.map{|s| s.name}}" unless def_of_w
+        word.definition=def_of_w
+        # puts "word #{word.name} has def in \nFile:#{word.definition.err_loc}"
+      end
+    end
     # try to load one vocabulary
     def load_vocab (vocab_name)
       current_vocab=nil
@@ -133,25 +155,7 @@ module MFactor
           puts "file:#{file}\n searchpath:" if $mf_verbose == true
           pp search_vocabs.map{|v| v.name} if $mf_verbose == true
         when MFDefinition then
-          d.file=file
-          name = d.name.to_s
-          if old_def=find_name(name,[current_vocab] + search_vocabs)
-            raise "#{d.err_loc}:Error: word already exists: #{name}
-#{old_def.err_loc}:Note: Location of previous definition"
-          end
-          # hack: assume kernel vocab is present, add all primitives to kernel
-          if d.primitive?
-            @dictionary["kernel"].add d
-          end
-          current_vocab.add d    # need to add here because of recursion
-          # find all used words in vocabularies
-          d.flatten_words.each do |word|
-            wname=word.name.to_s
-            def_of_w = find_name(wname,[current_vocab]+search_vocabs)
-            raise "#{d.err_loc}:Error: word '#{wname}' not found on #{search_vocabs.map{|s| s.name}}" unless def_of_w
-            word.definition=def_of_w
-            # puts "word #{word.name} has def in \nFile:#{word.definition.err_loc}"
-          end
+          load_def(d,file,current_vocab,search_vocabs)
         else
           raise "don't know how to load program item #{d}"
         end
