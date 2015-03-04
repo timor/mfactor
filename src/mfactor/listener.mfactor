@@ -13,7 +13,7 @@ IN: listener
 : _unsafe-listener ( -- ) prompt token dict-find [ dup parsing-word? [ definition 0 swap call [ drop ] times ]
                                         [ definition call ] if ] [ unknown-token ] if _unsafe-listener ;
 
-: listener ( -- ) [ _unsafe-listener ] catch "unhandled exception: " print . listener ;
+: listener ( -- ) [ _unsafe-listener ] report-errors listener ;
 
 SYNTAX: \ ( -- quot type ) token dict-find [ 3 suffix ] [ _bad-input ] if ;
 

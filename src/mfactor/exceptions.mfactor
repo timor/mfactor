@@ -35,3 +35,11 @@ IN: exceptions
     0 set-sp                      ! rewind data stack
     drop r>                       ! drop original quotation, put error code back on top
 ;
+
+USING: kernel io prettyprint ;
+
+! call quotation, reporting any unhandled errors to output, drop quotation
+: report-errors ( quot -- )
+    [ call ] catch
+    dup 0 = not [ "unhandled exception: " print . drop ]
+    [ drop ] if ;
