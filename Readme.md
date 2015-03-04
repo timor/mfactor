@@ -81,11 +81,6 @@ To build on embedded system (currently supported: cortex-m cores)
     requires big dictionary sizes for code-bases with a lot of definitions
   - NOTAIL: disable tail calls at start, can be switched on and off
     with `tail` and `notail` instructions nonetheless
-- compile time switches:
-  - TRACE_LEVEL: controls execution trace information on standard output
-    - 0: no trace output
-    - 1: word lookup and basic execution tracing
-    - 2: full execution tracing
 - example to build and run on linux host:
 
         rake ONHOST=1 NOPRIVATE=1
@@ -94,7 +89,7 @@ To build on embedded system (currently supported: cortex-m cores)
 
 # debugging #
 
-- current tools include: using TRACE_LEVEL
+- increasing special debug level variable causes verbose output
 - incorporate 'st' calls to print current stack status
 - calling `notail` which disables tail calls, thus leaving the return
   stack completely intact
