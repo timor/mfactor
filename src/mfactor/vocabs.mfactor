@@ -7,17 +7,17 @@ IN: vocabs
 
 ! dict_entry layout: addr(4)|flag(1)|name-header(1)|namelength(1)|name(namelength)|zerobyte(1)|
 ! name of dict entry
-: _name>> ( dictentry -- str ) cell + 2 + ;
+: name>> ( dictentry -- str ) cell + 2 + ;
 : parsing-word? ( dictentry -- ? ) cell + getmem 0x01 bitand ;
 : definition ( dictentry -- quot ) getmem ;
 ! find next free dictionary entry (check for first name byte = 0)
-: dict-next ( dict-entry -- dict-entry ) _name>> dup strlen + 2 + ;
+: dict-next ( dict-entry -- dict-entry ) name>> dup strlen + 2 + ;
 
 ! actually call the quotation associated with word
 : execute ( word -- effect ) definition call ; nocompile
 
 ! dictionary entry considered valid if
-: dict-valid? ( dict-entry -- ? ) _name>> strlen 0 = not ;
+: dict-valid? ( dict-entry -- ? ) name>> strlen 0 = not ;
 
 ! apply q to each dictionary entry
 : dict-each ( q: ( ... dict-entry -- ... ) -- )
@@ -26,14 +26,14 @@ IN: vocabs
 : _free-name ( -- addr ) dictstart [ dup dict-valid? ] [ dict-next ] while ;
 
 ! test dictionary access by enumerating all dictionary entries
-! : dict-enum ( -- ) [ [ _name>> print ": " print ] [ .x ] bi ] dict-each ;
+! : dict-enum ( -- ) [ [ name>> print ": " print ] [ .x ] bi ] dict-each ;
 
 ! word lookup in dictionary
 ! return matching dictionary entry if found, string address otherwise
 
 : _dict-find-helper ( str dict-entry -- dict-entry/str ? )
     dup dict-valid?
-    [ 2dup _name>> str=
+    [ 2dup name>> str=
       [ [ drop ] dip t ]
       [ dict-next _dict-find-helper ] if ]
     [ drop f ] if ;
