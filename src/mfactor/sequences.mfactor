@@ -9,7 +9,7 @@ IN: sequences
 : length ( seq -- n ) [ element-size ] [ getmem8 ] bi * ;
 
 ! WARNING: <byte-array> has runtime allocation!
-: <byte-array> ( n -- byte array ) [ _strhead, ] keep _get-MP [ [ 0xa5 b, ] times ] dip 1 - ;
+: <byte-array> ( n -- byte-array ) [ _strhead, ] keep _get-MP [ [ 0xa5 b, ] times ] dip 1 - ;
 ! random access into byte-array or string, seq is assumed to point to the count byte of the sequence, and one byte before that the element size
 : _ba-assert-index ( n seq -- n seq ) [ strlen 0 swap in-range not [ "byte-array index out of bound" print error ] when ] 2keep ;
 : ba-nth ( n seq -- elt ) _ba-assert-index + 1 + getmem8 ;
