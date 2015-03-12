@@ -6,7 +6,8 @@ IN: sequences
 ! access the second byte in the header (see headers.mfactor), which by default al sequence pointers point to
 : element-size ( seq -- n ) 1 - getmem8 7 bitand 1 + ;
 : element-type ( seq -- n ) 1 - getmem8 0xf8 bitand 3 asr ;
-: length ( seq -- n ) [ element-size ] [ getmem8 ] bi * ;
+: length ( seq -- n ) getmem8 ;
+: seq-size ( seq -- n ) [ element-size ] [ length ] bi * ;
 
 ! WARNING: <byte-array> has runtime allocation!
 : <byte-array> ( n -- byte-array ) [ _strhead, ] keep _get-MP [ [ 0xa5 b, ] times ] dip 1 - ;
