@@ -6,7 +6,7 @@ IN: memory
 
 ! : getmem ( addr -- ) _get ;
 ! : getmem8 ( addr -- ) _getbyte ;
-: getmem16 ( addr -- ) [ getmem8 ] [ 1 + getmem8 8 asl ] bi bitor ;
+: getmem16 ( addr -- value ) [ getmem8 ] [ 1 + getmem8 8 asl ] bi bitor ;
 ! : setmem ( val addr -- ) _set ;
 ! : setmem8 ( val addr -- ) _setbyte ;
 
