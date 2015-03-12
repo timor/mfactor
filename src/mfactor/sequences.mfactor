@@ -36,3 +36,32 @@ IN: sequences
 !     getmem8 [ dup 0 = [ ba-each ]
 !               [ 2 = [ ia-each ]
 !                 [ "each: unknown sequence type: " print '0' + emit error ] if ] if ] if ;
+
+! return address of nth element without checking for size
+: _nth-address-unsafe ( n seq -- elt-address )
+    swap
+    over element-size
+    * + 1 + ;
+
+! boxed data is 5 bytes long, (see headers, type 4)
+! TODO: throw proper exception!
+: unbox-data ( boxed-data-addr -- data )
+    [ 1 + ] [ getmem8 ] bi
+    dup 0 = [ drop getmem ]
+    [ dup 2 = [ drop resolve-bref ]
+      [ dup 3 = [ drop resolve-aref ]
+        [ "unable to unbox type: " print pwrite error ] if ] if ] if ;
+
+: _assert-nth-index-range ( n seq -- n seq )
+    [ length 0 swap in-range [ "sequence index out of bound" print error ] unless ] 2keep ;
+
+: nth ( n seq -- elt )
+    _assert-nth-index-range
+    [ _nth-address-unsafe ] keep
+    [ element-size ] [ element-type ] bi
+    dup 0 = [ drop 1 = [ getmem8 ] [ getmem ] if ]
+    [ dup 1 = [ 2drop getmem ]
+      [ dup 2 = [ 2drop resolve-bref ]
+        [ dup 3 = [ 2drop resolve-aref ]
+          [ dup 4 = [ 2drop unbox-data ]
+            [ "unknown element type: " print pwrite "size: " pwrite error ] if ] if ] if ] if ] if ;
