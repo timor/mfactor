@@ -16,7 +16,7 @@ IN: vocabs
 ! actually call the quotation associated with word
 : execute ( word -- effect ) definition call ; nocompile
 
-! dictionary entry considered valid if
+! dictionary entry considered valid if not 0 name length.
 : dict-valid? ( dict-entry -- ? ) name>> strlen 0 = not ;
 
 ! apply q to each dictionary entry
