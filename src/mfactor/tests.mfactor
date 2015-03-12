@@ -2,6 +2,12 @@
 USING: kernel sequences listener memory bcomp io prettyprint syntax exceptions ;
 IN: tests
 
+! helper
+: _assert-result ( quot a -- )
+    [ call ] dip tuck
+    = [ drop ]
+    [ "test failed, expected " print pwritex nl ] if ;
+
 ! some unit tests
 : _lcheck ( -- ) level 0 = [ "!stack not empty!" print nl ] unless ;
 : _test-emit ( -- ) 'c' emit [ f ] loop nl ;
@@ -25,6 +31,23 @@ IN: tests
    0 _read-string-and-compile nl
    [ 5 = ] dip 1 = and [ "!accumulator wrong!" print nl ] unless
    print nl ;
+: _test-seq-headers ( -- )
+    "testing sequence headers" print nl
+    "byteseq" print nl
+    B{ 1 2 3 }
+    [ [ element-size ] 1 _assert-result ] keep
+    [ [ element-type ] 0 _assert-result ] keep
+    [ [ seq-size ] 3 _assert-result ] call
+    "intseq" print nl
+    I{ 1 2 3 }
+    [ [ element-size ] 4 _assert-result ] keep
+    [ [ element-type ] 0 _assert-result ] keep
+    [ [ seq-size ] 12 _assert-result ] call
+    "anyseq" print nl
+    { 1 2 3 }
+    [ [ element-size ] 5 _assert-result ] keep
+    [ [ element-type ] 4 _assert-result ] keep
+    [ [ seq-size ] 15 _assert-result ] call ;
 : _run-tests ( -- ) nl [ [ 'b' emit ] 'a' emit call ] call
     _test-emit _lcheck          ! prints the 'c' of "abc"
     _test-int _lcheck           ! prints "0xaffecafe"
@@ -42,6 +65,7 @@ IN: tests
     _test-do-until _lcheck      ! prints 543210
     _test-ia _lcheck            ! prints 0x2 0x1 0 0 0 0x2 0 0 0 and another byte
     _test-ia-each _lcheck       ! prints 543210
+    _test-seq-headers _lcheck   ! verbose test
     [ "tests done." print ] call nl ;
 
 ! listener
