@@ -155,4 +155,33 @@ module MFactor
     rule(:current_dict => simple(:vocab)) {MFCurrentVocab.new(vocab.to_s)}
     rule(:program => subtree(:p)) { p }
   end
+
+  def unparse(tree)
+    case tree
+    when MFDefinition
+      tree.definer.to_s << " " << tree.name.to_s << " " <<
+        unparse(tree.effect) << "\n" <<
+        tree.code.body.map{|c| unparse(c)}.join(" ") << " ;\n"
+    when StackEffect
+      "( " << tree.inputs.map{|i| unparse(i)}.join(" ") << " -- " <<
+        tree.outputs.map{|i| unparse(i)}.join(" ") << " )"
+    when MFEffectItem
+      tree.name.to_s
+    when Quotation
+      "[ " << tree.body.map{|c| unparse(c)}.join(" ") << " ]\n"
+    when MFWord
+      tree.name.to_s
+    when MFIntLit
+      tree.value.to_s
+    when MFStringLit
+      '"' << tree.value.to_s << '"'
+    when MFLitSequence
+      "{ " << tree.content.map{c| unparse(c)}.join(" ") << " }\n"
+    when MFComplexSequence
+      "{ " << tree.content.map{c| unparse(c)}.join(" ") << " }\n"
+    else
+      "<# #{tree.class} >"
+    end
+  end
+  module_function :unparse
 end
