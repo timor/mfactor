@@ -27,7 +27,7 @@ IN: exceptions
     0 ;
 
 ! throw an error inside catch frame
-: throw ( errcode -- errcode )
+: throw ( errcode --  )
     _get-handler 1 set-sp         ! unwind retain stack to handler frame
     r> _set-handler               ! unlink handler frame
     r> 2 set-sp                   ! restore return stack
