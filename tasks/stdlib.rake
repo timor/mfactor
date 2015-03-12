@@ -101,7 +101,11 @@ task :parse, :path do |t,args|
   raise "unknown file #{args[:path]}" unless File.exist?(args[:path])
   res=MFactor::MFP.new.parse(File.read(args[:path]))
   pp res
-  pp MFactor::MFTransform.new.apply(res)
+  res=MFactor::MFTransform.new.apply(res)
+  pp res
+  res.each do |e|
+    puts MFactor::unparse(e),"\n"
+  end
 end
 
 desc "show the mfactor dictionary"
