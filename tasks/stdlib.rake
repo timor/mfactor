@@ -165,6 +165,8 @@ task :mftest, :word do |t,args|
   a=MFactor::MFStaticCompiler.new(mf)
   # pp a.infer_word(args[:word])
   dotfile=Tempfile.new("_mftestgraph_dot")
+  d=mf.find_name(args[:word])
+  raise "unknown definition: '#{args[:word]}'" unless d
   a.definition_dot_graph(mf.find_name(args[:word]),dotfile)
   dotfile.close
   cp dotfile.path, "generated/test.dot"
