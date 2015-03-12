@@ -50,8 +50,10 @@ IN: memory
 : memcpy ( dest src n -- )
     [ [ getmem swap setmem ] 2keep [ 1 + ] bi@ ] times 2drop ;
 
-! resolve reference
-: resolve-ref ( addr -- addr )
-    dup getmem8
-    2 = [ 1 + getmem16 _code-base + ]
-        [ 0 ] if ;
+! resolve base-relative reference, addr1 should already point to the address of the offset
+: resolve-bref ( addr1 -- addr2 )
+    getmem16 _code-base + ;
+
+! resolve absolute reference, addr1 should already point to the address of the offset
+: resolve-aref ( addr1 -- addr2 )
+    getmem ;
