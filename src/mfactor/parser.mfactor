@@ -23,6 +23,7 @@ IN: parser
 ! word named by the string.
 
 ! parsing words have to have ( acc -- acc ) signature.
+! try to find word named "string", or treat as number otherwise. also check if "string" denotes primitive
 : parse-datum ( string  -- word/number type )
     dict-find [ dup definition prim? [ definition 0 ] [ 2 ] if ]
     [ parsenum [ 3 ] [ "parsing '" print print "' failed\! " print error ] if ] if ;
