@@ -155,7 +155,7 @@ module MFactor
                 control=res_then
               end
             else
-              raise CompileError, "Error: alternatives not stack compatible in `if`" unless
+              raise CompileError, "#{word.err_loc}:Error: alternatives not stack compatible in `if`" unless
                 (then_pstack.length == else_pstack.length) && (then_rstack.length == else_rstack.length)
               phi_indices=then_pstack.diff_index(else_pstack)
               @current_def.log("need to phi elements: #{phi_indices}")
