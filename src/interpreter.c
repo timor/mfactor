@@ -79,20 +79,20 @@ static unsigned char dict_entry_real_length( dict_entry * e)
 /* returns NULL if not found, otherwise points to dictionary entry */
 static dict_entry * find_by_name(char *fname, unsigned char length)
 {
-	if (debug_lvl(1)) printf("looking for '%s'(%d) ", fname,length);
+	/* if (debug_lvl(1)) printf("looking for '%s'(%d) ", fname,length); */
 	for(char * ptr=(char*)dict;
 		 (ptr < ((char*)dict+sizeof(dict)))&&(((dict_entry*)ptr)->name_length > 0);
 		 ptr += (((dict_entry*)ptr)->name_length + 4*sizeof(unsigned char) + sizeof(void*))) {
 		dict_entry *dptr = (dict_entry*)ptr;
 		unsigned char rl = dict_entry_real_length(dptr);
-		if (debug_lvl(1)) printf("comparing to (%#lx): %s(%d); ",(uintptr_t)dptr->name,dptr->name,rl);
+		/* if (debug_lvl(1)) printf("comparing to (%#lx): %s(%d); ",(uintptr_t)dptr->name,dptr->name,rl); */
 		if (length != rl) continue;
 		if (strncmp(fname,dptr->name,length)==0) {
 			if (debug_lvl(1)) printf("found at: %#lx\n",(cell)dptr->address);
 			return dptr;
 		}
 	}
-	if (debug_lvl(1)) printf("not found\n");
+	/* if (debug_lvl(1)) printf("not found\n"); */
 	return (dict_entry *) NULL;
 }
 
@@ -113,14 +113,14 @@ static char* find_by_address( inst * word)
 
 static bool parse_number(char *str, cell * number){
 	int num;
-	if (debug_lvl(1)) printf("trying to read '%s' as number...",str);
+	/* if (debug_lvl(1)) printf("trying to read '%s' as number...",str); */
 	unsigned int read = sscanf(str,"%i",&num);
 	if (read == 1) {
-		if (debug_lvl(1)) printf("got %d\n",num);
+		/* if (debug_lvl(1)) printf("got %d\n",num); */
 		*number=(cell)num;
 		return true;
 	} else {
-		if (debug_lvl(1)) printf("failed\n");
+		/* if (debug_lvl(1)) printf("failed\n"); */
 		return false;
 	}
 }
@@ -248,11 +248,11 @@ void interpreter(unsigned int start_base_address) {
 		inst i;
 	next:
 		__attribute__((unused))
-			if (debug_lvl(2)) {
-				printf("\n");
-				printstack(psp,pstack);
-				printstack(retainsp,retainstack);
-			}
+			/* if (debug_lvl(2)) { */
+			/* 	printf("\n"); */
+			/* 	printstack(psp,pstack); */
+			/* 	printstack(retainsp,retainstack); */
+			/* } */
 		i= (*pc++);
 	dispatch:
 		if (debug_mode) {
@@ -361,13 +361,13 @@ void interpreter(unsigned int start_base_address) {
 			return;
 		case qend: {
 			return_entry e = returnpop();
-			if (debug_lvl(2)) {
-				char * name = find_by_address(e.current_call);
-				if (name) {
-					printf("<- %s\n",name);
-					fflush(stdout);
-				}
-			}
+			/* if (debug_lvl(2)) { */
+			/* 	char * name = find_by_address(e.current_call); */
+			/* 	if (name) { */
+			/* 		printf("<- %s\n",name); */
+			/* 		fflush(stdout); */
+			/* 	} */
+			/* } */
 			if (debug_mode) {
 				if (debug_nest > 0) {
 					printf("<- %d\n",debug_nest);
@@ -441,7 +441,7 @@ void interpreter(unsigned int start_base_address) {
 			/* ( -- countedstring ) */
 		case token: {
 			char *tok = read_token();
-			if (debug_lvl(1)) printf("got token:%s\n",tok+1);
+			/* if (debug_lvl(1)) printf("got token:%s\n",tok+1); */
 			if (tok) {
             ppush((cell)tok);
 			} else {
@@ -462,22 +462,22 @@ void interpreter(unsigned int start_base_address) {
 				applies to quotations */
 			x = ppop();
 			if (x >= INSTBASE_CELL) {
-            if (debug_lvl(2)) printf("s(t)call: prim\n");
+            /* if (debug_lvl(2)) printf("s(t)call: prim\n"); */
             i=(x>>(8*(sizeof(inst*)-sizeof(inst))));
             goto dispatch;
 			} else {
-            if (debug_lvl(2)) printf("scall: inmem word\n");
+            /* if (debug_lvl(2)) printf("scall: inmem word\n"); */
             goto nested_call;
 			} break;
 		case stcall:            /* WARNING: copied code above */
 			if (!tailcall) goto _scall;
 			x = ppop();
 			if (x >= INSTBASE_CELL) {
-            if (debug_lvl(2)) printf("stcall: prim\n");
+            /* if (debug_lvl(2)) printf("stcall: prim\n"); */
             i=(x>>(8*(sizeof(inst*)-sizeof(inst))));
             goto dispatch;      /* already a tail call */
 			} else {
-            if (debug_lvl(2)) printf("stcall: inmem word\n");
+            /* if (debug_lvl(2)) printf("stcall: inmem word\n"); */
             goto tail_call;
 			} break;
 		case stack_show:
@@ -532,8 +532,8 @@ void interpreter(unsigned int start_base_address) {
 			/* skip over to end of quotation , leave starting address on parameter stack*/
 		case qstart: {
 			uint8_t l = *((uint8_t *)pc) + 1;
-			if (debug_lvl(2)) printf("qstart saving %#lx\n",(uintptr_t)pc-(uintptr_t)base);
-			if (debug_lvl(2)) printf("pc skipping %d bytes\n",l);
+			/* if (debug_lvl(2)) printf("qstart saving %#lx\n",(uintptr_t)pc-(uintptr_t)base); */
+			/* if (debug_lvl(2)) printf("pc skipping %d bytes\n",l); */
 			ppush((cell)(pc + 1));
 			/* skip over quotation length, leaving pc after qend */
 			pc = pc + l + 1;
@@ -683,12 +683,12 @@ void interpreter(unsigned int start_base_address) {
 	nested_call:
 		{
 			inst *next_word = (inst *) x;
-			if (debug_lvl(2)) printf("w:%#lx\n",(cell)next_word-(uintptr_t)base);
+			/* if (debug_lvl(2)) printf("w:%#lx\n",(cell)next_word-(uintptr_t)base); */
 			char * name = find_by_address(next_word);
-			if (name) {
-            if (debug_lvl(1)) printf("-> %s\n",name);
-            fflush(stdout);
-			}
+			/* if (name) { */
+         /*    if (debug_lvl(1)) printf("-> %s\n",name); */
+         /*    fflush(stdout); */
+			/* } */
 			return_entry e = {.return_address = pc, .current_call=next_word};
 			returnpush(e);
 			if (debug_mode) {
@@ -702,12 +702,12 @@ void interpreter(unsigned int start_base_address) {
 	tail_call:
 		{
 			inst *next_word = (inst *) x;
-			if (debug_lvl(2)) printf("w:%#lx\n",(cell)next_word-(uintptr_t)base);
+			/* if (debug_lvl(2)) printf("w:%#lx\n",(cell)next_word-(uintptr_t)base); */
 			char * name = find_by_address(next_word);
-			if (name) {
-            if (debug_lvl(2)) printf("..-> %s\n",name);
-            fflush(stdout);
-			}
+			/* if (name) { */
+         /*    if (debug_lvl(2)) printf("..-> %s\n",name); */
+         /*    fflush(stdout); */
+			/* } */
 			if (debug_mode) {
             char * name = find_by_address(next_word);
             printf("tail calling: %s -> %d\n",name,debug_nest);
