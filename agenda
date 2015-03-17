@@ -1,4 +1,3 @@
-
 - DONE name table
 - DONE name lookup
 - DONE basic repl
@@ -23,7 +22,9 @@
 - DONE: put vocabulary lookup into user space
 - DONE: store length of inline quotations as first element, so one can handle it like "litc"
 - DONE: implement `case`.  implemented as macro only
-- implement symbols (SYMBOL:) and define some basic error conditions with them
+- DONE: implement symbols (SYMBOL:) and define some basic error conditions with them
+- rename `stdlib_size.h`, since there are more constants than size
+- rename all "stdlib" to "mfactor"
 - substitute debug mode with single stepping handler
 - change string reading and quotation accumulation to use memory instead of stack
 - split code into platform dependent and platform independent parts
