@@ -417,7 +417,7 @@ void interpreter(unsigned int start_base_address) {
 				switch (n) {
 				case 0 : psp = newsp; break;
 				case 1 : retainsp = newsp; break;
-				case 2 : returnsp = newsp; break;
+				case 2 : returnsp = (return_entry *)newsp; break;
 				} break;
 			}
 			/* ( n -- val ) */
