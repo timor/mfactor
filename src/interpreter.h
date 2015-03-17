@@ -52,6 +52,6 @@ inst stdlib[STDLIB_SIZE];
 #endif
 #define INSTBASE_CELL ((cell)INSTBASE<<(8*(sizeof(inst *)-sizeof(inst))))
 
-void interpreter(unsigned int);
+void interpreter(short_jump_target);
 
 #endif

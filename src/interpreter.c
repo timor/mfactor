@@ -224,7 +224,7 @@ static void init_specials() {
 	BASE = (cell)&stdlib; /* start of bytecode segment */
 }
 
-void interpreter(unsigned int start_base_address) {
+void interpreter(short_jump_target start_base_address) {
 	/* parameter stack */
 	static cell pstack[VM_PSTACK]={0};
 	static cell* psp;
