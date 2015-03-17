@@ -218,19 +218,28 @@ static void init_specials() {
 }
 
 void interpreter(unsigned int start_base_address) {
-	static bool tailcall = true;
 	/* parameter stack */
 	static cell pstack[VM_PSTACK]={0};
-	cell* psp = &pstack[0];
-	/* return stack, not preserved across calls */
-	return_entry returnstack[VM_RETURNSTACK]={{0}};
-	return_entry* returnsp = &returnstack[0];
+	static cell* psp;
+	/* return stack */
+	static return_entry returnstack[VM_RETURNSTACK]={{0}};
+	static return_entry* returnsp;
 	/* retain stack */
 	static cell retainstack[VM_RETAINSTACK]={0};
-	cell* retainsp =&retainstack[0];
+	static cell* retainsp;
+	static bool tailcall;
+	inst *pc;
+
+	/* initialize state */
+	pc = &stdlib[(start_base_address ? : START_WORD_OFFSET)];
+	restart:							  /* used for restarting, expect pc to be set beforehand */
+	psp = &pstack[0];
+	returnsp = &returnstack[0];
+	retainsp = &retainstack[0];
 	BASE = (cell)stdlib;
+	tailcall = true;
+
 	cell x;								/* temporary value for operations */
-	inst *pc = &stdlib[(start_base_address ? : START_WORD_OFFSET)];
 	return_entry start_entry = {.return_address=NULL,.current_call = pc};
 	/* single step debugging*/
 	unsigned int debug_nest = 0; /* used in debug mode to track when
