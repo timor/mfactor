@@ -1,0 +1,182 @@
+#+TITLE:     MFactor Documentation
+#+EMAIL:     timor.dd@googlemail.com
+#+DATE:      2015-03-17 Di
+#+DESCRIPTION:
+#+KEYWORDS:
+#+LANGUAGE:  en
+#+OPTIONS: timestamp:nil h:4 author:nil
+
+#+STARTUP: indent
+* Overview
+MFactor is an (incomplete) implementation of the [[http://factorcode.org/][factor language]] for embedded systems.
+It consists of two parts:
+
+A *host compiler*, written in Ruby, which is used with the [[https://github.com/ruby/rake][Rake]] build system to produce a
+binary image.
+
+A *c implementation of a bytecode vm* which is able to execute such an image.
+
+* Usage
+
+** Expected Preprocessor Definitions before Compilation
+- =CORTEX_M= when set, compile for Cortex-M3/M4 targets.  Cortex-M0 is currently
+  unsupported because unaligned memory access is required.
+
+** Bytecode Generator Output
+Per default, the output of the rake task is place in subdirectory =generated= of the
+including project.  This folder contains several files:
+- =inst_enum.h= - enum which contains all instruction mnemonics.  These are used in
+  =stdlib.code.h=
+- =mfactor_words.h= - contains all exported words, which can then be referenced from C
+  context. (see ???)
+- =stdlib.code.h= - contains the actual byte code image
+- =stdlib.dict.h= - contains the dictionary, excluding private words (see ???)
+- =stdlib_size.h= - some constants which are generated during byte code compilation and
+  used in the VM implementation
+* VM Implementation
+The VM is a [[http://en.wikipedia.org/wiki/Stack_machine][stack machine]] with three stacks, a *data stack*, *return stack* and a *retain
+stack*.
+
+** Instruction Set
+The Instruction Set for the VM is defined in [[file:instructionset.yml]].  For a description
+of the instructions see ??? the relevant section later on.
+
+** Implementation
+This section describes the implementation of the VM in [[file:src/interpreter.c]]
+
+*** Header File
+:PROPERTIES:
+:noweb-ref: vm_h
+:END:
+In [[file:src/interpreter.h]] are relevant data type definitions and preprocessor macro
+defaults.  These are supposed to be overriden to configure the compiled runtime (see
+???).
+
+**** Typedefs
+
+The type of actual primitive instructions which are loaded and evaluated, and from which
+byte code images are constructed. (see ???)
+Size: 1 byte
+#+begin_src C
+typedef unsigned char inst;
+#+end_src
+
+Targets of normal jumps and calls.  16 bit size, so if an image is bigger than 64K, these
+are not sufficient (see ???call instructions)
+Size: 2 bytes
+#+begin_src C
+  typedef unsigned short short_jump_target;  /* relative jumps in 64k on 32 bit */
+#+end_src
+
+Targets of long jumps. Use full 32 Bit address space.  Used for calls to addresses on
+stack.
+Size: 32 Bit
+#+begin_src C
+  typedef uintptr_t jump_target;  /* long absolute jump */
+#+end_src
+
+Type of data actually manipulated on the stack.
+Size: 32 Bit
+#+begin_src C
+typedef uintptr_t cell;                 /* memory cell must at least hold pointer */
+#+end_src
+
+**** The Image
+The image generated in =stdlib.code.h= is declared here:
+
+#+begin_src C
+inst stdlib[STDLIB_SIZE];
+#+end_src
+
+=STDLIB_SIZE= is generated, and exported in =stdlib_size.h=.
+See also [[*Bytecode%20Generator%20Output][Bytecode Generator Output]]
+
+**** Preprocessor Macros
+
+The following all indicate the size of the different components, in =cell= units
+
+#+begin_src C
+  /* data memory (affects non-transient data) in cells*/
+  #ifndef VM_MEM
+   #define VM_MEM 256
+  #endif
+  
+  /* dictionary size (affects number of named items)*/
+  #ifndef VM_DICT
+   #define VM_DICT 512
+  #endif
+  
+  /* parameter stack size (affects transient data)*/
+  #ifndef VM_PSTACK
+   #define VM_PSTACK 64
+  #endif
+  
+  /* return stack size (affects nesting of functions)*/
+  #ifndef VM_RETURNSTACK
+   #define VM_RETURNSTACK 64
+  #endif
+  
+  /* retain stack size (affects maximum amount of postponing data use) */
+  #ifndef VM_RETAINSTACK
+   #define VM_RETAINSTACK 32
+  #endif
+#+end_src
+
+Another macro can be preset or computed: =INSTBASE=.  This is used to distinguish
+primitive instructions from quotations, when executing words on the stack.  Primitives
+cannot be interpreted as memory addresses, since these would point into invalid memory.
+
+On Cortex-M, all memory addresses higher than 0x80... are not accessable, and can be
+used for primitive instructions.
+#+begin_src C
+  #ifndef INSTBASE
+   #if (__linux && __LP64__)
+    #define INSTBASE 0x80U
+   #elif (CORTEX_M)
+    #define INSTBASE 0xA0U
+   #else
+    #error "don't know instruction code base for architecure!"
+   #endif
+  #endif
+#+end_src
+
+A =cell=-sized version for comparison to data values:
+
+#+begin_src C
+#define INSTBASE_CELL ((cell)INSTBASE<<(8*(sizeof(inst *)-sizeof(inst))))
+#+end_src
+
+**** Main VM Function Prototype
+This is the prototype for the function that is supposed to be executed from the
+application program.  The only argument is the offset of the first in the bytecode image
+to be executed.
+
+#+begin_src C
+void interpreter(short_jump_target);
+#+end_src
+
+* Complete Source Files
+** interpreter.h
+#+name: interpreter_h
+#+begin_src C :tangle ../src/interpreter.h
+#ifndef INTERPRETER_H
+#define INTERPRETER_H
+
+#include <stdbool.h>
+#include <stdint.h>
+#include "generated/stdlib_size.h"
+
+<<vm_h>>
+
+#endif
+
+#+end_src
+
+
+* local vars                                                       :noexport:
+
+# Local Variables:
+# eval: (setq-local org-babel-default-header-args:C '((:noweb . "yes")))
+# End:
+
+

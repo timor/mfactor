@@ -1,0 +1,513 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>MFactor Documentation</title>
+<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
+<meta name="title" content="MFactor Documentation"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2015-03-17 Di"/>
+<meta name="author" content=""/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  {margin-left:auto; margin-right:0px;  text-align:right;}
+  .left   {margin-left:0px;  margin-right:auto; text-align:left;}
+  .center {margin-left:auto; margin-right:auto; text-align:center;}
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top;  }
+  th.right  { text-align:center;  }
+  th.left   { text-align:center;   }
+  th.center { text-align:center; }
+  td.right  { text-align:right;  }
+  td.left   { text-align:left;   }
+  td.center { text-align:center; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  div.inlinetask {
+    padding:10px;
+    border:2px solid gray;
+    margin:10px;
+    background: #ffffcc;
+  }
+  textarea { overflow-x: auto; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+
+</head>
+<body>
+
+<div id="preamble">
+
+</div>
+
+<div id="content">
+<h1 class="title">MFactor Documentation</h1>
+
+
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1 Overview</a></li>
+<li><a href="#sec-2">2 Usage</a>
+<ul>
+<li><a href="#sec-2-1">2.1 Expected Preprocessor Definitions before Compilation</a></li>
+<li><a href="#sec-2-2">2.2 Bytecode Generator Output</a></li>
+</ul>
+</li>
+<li><a href="#sec-3">3 VM Implementation</a>
+<ul>
+<li><a href="#sec-3-1">3.1 Instruction Set</a></li>
+<li><a href="#sec-3-2">3.2 Implementation</a>
+<ul>
+<li><a href="#sec-3-2-1">3.2.1 Header File</a>
+<ul>
+<li><a href="#sec-3-2-1-1">3.2.1.1 Typedefs</a></li>
+<li><a href="#sec-3-2-1-2">3.2.1.2 The Image</a></li>
+<li><a href="#sec-3-2-1-3">3.2.1.3 Preprocessor Macros</a></li>
+<li><a href="#sec-3-2-1-4">3.2.1.4 Main VM Function Prototype</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</li>
+<li><a href="#sec-4">4 Complete Source Files</a>
+<ul>
+<li><a href="#sec-4-1">4.1 interpreter.h</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Overview</h2>
+<div class="outline-text-2" id="text-1">
+
+<p>MFactor is an (incomplete) implementation of the <a href="http://factorcode.org/">factor language</a> for embedded systems.
+It consists of two parts:
+</p>
+<p>
+A <b>host compiler</b>, written in Ruby, which is used with the <a href="https://github.com/ruby/rake">Rake</a> build system to produce a
+binary image.
+</p>
+<p>
+A <b>c implementation of a bytecode vm</b> which is able to execute such an image.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Usage</h2>
+<div class="outline-text-2" id="text-2">
+
+
+
+</div>
+
+<div id="outline-container-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Expected Preprocessor Definitions before Compilation</h3>
+<div class="outline-text-3" id="text-2-1">
+
+<ul>
+<li><code>CORTEX_M</code> when set, compile for Cortex-M3/M4 targets.  Cortex-M0 is currently
+  unsupported because unaligned memory access is required.
+</li>
+</ul>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Bytecode Generator Output</h3>
+<div class="outline-text-3" id="text-2-2">
+
+<p>Per default, the output of the rake task is place in subdirectory <code>generated</code> of the
+including project.  This folder contains several files:
+</p><ul>
+<li><code>inst_enum.h</code> - enum which contains all instruction mnemonics.  These are used in
+  <code>stdlib.code.h</code>
+</li>
+<li><code>mfactor_words.h</code> - contains all exported words, which can then be referenced from C
+  context. (see ???)
+</li>
+<li><code>stdlib.code.h</code> - contains the actual byte code image
+</li>
+<li><code>stdlib.dict.h</code> - contains the dictionary, excluding private words (see ???)
+</li>
+<li><code>stdlib_size.h</code> - some constants which are generated during byte code compilation and
+  used in the VM implementation
+</li>
+</ul>
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> VM Implementation</h2>
+<div class="outline-text-2" id="text-3">
+
+<p>The VM is a <a href="http://en.wikipedia.org/wiki/Stack_machine">stack machine</a> with three stacks, a <b>data stack</b>, <b>return stack</b> and a <b>retain stack</b>.
+</p>
+
+</div>
+
+<div id="outline-container-3-1" class="outline-3">
+<h3 id="sec-3-1"><span class="section-number-3">3.1</span> Instruction Set</h3>
+<div class="outline-text-3" id="text-3-1">
+
+<p>The Instruction Set for the VM is defined in <a href="instructionset.yml">instructionset.yml</a>.  For a description
+of the instructions see ??? the relevant section later on.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-3-2" class="outline-3">
+<h3 id="sec-3-2"><span class="section-number-3">3.2</span> Implementation</h3>
+<div class="outline-text-3" id="text-3-2">
+
+<p>This section describes the implementation of the VM in <a href="src/interpreter.c">src/interpreter.c</a>
+</p>
+
+</div>
+
+<div id="outline-container-3-2-1" class="outline-4">
+<h4 id="sec-3-2-1"><span class="section-number-4">3.2.1</span> Header File</h4>
+<div class="outline-text-4" id="text-3-2-1">
+
+<p>In <a href="src/interpreter.h">src/interpreter.h</a> are relevant data type definitions and preprocessor macro
+defaults.  These are supposed to be overriden to configure the compiled runtime (see
+???).
+</p>
+
+</div>
+
+<div id="outline-container-3-2-1-1" class="outline-5">
+<h5 id="sec-3-2-1-1"><span class="section-number-5">3.2.1.1</span> Typedefs</h5>
+<div class="outline-text-5" id="text-3-2-1-1">
+
+
+<p>
+The type of actual primitive instructions which are loaded and evaluated, and from which
+byte code images are constructed. (see ???)
+Size: 1 byte
+</p>
+
+
+<pre class="src src-C"><span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span> <span style="color: #228b22;">inst</span>;
+</pre>
+
+
+<p>
+Targets of normal jumps and calls.  16 bit size, so if an image is bigger than 64K, these
+are not sufficient (see ???call instructions)
+Size: 2 bytes
+</p>
+
+
+<pre class="src src-C"><span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">short</span> <span style="color: #228b22;">short_jump_target</span>;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">relative jumps in 64k on 32 bit </span><span style="color: #b22222;">*/</span>
+</pre>
+
+
+<p>
+Targets of long jumps. Use full 32 Bit address space.  Used for calls to addresses on
+stack.
+Size: 32 Bit
+</p>
+
+
+<pre class="src src-C"><span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">uintptr_t</span> <span style="color: #228b22;">jump_target</span>;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">long absolute jump </span><span style="color: #b22222;">*/</span>
+</pre>
+
+
+<p>
+Type of data actually manipulated on the stack.
+Size: 32 Bit
+</p>
+
+
+<pre class="src src-C"><span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">uintptr_t</span> <span style="color: #228b22;">cell</span>;                 <span style="color: #b22222;">/* </span><span style="color: #b22222;">memory cell must at least hold pointer </span><span style="color: #b22222;">*/</span>
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3-2-1-2" class="outline-5">
+<h5 id="sec-3-2-1-2"><span class="section-number-5">3.2.1.2</span> The Image</h5>
+<div class="outline-text-5" id="text-3-2-1-2">
+
+<p>The image generated in <code>stdlib.code.h</code> is declared here:
+</p>
+
+
+
+<pre class="src src-C"><span style="color: #228b22;">inst</span> <span style="color: #a0522d;">stdlib</span>[STDLIB_SIZE];
+</pre>
+
+
+<p>
+<code>STDLIB_SIZE</code> is generated, and exported in <code>stdlib_size.h</code>.
+See also <a href="#sec-2-2">Bytecode Generator Output</a>
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-3-2-1-3" class="outline-5">
+<h5 id="sec-3-2-1-3"><span class="section-number-5">3.2.1.3</span> Preprocessor Macros</h5>
+<div class="outline-text-5" id="text-3-2-1-3">
+
+
+<p>
+The following all indicate the size of the different components, in <code>cell</code> units
+</p>
+
+
+
+<pre class="src src-C"><span style="color: #b22222;">/* </span><span style="color: #b22222;">data memory (affects non-transient data) in cells</span><span style="color: #b22222;">*/</span>
+<span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_MEM
+<span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_MEM</span> 256
+<span style="color: #483d8b;">#endif</span>
+
+<span style="color: #b22222;">/* </span><span style="color: #b22222;">dictionary size (affects number of named items)</span><span style="color: #b22222;">*/</span>
+<span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_DICT
+<span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_DICT</span> 512
+<span style="color: #483d8b;">#endif</span>
+
+<span style="color: #b22222;">/* </span><span style="color: #b22222;">parameter stack size (affects transient data)</span><span style="color: #b22222;">*/</span>
+<span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_PSTACK
+<span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_PSTACK</span> 64
+<span style="color: #483d8b;">#endif</span>
+
+<span style="color: #b22222;">/* </span><span style="color: #b22222;">return stack size (affects nesting of functions)</span><span style="color: #b22222;">*/</span>
+<span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_RETURNSTACK
+<span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_RETURNSTACK</span> 64
+<span style="color: #483d8b;">#endif</span>
+
+<span style="color: #b22222;">/* </span><span style="color: #b22222;">retain stack size (affects maximum amount of postponing data use) </span><span style="color: #b22222;">*/</span>
+<span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_RETAINSTACK
+<span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_RETAINSTACK</span> 32
+<span style="color: #483d8b;">#endif</span>
+</pre>
+
+
+<p>
+Another macro can be preset or computed: <code>INSTBASE</code>.  This is used to distinguish
+primitive instructions from quotations, when executing words on the stack.  Primitives
+cannot be interpreted as memory addresses, since these would point into invalid memory.
+</p>
+<p>
+On Cortex-M, all memory addresses higher than 0x80&hellip; are not accessable, and can be
+used for primitive instructions.
+</p>
+
+
+<pre class="src src-C"><span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> INSTBASE
+<span style="color: #483d8b;"> #if</span> (__linux &amp;&amp; __LP64__)
+<span style="color: #483d8b;">  #define</span> <span style="color: #a0522d;">INSTBASE</span> 0x80U
+<span style="color: #483d8b;"> #elif</span> (CORTEX_M)
+<span style="color: #483d8b;">  #define</span> <span style="color: #a0522d;">INSTBASE</span> 0xA0U
+<span style="color: #483d8b;"> #else</span>
+<span style="color: #483d8b;">  #error</span> <span style="color: #8b2252;">"don't know instruction code base for architecure!"</span>
+<span style="color: #483d8b;"> #endif</span>
+<span style="color: #483d8b;">#endif</span>
+</pre>
+
+
+<p>
+A <code>cell</code>-sized version for comparison to data values:
+</p>
+
+
+
+<pre class="src src-C"><span style="color: #483d8b;">#define</span> <span style="color: #a0522d;">INSTBASE_CELL</span> ((<span style="color: #228b22;">cell</span>)INSTBASE&lt;&lt;(8*(<span style="color: #a020f0;">sizeof</span>(<span style="color: #228b22;">inst</span> *)-<span style="color: #a020f0;">sizeof</span>(inst))))
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3-2-1-4" class="outline-5">
+<h5 id="sec-3-2-1-4"><span class="section-number-5">3.2.1.4</span> Main VM Function Prototype</h5>
+<div class="outline-text-5" id="text-3-2-1-4">
+
+<p>This is the prototype for the function that is supposed to be executed from the
+application program.  The only argument is the offset of the first in the bytecode image
+to be executed.
+</p>
+
+
+
+<pre class="src src-C"><span style="color: #228b22;">void</span> <span style="color: #0000ff;">interpreter</span>(<span style="color: #228b22;">short_jump_target</span>);
+</pre>
+
+
+</div>
+</div>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Complete Source Files</h2>
+<div class="outline-text-2" id="text-4">
+
+
+</div>
+
+<div id="outline-container-4-1" class="outline-3">
+<h3 id="sec-4-1"><span class="section-number-3">4.1</span> interpreter.h</h3>
+<div class="outline-text-3" id="text-4-1">
+
+
+
+
+<pre class="src src-C"><span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> INTERPRETER_H
+<span style="color: #483d8b;">#define</span> <span style="color: #a0522d;">INTERPRETER_H</span>
+
+<span style="color: #483d8b;">#include</span> <span style="color: #8b2252;">&lt;stdbool.h&gt;</span>
+<span style="color: #483d8b;">#include</span> <span style="color: #8b2252;">&lt;stdint.h&gt;</span>
+<span style="color: #483d8b;">#include</span> <span style="color: #8b2252;">"generated/stdlib_size.h"</span>
+
+<span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span> <span style="color: #228b22;">inst</span>;
+<span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">short</span> <span style="color: #228b22;">short_jump_target</span>;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">relative jumps in 64k on 32 bit </span><span style="color: #b22222;">*/</span>
+<span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">uintptr_t</span> <span style="color: #228b22;">jump_target</span>;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">long absolute jump </span><span style="color: #b22222;">*/</span>
+<span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">uintptr_t</span> <span style="color: #228b22;">cell</span>;                 <span style="color: #b22222;">/* </span><span style="color: #b22222;">memory cell must at least hold pointer </span><span style="color: #b22222;">*/</span>
+<span style="color: #228b22;">inst</span> <span style="color: #a0522d;">stdlib</span>[STDLIB_SIZE];
+<span style="color: #b22222;">/* </span><span style="color: #b22222;">data memory (affects non-transient data) in cells</span><span style="color: #b22222;">*/</span>
+<span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_MEM
+<span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_MEM</span> 256
+<span style="color: #483d8b;">#endif</span>
+
+<span style="color: #b22222;">/* </span><span style="color: #b22222;">dictionary size (affects number of named items)</span><span style="color: #b22222;">*/</span>
+<span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_DICT
+<span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_DICT</span> 512
+<span style="color: #483d8b;">#endif</span>
+
+<span style="color: #b22222;">/* </span><span style="color: #b22222;">parameter stack size (affects transient data)</span><span style="color: #b22222;">*/</span>
+<span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_PSTACK
+<span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_PSTACK</span> 64
+<span style="color: #483d8b;">#endif</span>
+
+<span style="color: #b22222;">/* </span><span style="color: #b22222;">return stack size (affects nesting of functions)</span><span style="color: #b22222;">*/</span>
+<span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_RETURNSTACK
+<span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_RETURNSTACK</span> 64
+<span style="color: #483d8b;">#endif</span>
+
+<span style="color: #b22222;">/* </span><span style="color: #b22222;">retain stack size (affects maximum amount of postponing data use) </span><span style="color: #b22222;">*/</span>
+<span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_RETAINSTACK
+<span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_RETAINSTACK</span> 32
+<span style="color: #483d8b;">#endif</span>
+<span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> INSTBASE
+<span style="color: #483d8b;"> #if</span> (__linux &amp;&amp; __LP64__)
+<span style="color: #483d8b;">  #define</span> <span style="color: #a0522d;">INSTBASE</span> 0x80U
+<span style="color: #483d8b;"> #elif</span> (CORTEX_M)
+<span style="color: #483d8b;">  #define</span> <span style="color: #a0522d;">INSTBASE</span> 0xA0U
+<span style="color: #483d8b;"> #else</span>
+<span style="color: #483d8b;">  #error</span> <span style="color: #8b2252;">"don't know instruction code base for architecure!"</span>
+<span style="color: #483d8b;"> #endif</span>
+<span style="color: #483d8b;">#endif</span>
+<span style="color: #483d8b;">#define</span> <span style="color: #a0522d;">INSTBASE_CELL</span> ((<span style="color: #228b22;">cell</span>)INSTBASE&lt;&lt;(8*(<span style="color: #a020f0;">sizeof</span>(<span style="color: #228b22;">inst</span> *)-<span style="color: #a020f0;">sizeof</span>(inst))))
+<span style="color: #228b22;">void</span> <span style="color: #0000ff;">interpreter</span>(<span style="color: #228b22;">short_jump_target</span>);
+
+<span style="color: #483d8b;">#endif</span>
+
+</pre>
+
+
+
+</div>
+</div>
+</div>
+</div>
+
+<div id="postamble">
+<p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
+<a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
+
+</div>
+</body>
+</html>
