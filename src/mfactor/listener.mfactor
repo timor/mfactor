@@ -10,10 +10,19 @@ IN: listener
 
 : prompt ( -- ) level pwrite '>' emit ' ' emit ;
 
-: _unsafe-listener ( -- ) prompt token dict-find [ dup parsing-word? [ definition 0 swap call [ drop ] times ]
-                                        [ definition call ] if ] [ unknown-token ] if _unsafe-listener ;
+: _call-safe ( quot: ( ..a -- ..b ) -- ..b )
+    [ call ] report-errors ; inline
 
-: listener ( -- ) [ _unsafe-listener ] report-errors listener ;
+! Repeatedly prompt for a token nad try to find it.  If found, see if it is a parsing
+! word, which is called with 0 on the stack (represents empty parser accumulator).  If it
+! is not a parsing word, call it, else handle unknown word.
+: listener ( -- )
+    prompt token dict-find
+    [ dup parsing-word? [ definition 0 swap _call-safe [ drop ] times ]
+      [ definition _call-safe ] if ]
+    [ unknown-token ] if listener ;
+
+! : listener ( -- ) [ _unsafe-listener ] report-errors listener ;
 
 SYNTAX: \ ( -- quot type ) token dict-find [ 3 suffix ] [ _bad-input ] if ;
 
