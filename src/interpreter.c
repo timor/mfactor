@@ -63,6 +63,7 @@ typedef struct return_entry {
 	inst * current_call;
 } return_entry;
 
+	#include "generated/inst_enum.h"
 	#include "generated/stdlib.code.h"
 /* dictionary grows up*/
 	#include "generated/stdlib.dict.h"

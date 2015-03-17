@@ -52,8 +52,6 @@ inst stdlib[STDLIB_SIZE];
 #endif
 #define INSTBASE_CELL ((cell)INSTBASE<<(8*(sizeof(inst *)-sizeof(inst))))
 
-#include "generated/inst_enum.h"
-
 void interpreter(unsigned int);
 
 #endif
