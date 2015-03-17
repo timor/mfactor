@@ -37,6 +37,7 @@
 	#define _NumSpecials 10
 static const unsigned char NumSpecials = _NumSpecials;
 static cell special_vars[_NumSpecials];
+	#define BASE special_vars[5]
 
 /* main memory to work with */
 static cell memory[VM_MEM];
@@ -170,7 +171,7 @@ static void print_error(char * str)
 	printf("\n");
 }
 
-	#define BACKTRACE() (printstack(psp,pstack),printstack(retainsp,retainstack),backtrace(returnsp,returnstack,base,pc));
+	#define BACKTRACE() (printstack(psp,pstack),printstack(retainsp,retainstack),backtrace(returnsp,returnstack,(inst *)BASE,pc));
 
 	#define assert_pop(sp,min) if (sp <= min) { print_error("stack underflow");BACKTRACE();return;}
 	#define assert_push(sp,min,size) if (sp > min+size){ print_error("stack overflow");BACKTRACE();return;}
@@ -213,6 +214,7 @@ extern cell DATA_END;
 static void init_specials() {
 	special_vars[0] = (cell)memory; /* start of user memory */
 	special_vars[5] = (cell)&stdlib; /* start of bytecode segment */
+	BASE = (cell)&stdlib; /* start of bytecode segment */
 }
 
 void interpreter(unsigned int start_base_address) {
@@ -226,8 +228,8 @@ void interpreter(unsigned int start_base_address) {
 	/* retain stack */
 	static cell retainstack[VM_RETAINSTACK]={0};
 	cell* retainsp =&retainstack[0];
+	BASE = (cell)stdlib;
 	cell x;								/* temporary value for operations */
-	static inst *base=stdlib;  /* base address for base-relative short calls */
 	inst *pc = &stdlib[(start_base_address ? : START_WORD_OFFSET)];
 	return_entry start_entry = {.return_address=NULL,.current_call = pc};
 	/* single step debugging*/
@@ -338,7 +340,7 @@ void interpreter(unsigned int start_base_address) {
 		case bref:              /* reference to short-length in-memory data (type can be seen on-site)*/
 		case blitq:             /* reference to in-memory quotation */
 			x=(cell)(*((short_jump_target*) pc));
-			ppush((cell) (base + ((short_jump_target) x)));
+			ppush((cell) (BASE + ((short_jump_target) x)));
 			pc += sizeof(short_jump_target);
 			break;
 		case _pwrite:
@@ -486,7 +488,7 @@ void interpreter(unsigned int start_base_address) {
 			printf("retain");
 			printstack(retainsp,retainstack);
 			printf("return");
-			print_return_stack(returnsp,returnstack,base);
+			print_return_stack(returnsp,returnstack,(inst *)BASE);
 			break;
 		case stack_level: /* ( -- u ) */
 			ppush(psp-pstack); break;
@@ -540,14 +542,14 @@ void interpreter(unsigned int start_base_address) {
 		} break;
 		case bcall: {
 			_bcall:
-			x= (cell)(base+*((short_jump_target *)pc));
+			x= (cell)(BASE+*((short_jump_target *)pc));
 			pc += sizeof(short_jump_target);
 			goto nested_call;
 		} break;
 			/* base-relative tail-call, effectively a goto */
 		case btcall:
 			if (!tailcall) goto _bcall;
-			x=(cell)(base+*((short_jump_target *)pc));
+			x=(cell)(BASE+*((short_jump_target *)pc));
 			goto tail_call;
 			break;
 		case acall: {
@@ -575,7 +577,7 @@ void interpreter(unsigned int start_base_address) {
 			printf("retain");
 			printstack(retainsp,retainstack);
 			printf("return");
-			print_return_stack(returnsp,returnstack,base);
+			print_return_stack(returnsp,returnstack,(inst *)BASE);
 			BACKTRACE();
 			return;
 			break;
