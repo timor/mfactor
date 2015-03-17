@@ -683,7 +683,7 @@ void interpreter(unsigned int start_base_address) {
 		{
 			inst *next_word = (inst *) x;
 			/* if (debug_lvl(2)) printf("w:%#lx\n",(cell)next_word-(uintptr_t)base); */
-			char * name = find_by_address(next_word);
+			/* char * name = find_by_address(next_word); */
 			/* if (name) { */
          /*    if (debug_lvl(1)) printf("-> %s\n",name); */
          /*    fflush(stdout); */
@@ -702,7 +702,7 @@ void interpreter(unsigned int start_base_address) {
 		{
 			inst *next_word = (inst *) x;
 			/* if (debug_lvl(2)) printf("w:%#lx\n",(cell)next_word-(uintptr_t)base); */
-			char * name = find_by_address(next_word);
+			/* char * name = find_by_address(next_word); */
 			/* if (name) { */
          /*    if (debug_lvl(2)) printf("..-> %s\n",name); */
          /*    fflush(stdout); */
