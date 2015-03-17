@@ -37,6 +37,10 @@
 	#define _NumSpecials 10
 static const unsigned char NumSpecials = _NumSpecials;
 static cell special_vars[_NumSpecials];
+	#define MP special_vars[0]
+	#define HANDLER special_vars[1]
+	#define DEBUG_LEVEL special_vars[2]
+	#define RESTART special_vars[3]
 	#define BASE special_vars[5]
 
 /* main memory to work with */
@@ -65,7 +69,7 @@ typedef struct return_entry {
 
 /* check if current value of debug is greater or equal to val */
 static bool debug_lvl(unsigned int val) {
-	return (special_vars[2] >= val);
+	return (DEBUG_LEVEL >= val);
 }
 
 /* check if name in dictionary entry is a null-terminated string */
@@ -214,8 +218,8 @@ extern cell DATA_START;
 extern cell DATA_END;
 
 static void init_specials() {
-	special_vars[0] = (cell)memory; /* start of user memory */
-	special_vars[5] = (cell)&stdlib; /* start of bytecode segment */
+	HANDLER = 0;
+	MP = (cell)memory; /* start of user memory */
 	BASE = (cell)&stdlib; /* start of bytecode segment */
 }
 
