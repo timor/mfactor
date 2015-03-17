@@ -31,7 +31,7 @@
 	0: MP - memory write pointer
 	1: HANDLER - handler frame location in r(etain) stack (dynamic chain for catch frames)
 	2: DEBUG_LEVEL - 0 to turn off, increasing will produce more verbose debug output
-	3: ON_ERROR - address of word to call when internal error occurred 
+	3: RESTART - word where to restart when hard error occured
 	4: STEP_HANDLER - address of handler which can be used for single stepping
 	5: BASE - address of current 64k segment base */
 	#define _NumSpecials 10
@@ -173,8 +173,10 @@ static void print_error(char * str)
 
 	#define BACKTRACE() (printstack(psp,pstack),printstack(retainsp,retainstack),backtrace(returnsp,returnstack,(inst *)BASE,pc));
 
-	#define assert_pop(sp,min) if (sp <= min) { print_error("stack underflow");BACKTRACE();return;}
-	#define assert_push(sp,min,size) if (sp > min+size){ print_error("stack overflow");BACKTRACE();return;}
+	#define restart() do {pc = (inst*)RESTART; goto restart;} while(0)
+
+	#define assert_pop(sp,min) if (sp <= min) { print_error("stack underflow");BACKTRACE();restart();}
+	#define assert_push(sp,min,size) if (sp > min+size){ print_error("stack overflow");BACKTRACE();restart();}
 
 
 /* empty ascending stack */
@@ -190,7 +192,7 @@ static void print_error(char * str)
 	#define peek_n(sp,nth) (*(sp-nth))
 
 /* writes are only allowed into dedicated memory area for now */
-	#define assert_memwrite(x) if ((x < memory) || (x >= (memory+VM_MEM))) {printf("prevented memory access at %#lx\n",x); BACKTRACE();return;}
+	#define assert_memwrite(x) if ((x < memory) || (x >= (memory+VM_MEM))) {printf("prevented memory access at %#lx\n",x); BACKTRACE();restart();}
 /* reads are only allowed inside data space */
 	#if __linux
 		#define DATA_START __data_start
@@ -245,11 +247,6 @@ void interpreter(unsigned int start_base_address) {
 	unsigned int debug_nest = 0; /* used in debug mode to track when
 											* to stop single stepping*/
 	bool debug_mode = false;
-	/* get the address of the error handler */
-	inst * handler=NULL;
-	dict_entry * handler_entry=find_by_name("on-error",8);
-	if (handler_entry)
-		handler=handler_entry->address;
 	#if DEBUG
 	debug_mode=true;
 	#endif
@@ -457,7 +454,7 @@ void interpreter(unsigned int start_base_address) {
             ppush((cell)tok);
 			} else {
             print_error("token reader error");
-            return;
+            restart();
 			}} break;
 			/* (countedstr -- countedstr/dict_entry foundp) */
 		case search: {
@@ -571,15 +568,6 @@ void interpreter(unsigned int start_base_address) {
 			break;
 		case error:
 		_error:
-			if (handler)
-				{
-					ppush((unsigned int)psp);
-					ppush(psp-pstack);
-					ppush((unsigned int)returnsp);
-					ppush(returnsp-returnstack);
-					x=(unsigned int)handler;
-					goto nested_call;
-				}
 			printf("error!\n");
 			printf("\np");
 			printstack(psp,pstack);
@@ -588,7 +576,7 @@ void interpreter(unsigned int start_base_address) {
 			printf("return");
 			print_return_stack(returnsp,returnstack,(inst *)BASE);
 			BACKTRACE();
-			return;
+			restart();
 			break;
 		case tstart:
 			start_timer();
@@ -625,7 +613,7 @@ void interpreter(unsigned int start_base_address) {
 					{
 						printf("no ff entry with index %f\n",i);
 						BACKTRACE();
-						return;
+						restart();
 					}
 				ppush((cell)FF_Table[i]);
 			} break;
