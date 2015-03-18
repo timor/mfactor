@@ -252,8 +252,10 @@ Currently, it is configured via setting global variables:
 </li>
 <li><code>MFACTOR_ROOT_VOCAB</code>: the root vocabulary, which is first loaded and loads all dependencies
 </li>
-<li><code>MFACTOR_DEPENDING_OBJECT</code>: To cause Rake to recompile the whole application, this
-should be set to an object file in the application which contains the bytecode image.
+<li><code>MFACTOR_DEPENDING_OBJECTS</code>: To cause Rake to recompile the whole application, this
+should be set to the object files in the application which depend on the generated
+output. This usually means all file that use any of the words defined in
+<code>MFACTOR_C_WORDS</code>, as well as the object file that is built from <code>src/interpreter.c</code>
 </li>
 <li><code>MFACTOR_C_WORDS</code>: Hashtable for exposing word locations in bytecode to C. Format:
 <div class="org-src-container">

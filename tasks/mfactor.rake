@@ -128,9 +128,11 @@ IMAGE_FILES.each do |f|
   end
 end
 
-if MFACTOR_DEPENDING_OBJECT
-  file MFACTOR_DEPENDING_OBJECT => IMAGE_FILES
-  file MFACTOR_DEPENDING_OBJECT => "generated/inst_enum.h"
+if MFACTOR_DEPENDING_OBJECTS
+  MFACTOR_DEPENDING_OBJECTS.each do |f|
+    file f => IMAGE_FILES
+    file f => "generated/inst_enum.h"
+  end
 end
 
 
