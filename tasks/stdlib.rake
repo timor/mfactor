@@ -64,8 +64,8 @@ require "mfactor/bytecode"
 
 def build_stdlib
   puts "rebuilding stdlib from generated sources"
-  if defined? $mfactor_ff
-    ffyaml=YAML.load_file($mfactor_ff)
+  if defined? MFACTOR_FF
+    ffyaml=YAML.load_file(MFACTOR_FF)
     ff_mfactor(ffyaml,File.open("generated/ff.mfactor","w"))
   end
   # iset=YAML.load_file("#{THISDIR}/instructionset.yml")
@@ -123,8 +123,8 @@ STDLIB_FILES.each do |f|
   file f => ["generated","#{ISETFILE}"]+FileList["#{THISDIR}/../src/mfactor/*.mfactor"]+FileList["#{MFACTOR_SRC_DIR}/*.mfactor"] do
     build_stdlib
   end
-  if defined? $mfactor_ff
-    file f => $mfactor_ff
+  if defined? MFACTOR_FF
+    file f => MFACTOR_FF
   end
 end
 
@@ -181,8 +181,8 @@ directory "generated/cfg"
 # generate a subdir in generated for each vocabulary, generate a control flow graphic for each word, if applicable
 task :compile_all => "generated/cfg" do
   $stdout.sync=true
-  if defined? $mfactor_ff
-    ffyaml=YAML.load_file($mfactor_ff)
+  if defined? MFACTOR_FF
+    ffyaml=YAML.load_file(MFACTOR_FF)
     ff_mfactor(ffyaml,File.open("generated/ff.mfactor","w"))
   end
   mf=MFactor::Image.new([MFACTOR_SRC_DIR,"generated"])
