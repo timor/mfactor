@@ -57,9 +57,9 @@ The general idea is as follows:
                     +--------+
 #+END_SRC
 
-In order to incorporate this into a project, several rake tasks are supplied in [[file:../tasks/stdlib.rake][tasks/stdlib.rake]]
+In order to incorporate this into a project, several rake tasks are supplied in [[file:../tasks/mfactor.rake][tasks/mfactor.rake]]
 
-- *stdlib*: the main task, which, when called, generates above code
+- *mfactor*: the main task, which, when called, generates above code
 - *mftest[word name]*: helper task, outputs a graphical representation of a specific word in the =generated= subdir.
 
 ** Configuring the Rake Task
@@ -114,12 +114,12 @@ Parser -> Image -> ByteCodeImage
 Per default, the output of the rake task is place in subdirectory =generated= of the
 including project.  This folder contains several files:
 - =inst_enum.h= - enum which contains all instruction mnemonics.  These are used in
-  =stdlib.code.h=
+  =image.code.h=
 - =mfactor_words.h= - contains all exported words, which can then be referenced from C
   context. (see ???)
-- =stdlib.code.h= - contains the actual byte code image
-- =stdlib.dict.h= - contains the dictionary, excluding private words (see ???)
-- =stdlib_size.h= - some constants which are generated during byte code compilation and
+- =image.code.h= - contains the actual byte code image
+- =image.dict.h= - contains the dictionary, excluding private words (see ???)
+- =image_size.h= - some constants which are generated during byte code compilation and
   used in the VM implementation
 
 * VM Implementation
@@ -171,13 +171,13 @@ typedef uintptr_t cell;                 /* memory cell must at least hold pointe
 #+end_src
 
 **** The Image
-The image generated in =stdlib.code.h= is declared here:
+The image generated in =image.code.h= is declared here:
 
 #+begin_src C
-inst stdlib[STDLIB_SIZE];
+inst image[IMAGE_SIZE];
 #+end_src
 
-=STDLIB_SIZE= is generated, and exported in =stdlib_size.h=.
+=IMAGE_SIZE= is generated, and exported in =image_size.h=.
 See also [[*Bytecode%20Generator%20Output][Bytecode Generator Output]]
 
 **** Preprocessor Macros
@@ -253,7 +253,7 @@ void interpreter(short_jump_target);
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "generated/stdlib_size.h"
+#include "generated/image_size.h"
 
 <<vm_h>>
 

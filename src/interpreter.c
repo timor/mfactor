@@ -64,9 +64,9 @@ typedef struct return_entry {
 } return_entry;
 
 	#include "generated/inst_enum.h"
-	#include "generated/stdlib.code.h"
+	#include "generated/image.code.h"
 /* dictionary grows up*/
-	#include "generated/stdlib.dict.h"
+	#include "generated/image.dict.h"
 
 /* check if current value of debug is greater or equal to val */
 static bool debug_lvl(unsigned int val) {
@@ -221,7 +221,7 @@ extern cell DATA_END;
 static void init_specials() {
 	HANDLER = 0;
 	MP = (cell)memory; /* start of user memory */
-	BASE = (cell)&stdlib; /* start of bytecode segment */
+	BASE = (cell)&image; /* start of bytecode segment */
 }
 
 void interpreter(short_jump_target start_base_address) {
@@ -238,12 +238,12 @@ void interpreter(short_jump_target start_base_address) {
 	inst *pc;
 
 	/* initialize state */
-	pc = &stdlib[(start_base_address ? : START_WORD_OFFSET)];
+	pc = &image[(start_base_address ? : START_WORD_OFFSET)];
 	restart:							  /* used for restarting, expect pc to be set beforehand */
 	psp = &pstack[0];
 	returnsp = &returnstack[0];
 	retainsp = &retainstack[0];
-	BASE = (cell)stdlib;
+	BASE = (cell)image;
 	tailcall = true;
 
 	cell x;								/* temporary value for operations */

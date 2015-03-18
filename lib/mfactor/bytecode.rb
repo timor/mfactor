@@ -9,7 +9,7 @@ module MFactor
   # holds specialized compiled information
   class MFCompiledDefinition < Struct.new(:definition,:location,:code,:flags)
     def write_dict_entry(bytecode,io="")
-      loc = definition.primitive? ? "0x#{(location << (8*(bytecode.cell_width-1))).to_s(16)}" : "&stdlib+#{location.to_s}"
+      loc = definition.primitive? ? "0x#{(location << (8*(bytecode.cell_width-1))).to_s(16)}" : "&image+#{location.to_s}"
       io <<
         "{ .address = (inst *)#{loc}, .flags = #{flags}, .name = #{definition.name.to_s.inspect}, .name_length=#{definition.name.to_s.length}}"
     end
@@ -258,7 +258,7 @@ module MFactor
     # output select locations directly as defines
     def write_word_positions(wordhash,io="")
       wordhash.each do |factorname, cname|
-        io << "#define " << cname << " (&(stdlib[" << get_word_address(factorname) << "]))\n"
+        io << "#define " << cname << " (&(image[" << get_word_address(factorname) << "]))\n"
 #        io << "#define " << cname << " " << get_word_address(factorname) << "\n"
       end
     end

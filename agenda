@@ -24,7 +24,7 @@
 - DONE: implement `case`.  implemented as macro only
 - DONE: implement symbols (SYMBOL:) and define some basic error conditions with them
 - rename `stdlib_size.h`, since there are more constants than size
-- rename all "stdlib" to "mfactor"
+- DONE: rename all "stdlib" to "mfactor"
 - substitute debug mode with single stepping handler
 - change string reading and quotation accumulation to use memory instead of stack
 - split code into platform dependent and platform independent parts

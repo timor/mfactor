@@ -62,8 +62,8 @@ require "mfactor/bytecode"
 
 # main code generation routine
 
-def build_stdlib
-  puts "rebuilding stdlib from generated sources"
+def build_image
+  puts "rebuilding image from generated sources"
   if defined? MFACTOR_FF
     ffyaml=YAML.load_file(MFACTOR_FF)
     ff_mfactor(ffyaml,File.open("generated/ff.mfactor","w"))
@@ -72,24 +72,24 @@ def build_stdlib
   # stdlib=YAML_Mfactor.new("generated/mfactor.yml",iset)
   mf=MFactor::ByteCode.const_get(GENERATOR).new([MFACTOR_SRC_DIR,"generated"])
   mf.load_vocab(MFACTOR_ROOT_VOCAB)
-  File.open("generated/stdlib_size.h","w") do |f|
-    f.puts "#define STDLIB_SIZE #{mf.bytecode_size}"
+  File.open("generated/image_size.h","w") do |f|
+    f.puts "#define IMAGE_SIZE #{mf.bytecode_size}"
     # define the starting word for use in interpreter() call
     f.puts "#define START_WORD_OFFSET " + (mf.get_word_address(START_WORD)).to_s
   end
-  File.open("generated/stdlib.code.h","w") do |f|
+  File.open("generated/image.code.h","w") do |f|
     ff_code(ffyaml || [],f)
-    f.write "inst stdlib[#{mf.bytecode_size}]= {\n"
+    f.write "inst image[#{mf.bytecode_size}]= {\n"
     mf.write_bytecode_image f
     f.write "};\n"
   end
-  File.open("generated/stdlib.dict.h","w") do |f|
+  File.open("generated/image.dict.h","w") do |f|
     f.write "dict_entry dict[VM_DICT] __attribute((aligned(1))) = {\n"
     mf.write_dictionary_entries f
     f.write "};\n"
   end
   File.open("generated/mfactor_words.h","w") do |f|
-    f.puts "extern char stdlib[];"
+    f.puts "extern char image[];"
     mf.write_word_positions(MFACTOR_C_WORDS,f)
   end
   mf
@@ -110,18 +110,18 @@ end
 
 desc "show the mfactor dictionary"
 task :see_dict => "generated" do
-  puts build_stdlib.see
+  puts build_image.see
 end
 
-STDLIB_FILES=["generated/stdlib.code.h","generated/stdlib.dict.h","generated/stdlib_size.h","generated/mfactor_words.h"]
-# file "generated/_generated_" => STDLIB_FILES+["generated/inst_enum.h"] do
+IMAGE_FILES=["generated/image.code.h","generated/image.dict.h","generated/image_size.h","generated/mfactor_words.h"]
+# file "generated/_generated_" => IMAGE_FILES+["generated/inst_enum.h"] do
 #   touch "generated/_generated_"
 # end
 
 # requesting any of the to-be-generated files triggers generation of all
-STDLIB_FILES.each do |f|
+IMAGE_FILES.each do |f|
   file f => ["generated","#{ISETFILE}"]+FileList["#{THISDIR}/../src/mfactor/*.mfactor"]+FileList["#{MFACTOR_SRC_DIR}/*.mfactor"] do
-    build_stdlib
+    build_image
   end
   if defined? MFACTOR_FF
     file f => MFACTOR_FF
@@ -129,7 +129,7 @@ STDLIB_FILES.each do |f|
 end
 
 if MFACTOR_DEPENDING_OBJECT
-  file MFACTOR_DEPENDING_OBJECT => STDLIB_FILES
+  file MFACTOR_DEPENDING_OBJECT => IMAGE_FILES
   file MFACTOR_DEPENDING_OBJECT => "generated/inst_enum.h"
 end
 
@@ -154,7 +154,7 @@ END
 end
 
 desc "build the mfactor code"
-task :stdlib => STDLIB_FILES+[__FILE__]
+task :mfactor => IMAGE_FILES+[__FILE__]
 
 require 'pp'
 

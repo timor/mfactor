@@ -179,11 +179,11 @@ for the JavaScript code in this tag.
 </li>
 </ul>
 </li>
+<li><a href="#sec-3-3">3.3. Complete Source Files</a>
+<ul>
+<li><a href="#sec-3-3-1">3.3.1. interpreter.h</a></li>
 </ul>
 </li>
-<li><a href="#sec-4">4. Complete Source Files</a>
-<ul>
-<li><a href="#sec-4-1">4.1. interpreter.h</a></li>
 </ul>
 </li>
 </ul>
@@ -221,11 +221,11 @@ The general idea is as follows:
 </div>
 
 <p>
-In order to incorporate this into a project, several rake tasks are supplied in <a href="../tasks/stdlib.rake">tasks/stdlib.rake</a>
+In order to incorporate this into a project, several rake tasks are supplied in <a href="../tasks/mfactor.rake">tasks/mfactor.rake</a>
 </p>
 
 <ul class="org-ul">
-<li><b>stdlib</b>: the main task, which, when called, generates above code
+<li><b>mfactor</b>: the main task, which, when called, generates above code
 </li>
 <li><b>mftest[word name]</b>: helper task, outputs a graphical representation of a specific word in the <code>generated</code> subdir.
 </li>
@@ -297,12 +297,9 @@ Currently supported values are:
 <li><code>i</code>, <code>b</code>, <code>bi</code>, <code>iis</code>, <code>iii</code> where <code>i</code> is <code>int</code>, <code>b</code> is <code>int8</code> and <code>s</code> is <code>int16</code>
 </li>
 </ul>
+</div>
+</div>
 
-<p>
-If a file <code>ff.yaml</code> is found in <code>MFACTOR_SRC_DIR</code>, it is parsed as a yaml file
-</p>
-</div>
-</div>
 <div id="outline-container-sec-1-4" class="outline-3">
 <h3 id="sec-1-4"><span class="section-number-3">1.4</span> Invoking the Rake Task</h3>
 <div class="outline-text-3" id="text-1-4">
@@ -342,16 +339,16 @@ including project.  This folder contains several files:
 </p>
 <ul class="org-ul">
 <li><code>inst_enum.h</code> - enum which contains all instruction mnemonics.  These are used in
-<code>stdlib.code.h</code>
+<code>image.code.h</code>
 </li>
 <li><code>mfactor_words.h</code> - contains all exported words, which can then be referenced from C
 context. (see ???)
 </li>
-<li><code>stdlib.code.h</code> - contains the actual byte code image
+<li><code>image.code.h</code> - contains the actual byte code image
 </li>
-<li><code>stdlib.dict.h</code> - contains the dictionary, excluding private words (see ???)
+<li><code>image.dict.h</code> - contains the dictionary, excluding private words (see ???)
 </li>
-<li><code>stdlib_size.h</code> - some constants which are generated during byte code compilation and
+<li><code>image_size.h</code> - some constants which are generated during byte code compilation and
 used in the VM implementation
 </li>
 </ul>
@@ -448,17 +445,17 @@ Size: 32 Bit
 <h5 id="sec-3-2-1-2"><span class="section-number-5">3.2.1.2</span> The Image</h5>
 <div class="outline-text-5" id="text-3-2-1-2">
 <p>
-The image generated in <code>stdlib.code.h</code> is declared here:
+The image generated in <code>image.code.h</code> is declared here:
 </p>
 
 <div class="org-src-container">
 
-<pre class="src src-C"><span style="color: #228b22;">inst</span> <span style="color: #a0522d;">stdlib</span>[STDLIB_SIZE];
+<pre class="src src-C"><span style="color: #228b22;">inst</span> <span style="color: #a0522d;">image</span>[IMAGE_SIZE];
 </pre>
 </div>
 
 <p>
-<code>STDLIB_SIZE</code> is generated, and exported in <code>stdlib_size.h</code>.
+<code>IMAGE_SIZE</code> is generated, and exported in <code>image_size.h</code>.
 See also <i>Bytecode Generator Output</i>
 </p>
 </div>
@@ -554,14 +551,13 @@ to be executed.
 </div>
 </div>
 </div>
-</div>
 
-<div id="outline-container-sec-4" class="outline-2">
-<h2 id="sec-4"><span class="section-number-2">4</span> Complete Source Files</h2>
-<div class="outline-text-2" id="text-4">
-</div><div id="outline-container-sec-4-1" class="outline-3">
-<h3 id="sec-4-1"><span class="section-number-3">4.1</span> interpreter.h</h3>
-<div class="outline-text-3" id="text-4-1">
+<div id="outline-container-sec-3-3" class="outline-3">
+<h3 id="sec-3-3"><span class="section-number-3">3.3</span> Complete Source Files</h3>
+<div class="outline-text-3" id="text-3-3">
+</div><div id="outline-container-sec-3-3-1" class="outline-4">
+<h4 id="sec-3-3-1"><span class="section-number-4">3.3.1</span> interpreter.h</h4>
+<div class="outline-text-4" id="text-3-3-1">
 <div class="org-src-container">
 
 <pre class="src src-C" id="interpreter_h"><span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> INTERPRETER_H
@@ -569,13 +565,13 @@ to be executed.
 
 <span style="color: #483d8b;">#include</span> <span style="color: #8b2252;">&lt;stdbool.h&gt;</span>
 <span style="color: #483d8b;">#include</span> <span style="color: #8b2252;">&lt;stdint.h&gt;</span>
-<span style="color: #483d8b;">#include</span> <span style="color: #8b2252;">"generated/stdlib_size.h"</span>
+<span style="color: #483d8b;">#include</span> <span style="color: #8b2252;">"generated/image_size.h"</span>
 
 <span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span> <span style="color: #228b22;">inst</span>;
 <span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">short</span> <span style="color: #228b22;">short_jump_target</span>;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">relative jumps in 64k on 32 bit </span><span style="color: #b22222;">*/</span>
 <span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">uintptr_t</span> <span style="color: #228b22;">jump_target</span>;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">long absolute jump </span><span style="color: #b22222;">*/</span>
 <span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">uintptr_t</span> <span style="color: #228b22;">cell</span>;                 <span style="color: #b22222;">/* </span><span style="color: #b22222;">memory cell must at least hold pointer </span><span style="color: #b22222;">*/</span>
-<span style="color: #228b22;">inst</span> <span style="color: #a0522d;">stdlib</span>[STDLIB_SIZE];
+<span style="color: #228b22;">inst</span> <span style="color: #a0522d;">image</span>[IMAGE_SIZE];
 <span style="color: #b22222;">/* </span><span style="color: #b22222;">data memory (affects non-transient data) in cells</span><span style="color: #b22222;">*/</span>
 <span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_MEM
 <span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_MEM</span> 256
@@ -614,6 +610,7 @@ to be executed.
 
 <span style="color: #483d8b;">#endif</span>
 </pre>
+</div>
 </div>
 </div>
 </div>
