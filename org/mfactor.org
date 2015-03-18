@@ -76,10 +76,10 @@ Currently, it is configured via setting global variables:
   #+BEGIN_SRC ruby
       { "mfactor-word-name" => "NAME_OF_CPP_DEFINE" }
   #+END_SRC
-- =$ff_mfactor=: 
+- =FF_MFACTOR=: path to file containing interface definitions to c code (see [[*Making%20Existing%20C%20Functions%20Available][Making Existing C Functions Available]])
 
 ** Making Existing C Functions Available
-Special global variable =$mfactor_ff= can be set to a yaml file for
+Special global variable =FF_MFACTOR= can be set to a yaml file for
 "importing" existing c functions into the interpreter's namespace (Foreign function interface).
 entries are in the form of
 
