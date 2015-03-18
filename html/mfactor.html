@@ -1,65 +1,101 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>MFactor Documentation</title>
-<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
-<meta name="title" content="MFactor Documentation"/>
-<meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2015-03-17 Di"/>
-<meta name="author" content=""/>
-<meta name="description" content=""/>
-<meta name="keywords" content=""/>
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
-  html { font-family: Times, serif; font-size: 12pt; }
   .title  { text-align: center; }
-  .todo   { color: red; }
+  .todo   { font-family: monospace; color: red; }
   .done   { color: green; }
-  .tag    { background-color: #add8e6; font-weight:normal }
-  .target { }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
   .timestamp { color: #bebebe; }
   .timestamp-kwd { color: #5f9ea0; }
-  .right  {margin-left:auto; margin-right:0px;  text-align:right;}
-  .left   {margin-left:0px;  margin-right:auto; text-align:left;}
-  .center {margin-left:auto; margin-right:auto; text-align:center;}
-  p.verse { margin-left: 3% }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
   pre {
-	border: 1pt solid #AEBDCC;
-	background-color: #F3F5F7;
-	padding: 5pt;
-	font-family: courier, monospace;
-        font-size: 90%;
-        overflow:auto;
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
   }
-  table { border-collapse: collapse; }
-  td, th { vertical-align: top;  }
-  th.right  { text-align:center;  }
-  th.left   { text-align:center;   }
-  th.center { text-align:center; }
-  td.right  { text-align:right;  }
-  td.left   { text-align:left;   }
-  td.center { text-align:center; }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
   dt { font-weight: bold; }
-  div.figure { padding: 0.5em; }
-  div.figure p { text-align: center; }
-  div.inlinetask {
-    padding:10px;
-    border:2px solid gray;
-    margin:10px;
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
     background: #ffffcc;
   }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
   textarea { overflow-x: auto; }
-  .linenr { font-size:smaller }
-  .code-highlighted {background-color:#ffff00;}
-  .org-info-js_info-navigation { border-style:none; }
-  #org-info-js_console-label { font-size:10px; font-weight:bold;
-                               white-space:nowrap; }
-  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
-                                 font-weight:bold; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
   /*]]>*/-->
 </style>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/bigblow/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/bigblow/css/bigblow.css"/>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/bigblow/css/hideshow.css"/>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery-ui-1.10.2.min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery.localscroll-min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery.scrollTo-1.4.3.1-min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery.zclip.min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/bigblow.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/hideshow.js"></script>
 <script type="text/javascript">
 /*
 @licstart  The following is the entire license notice for the
@@ -106,244 +142,336 @@ for the JavaScript code in this tag.
  }
 /*]]>*///-->
 </script>
-
 </head>
 <body>
-
-<div id="preamble">
-
-</div>
-
 <div id="content">
 <h1 class="title">MFactor Documentation</h1>
-
-
 <div id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#sec-1">1 Overview</a></li>
-<li><a href="#sec-2">2 Usage</a>
+<li><a href="#sec-1">1. Overview</a>
 <ul>
-<li><a href="#sec-2-1">2.1 Expected Preprocessor Definitions before Compilation</a></li>
-<li><a href="#sec-2-2">2.2 Bytecode Generator Output</a></li>
+<li><a href="#sec-1-1">1.1. General Concept</a></li>
+<li><a href="#sec-1-2">1.2. Configuring the Rake Task</a></li>
+<li><a href="#sec-1-3">1.3. Making Existing C Functions Available</a></li>
+<li><a href="#sec-1-4">1.4. Invoking the Rake Task</a></li>
 </ul>
 </li>
-<li><a href="#sec-3">3 VM Implementation</a>
+<li><a href="#sec-2">2. Host Compiler</a>
 <ul>
-<li><a href="#sec-3-1">3.1 Instruction Set</a></li>
-<li><a href="#sec-3-2">3.2 Implementation</a>
-<ul>
-<li><a href="#sec-3-2-1">3.2.1 Header File</a>
-<ul>
-<li><a href="#sec-3-2-1-1">3.2.1.1 Typedefs</a></li>
-<li><a href="#sec-3-2-1-2">3.2.1.2 The Image</a></li>
-<li><a href="#sec-3-2-1-3">3.2.1.3 Preprocessor Macros</a></li>
-<li><a href="#sec-3-2-1-4">3.2.1.4 Main VM Function Prototype</a></li>
-</ul></li>
-</ul></li>
+<li><a href="#sec-2-1">2.1. Concept</a></li>
+<li><a href="#sec-2-2">2.2. Bytecode Generator Output</a></li>
 </ul>
 </li>
-<li><a href="#sec-4">4 Complete Source Files</a>
+<li><a href="#sec-3">3. VM Implementation</a>
 <ul>
-<li><a href="#sec-4-1">4.1 interpreter.h</a></li>
+<li><a href="#sec-3-1">3.1. Instruction Set</a></li>
+<li><a href="#sec-3-2">3.2. Implementation</a>
+<ul>
+<li><a href="#sec-3-2-1">3.2.1. Header File</a>
+<ul>
+<li><a href="#sec-3-2-1-1">3.2.1.1. Typedefs</a></li>
+<li><a href="#sec-3-2-1-2">3.2.1.2. The Image</a></li>
+<li><a href="#sec-3-2-1-3">3.2.1.3. Preprocessor Macros</a></li>
+<li><a href="#sec-3-2-1-4">3.2.1.4. Main VM Function Prototype</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#sec-4">4. Complete Source Files</a>
+<ul>
+<li><a href="#sec-4-1">4.1. interpreter.h</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </div>
-
-<div id="outline-container-1" class="outline-2">
+<div id="outline-container-sec-1" class="outline-2">
 <h2 id="sec-1"><span class="section-number-2">1</span> Overview</h2>
 <div class="outline-text-2" id="text-1">
-
-<p>MFactor is an (incomplete) implementation of the <a href="http://factorcode.org/">factor language</a> for embedded systems.
+<p>
+MFactor is an (incomplete) implementation of the <a href="http://factorcode.org/">factor language</a> for embedded systems.
 It consists of two parts:
 </p>
+
 <p>
 A <b>host compiler</b>, written in Ruby, which is used with the <a href="https://github.com/ruby/rake">Rake</a> build system to produce a
 binary image.
 </p>
+
 <p>
 A <b>c implementation of a bytecode vm</b> which is able to execute such an image.
 </p>
 </div>
 
+
+<div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> General Concept</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+The general idea is as follows:
+</p>
+
+<div class="figure">
+<p><img src="img/concept.png" alt="concept.png" />
+</p>
 </div>
 
-<div id="outline-container-2" class="outline-2">
-<h2 id="sec-2"><span class="section-number-2">2</span> Usage</h2>
-<div class="outline-text-2" id="text-2">
+<p>
+In order to incorporate this into a project, several rake tasks are supplied in <a href="../tasks/stdlib.rake">tasks/stdlib.rake</a>
+</p>
 
-
-
+<ul class="org-ul">
+<li><b>stdlib</b>: the main task, which, when called, generates above code
+</li>
+<li><b>mftest[word name]</b>: helper task, outputs a graphical representation of a specific word in the <code>generated</code> subdir.
+</li>
+</ul>
+</div>
 </div>
 
-<div id="outline-container-2-1" class="outline-3">
-<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Expected Preprocessor Definitions before Compilation</h3>
-<div class="outline-text-3" id="text-2-1">
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> Configuring the Rake Task</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+The rake file is supposed to be included with rake's <code>import</code> facility.
+</p>
 
-<ul>
-<li><code>CORTEX_M</code> when set, compile for Cortex-M3/M4 targets.  Cortex-M0 is currently
-  unsupported because unaligned memory access is required.
+<p>
+Currently, it is configured via setting global variables:
+</p>
+<ul class="org-ul">
+<li><code>MFACTOR_SRC_DIR</code>: determines the directory where the application's mfactor sources can be found
+</li>
+<li><code>GENERATOR</code>: which bytecode backend to use, currently, only <code>Cortex</code> is supported
+</li>
+<li><code>START_WORD</code>: word, which will be executed when starting the vm
+</li>
+<li><code>MFACTOR_ROOT_VOCAB</code>: the root vocabulary, which is first loaded and loads all dependencies
+</li>
+<li><code>MFACTOR_DEPENDING_OBJECT</code>: To cause Rake to recompile the whole application, this
+should be set to an object file in the application which contains the bytecode image.
+</li>
+<li><code>MFACTOR_C_WORDS</code>: Hashtable for exposing word locations in bytecode to C. Format:
+<div class="org-src-container">
+
+<pre class="src src-ruby">{ <span style="color: #8b2252;">"mfactor-word-name"</span> =&gt; <span style="color: #8b2252;">"NAME_OF_CPP_DEFINE"</span> }
+</pre>
+</div>
+</li>
+<li><code>$ff_mfactor</code>: 
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-1-3" class="outline-3">
+<h3 id="sec-1-3"><span class="section-number-3">1.3</span> Making Existing C Functions Available</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+Special global variable <code>$mfactor_ff</code> can be set to a yaml file for
+"importing" existing c functions into the interpreter's namespace (Foreign function interface).
+entries are in the form of
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-yaml"><span style="color: #a0522d;">&lt;c_name&gt;</span>:
+  <span style="color: #a0522d;">name</span>: <span style="color: #8b2252;">"&lt;mfactor-name&gt;"</span>
+  <span style="color: #a0522d;">call</span>: &lt;callspec&gt;
+</pre>
+</div>
+
+<p>
+where <code>&lt;callspec&gt;</code> describes the function's arguments, e.g. "iis" for a function like <code>fn( int, int, int16)</code>.
+Currently supported values are:
+</p>
+<ul class="org-ul">
+<li><code>v</code> -&gt; fn(void)
+</li>
+<li><code>lit</code> -&gt; for variables
+</li>
+<li><code>i</code>, <code>b</code>, <code>bi</code>, <code>iis</code>, <code>iii</code> where <code>i</code> is <code>int</code>, <code>b</code> is <code>int8</code> and <code>s</code> is <code>int16</code>
 </li>
 </ul>
 
-
+<p>
+If a file <code>ff.yaml</code> is found in <code>MFACTOR_SRC_DIR</code>, it is parsed as a yaml file
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-4" class="outline-3">
+<h3 id="sec-1-4"><span class="section-number-3">1.4</span> Invoking the Rake Task</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+If <code>MFACTOR_DEPENDING_OBJECT</code> was set correctly, then a rebuild of the application
+automatically triggers a recompile of the bytecode image.
+</p>
+</div>
+</div>
 </div>
 
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Host Compiler</h2>
+<div class="outline-text-2" id="text-2">
+</div><div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Concept</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+The host compiler scans <code>MFACTOR_SRC_DIR</code> for the vocabulary specified with
+<code>MFACTOR_ROOT_VOCAB</code>, and loads it.  It recursively loads any formerly unloaded
+vocabularies in the process.  Loading a vocabulary involves following ruby classes:
+</p>
+
+<div class="figure">
+<p><img src="img/rbcomp.png" alt="rbcomp.png" />
+</p>
+</div>
+</div>
 </div>
 
-<div id="outline-container-2-2" class="outline-3">
+<div id="outline-container-sec-2-2" class="outline-3">
 <h3 id="sec-2-2"><span class="section-number-3">2.2</span> Bytecode Generator Output</h3>
 <div class="outline-text-3" id="text-2-2">
-
-<p>Per default, the output of the rake task is place in subdirectory <code>generated</code> of the
+<p>
+Per default, the output of the rake task is place in subdirectory <code>generated</code> of the
 including project.  This folder contains several files:
-</p><ul>
+</p>
+<ul class="org-ul">
 <li><code>inst_enum.h</code> - enum which contains all instruction mnemonics.  These are used in
-  <code>stdlib.code.h</code>
+<code>stdlib.code.h</code>
 </li>
 <li><code>mfactor_words.h</code> - contains all exported words, which can then be referenced from C
-  context. (see ???)
+context. (see ???)
 </li>
 <li><code>stdlib.code.h</code> - contains the actual byte code image
 </li>
 <li><code>stdlib.dict.h</code> - contains the dictionary, excluding private words (see ???)
 </li>
 <li><code>stdlib_size.h</code> - some constants which are generated during byte code compilation and
-  used in the VM implementation
+used in the VM implementation
 </li>
 </ul>
-
 </div>
 </div>
-
 </div>
 
-<div id="outline-container-3" class="outline-2">
+<div id="outline-container-sec-3" class="outline-2">
 <h2 id="sec-3"><span class="section-number-2">3</span> VM Implementation</h2>
 <div class="outline-text-2" id="text-3">
-
-<p>The VM is a <a href="http://en.wikipedia.org/wiki/Stack_machine">stack machine</a> with three stacks, a <b>data stack</b>, <b>return stack</b> and a <b>retain stack</b>.
+<p>
+The VM is a <a href="http://en.wikipedia.org/wiki/Stack_machine">stack machine</a> with three stacks, a <b>data stack</b>, <b>return stack</b> and a <b>retain
+stack</b>.
 </p>
-
 </div>
 
-<div id="outline-container-3-1" class="outline-3">
+<div id="outline-container-sec-3-1" class="outline-3">
 <h3 id="sec-3-1"><span class="section-number-3">3.1</span> Instruction Set</h3>
 <div class="outline-text-3" id="text-3-1">
-
-<p>The Instruction Set for the VM is defined in <a href="instructionset.yml">instructionset.yml</a>.  For a description
+<p>
+The Instruction Set for the VM is defined in <a href="instructionset.yml">instructionset.yml</a>.  For a description
 of the instructions see ??? the relevant section later on.
 </p>
 </div>
-
 </div>
 
-<div id="outline-container-3-2" class="outline-3">
+<div id="outline-container-sec-3-2" class="outline-3">
 <h3 id="sec-3-2"><span class="section-number-3">3.2</span> Implementation</h3>
 <div class="outline-text-3" id="text-3-2">
-
-<p>This section describes the implementation of the VM in <a href="src/interpreter.c">src/interpreter.c</a>
+<p>
+This section describes the implementation of the VM in <a href="src/interpreter.c">src/interpreter.c</a>
 </p>
-
 </div>
 
-<div id="outline-container-3-2-1" class="outline-4">
+<div id="outline-container-sec-3-2-1" class="outline-4">
 <h4 id="sec-3-2-1"><span class="section-number-4">3.2.1</span> Header File</h4>
 <div class="outline-text-4" id="text-3-2-1">
-
-<p>In <a href="src/interpreter.h">src/interpreter.h</a> are relevant data type definitions and preprocessor macro
+<p>
+In <a href="src/interpreter.h">src/interpreter.h</a> are relevant data type definitions and preprocessor macro
 defaults.  These are supposed to be overriden to configure the compiled runtime (see
 ???).
 </p>
-
 </div>
 
-<div id="outline-container-3-2-1-1" class="outline-5">
+<div id="outline-container-sec-3-2-1-1" class="outline-5">
 <h5 id="sec-3-2-1-1"><span class="section-number-5">3.2.1.1</span> Typedefs</h5>
 <div class="outline-text-5" id="text-3-2-1-1">
-
-
 <p>
 The type of actual primitive instructions which are loaded and evaluated, and from which
 byte code images are constructed. (see ???)
 Size: 1 byte
 </p>
-
+<div class="org-src-container">
 
 <pre class="src src-C"><span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span> <span style="color: #228b22;">inst</span>;
 </pre>
-
+</div>
 
 <p>
 Targets of normal jumps and calls.  16 bit size, so if an image is bigger than 64K, these
 are not sufficient (see ???call instructions)
 Size: 2 bytes
 </p>
-
+<div class="org-src-container">
 
 <pre class="src src-C"><span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">short</span> <span style="color: #228b22;">short_jump_target</span>;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">relative jumps in 64k on 32 bit </span><span style="color: #b22222;">*/</span>
 </pre>
-
+</div>
 
 <p>
 Targets of long jumps. Use full 32 Bit address space.  Used for calls to addresses on
 stack.
 Size: 32 Bit
 </p>
-
+<div class="org-src-container">
 
 <pre class="src src-C"><span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">uintptr_t</span> <span style="color: #228b22;">jump_target</span>;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">long absolute jump </span><span style="color: #b22222;">*/</span>
 </pre>
-
+</div>
 
 <p>
 Type of data actually manipulated on the stack.
 Size: 32 Bit
 </p>
-
+<div class="org-src-container">
 
 <pre class="src src-C"><span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">uintptr_t</span> <span style="color: #228b22;">cell</span>;                 <span style="color: #b22222;">/* </span><span style="color: #b22222;">memory cell must at least hold pointer </span><span style="color: #b22222;">*/</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-2-1-2" class="outline-5">
+<div id="outline-container-sec-3-2-1-2" class="outline-5">
 <h5 id="sec-3-2-1-2"><span class="section-number-5">3.2.1.2</span> The Image</h5>
 <div class="outline-text-5" id="text-3-2-1-2">
-
-<p>The image generated in <code>stdlib.code.h</code> is declared here:
+<p>
+The image generated in <code>stdlib.code.h</code> is declared here:
 </p>
 
-
+<div class="org-src-container">
 
 <pre class="src src-C"><span style="color: #228b22;">inst</span> <span style="color: #a0522d;">stdlib</span>[STDLIB_SIZE];
 </pre>
-
+</div>
 
 <p>
 <code>STDLIB_SIZE</code> is generated, and exported in <code>stdlib_size.h</code>.
-See also <a href="#sec-2-2">Bytecode Generator Output</a>
+See also <i>Bytecode Generator Output</i>
 </p>
 </div>
-
 </div>
 
-<div id="outline-container-3-2-1-3" class="outline-5">
+<div id="outline-container-sec-3-2-1-3" class="outline-5">
 <h5 id="sec-3-2-1-3"><span class="section-number-5">3.2.1.3</span> Preprocessor Macros</h5>
 <div class="outline-text-5" id="text-3-2-1-3">
-
-
 <p>
 The following all indicate the size of the different components, in <code>cell</code> units
 </p>
 
-
+<div class="org-src-container">
 
 <pre class="src src-C"><span style="color: #b22222;">/* </span><span style="color: #b22222;">data memory (affects non-transient data) in cells</span><span style="color: #b22222;">*/</span>
 <span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_MEM
@@ -370,18 +498,19 @@ The following all indicate the size of the different components, in <code>cell</
 <span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_RETAINSTACK</span> 32
 <span style="color: #483d8b;">#endif</span>
 </pre>
-
+</div>
 
 <p>
 Another macro can be preset or computed: <code>INSTBASE</code>.  This is used to distinguish
 primitive instructions from quotations, when executing words on the stack.  Primitives
 cannot be interpreted as memory addresses, since these would point into invalid memory.
 </p>
+
 <p>
-On Cortex-M, all memory addresses higher than 0x80&hellip; are not accessable, and can be
+On Cortex-M, all memory addresses higher than 0x80&#x2026; are not accessable, and can be
 used for primitive instructions.
 </p>
-
+<div class="org-src-container">
 
 <pre class="src src-C"><span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> INSTBASE
 <span style="color: #483d8b;"> #if</span> (__linux &amp;&amp; __LP64__)
@@ -393,59 +522,49 @@ used for primitive instructions.
 <span style="color: #483d8b;"> #endif</span>
 <span style="color: #483d8b;">#endif</span>
 </pre>
-
+</div>
 
 <p>
 A <code>cell</code>-sized version for comparison to data values:
 </p>
 
-
+<div class="org-src-container">
 
 <pre class="src src-C"><span style="color: #483d8b;">#define</span> <span style="color: #a0522d;">INSTBASE_CELL</span> ((<span style="color: #228b22;">cell</span>)INSTBASE&lt;&lt;(8*(<span style="color: #a020f0;">sizeof</span>(<span style="color: #228b22;">inst</span> *)-<span style="color: #a020f0;">sizeof</span>(inst))))
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-2-1-4" class="outline-5">
+<div id="outline-container-sec-3-2-1-4" class="outline-5">
 <h5 id="sec-3-2-1-4"><span class="section-number-5">3.2.1.4</span> Main VM Function Prototype</h5>
 <div class="outline-text-5" id="text-3-2-1-4">
-
-<p>This is the prototype for the function that is supposed to be executed from the
+<p>
+This is the prototype for the function that is supposed to be executed from the
 application program.  The only argument is the offset of the first in the bytecode image
 to be executed.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-C"><span style="color: #228b22;">void</span> <span style="color: #0000ff;">interpreter</span>(<span style="color: #228b22;">short_jump_target</span>);
+<pre class="src src-C"><span style="color: #228b22;">void</span> <span style="color: #0000ff;">interpreter</span>(short_jump_target);
 </pre>
-
-
 </div>
 </div>
 </div>
 </div>
-
+</div>
 </div>
 
-<div id="outline-container-4" class="outline-2">
+<div id="outline-container-sec-4" class="outline-2">
 <h2 id="sec-4"><span class="section-number-2">4</span> Complete Source Files</h2>
 <div class="outline-text-2" id="text-4">
-
-
-</div>
-
-<div id="outline-container-4-1" class="outline-3">
+</div><div id="outline-container-sec-4-1" class="outline-3">
 <h3 id="sec-4-1"><span class="section-number-3">4.1</span> interpreter.h</h3>
 <div class="outline-text-3" id="text-4-1">
+<div class="org-src-container">
 
-
-
-
-<pre class="src src-C"><span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> INTERPRETER_H
+<pre class="src src-C" id="interpreter_h"><span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> INTERPRETER_H
 <span style="color: #483d8b;">#define</span> <span style="color: #a0522d;">INTERPRETER_H</span>
 
 <span style="color: #483d8b;">#include</span> <span style="color: #8b2252;">&lt;stdbool.h&gt;</span>
@@ -494,20 +613,16 @@ to be executed.
 <span style="color: #228b22;">void</span> <span style="color: #0000ff;">interpreter</span>(<span style="color: #228b22;">short_jump_target</span>);
 
 <span style="color: #483d8b;">#endif</span>
-
 </pre>
-
-
-
 </div>
 </div>
 </div>
 </div>
-
-<div id="postamble">
-<p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
-<a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
-
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: 2015-03-17 Di</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.4.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
 </html>

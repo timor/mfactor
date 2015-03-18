@@ -27,12 +27,89 @@ binary image.
 
 A *c implementation of a bytecode vm* which is able to execute such an image.
 
-* Usage
 
-** Expected Preprocessor Definitions before Compilation
-- =CORTEX_M= when set, compile for Cortex-M3/M4 targets.  Cortex-M0 is currently
-  unsupported because unaligned memory access is required.
+** General Concept
+The general idea is as follows:
+#+BEGIN_SRC ditaa :file img/concept.png
+  +---------+
+  |.mfactor +----+
+  |source   |    |
+  |files    |    |
+  +---------+    |
+                 v
+        +-----------+       +---------------------+
+        | rake task |       |vm implementation .c |
+        |           |       |{d}                  |
+        |           |       +---------------------+
+        +-----------+                |
+             |                       v
+             v                +----------------+    +--------------+
+      +--------------+        | regular        |    |c application |
+      |bytecode image|------->| compilation    |<---|{d}           |
+      |  {d}         |        |                |    +--------------+
+      +--------------+        +----------------+
+                                    |
+                                    |
+                    +--------+      |
+                    |binary  |      |
+                    |{d}     |<-----+
+                    |        |
+                    +--------+
+#+END_SRC
 
+In order to incorporate this into a project, several rake tasks are supplied in [[file:../tasks/stdlib.rake][tasks/stdlib.rake]]
+
+- *stdlib*: the main task, which, when called, generates above code
+- *mftest[word name]*: helper task, outputs a graphical representation of a specific word in the =generated= subdir.
+
+** Configuring the Rake Task
+The rake file is supposed to be included with rake's =import= facility.
+
+Currently, it is configured via setting global variables:
+- =MFACTOR_SRC_DIR=: determines the directory where the application's mfactor sources can be found
+- =GENERATOR=: which bytecode backend to use, currently, only =Cortex= is supported
+- =START_WORD=: word, which will be executed when starting the vm
+- =MFACTOR_ROOT_VOCAB=: the root vocabulary, which is first loaded and loads all dependencies
+- =MFACTOR_DEPENDING_OBJECT=: To cause Rake to recompile the whole application, this
+  should be set to an object file in the application which contains the bytecode image.
+- =MFACTOR_C_WORDS=: Hashtable for exposing word locations in bytecode to C. Format:
+  #+BEGIN_SRC ruby
+      { "mfactor-word-name" => "NAME_OF_CPP_DEFINE" }
+  #+END_SRC
+- =$ff_mfactor=: 
+
+** Making Existing C Functions Available
+Special global variable =$mfactor_ff= can be set to a yaml file for
+"importing" existing c functions into the interpreter's namespace (Foreign function interface).
+entries are in the form of
+
+#+BEGIN_SRC yaml
+  <c_name>:
+    name: "<mfactor-name>"
+    call: <callspec>
+#+END_SRC
+
+  where =<callspec>= describes the function's arguments, e.g. "iis" for a function like =fn( int, int, int16)=.
+  Currently supported values are:
+  - =v= -> fn(void)
+  - =lit= -> for variables
+  - =i=, =b=, =bi=, =iis=, =iii= where =i= is =int=, =b= is =int8= and =s= is =int16=
+
+** Invoking the Rake Task
+If =MFACTOR_DEPENDING_OBJECT= was set correctly, then a rebuild of the application
+automatically triggers a recompile of the bytecode image.
+
+* Host Compiler
+
+** Concept
+The host compiler scans =MFACTOR_SRC_DIR= for the vocabulary specified with
+=MFACTOR_ROOT_VOCAB=, and loads it.  It recursively loads any formerly unloaded
+vocabularies in the process.  Loading a vocabulary involves following ruby classes:
+#+BEGIN_SRC ditaa :file img/rbcomp.png
+
+Parser -> Image -> ByteCodeImage
+
+#+END_SRC
 ** Bytecode Generator Output
 Per default, the output of the rake task is place in subdirectory =generated= of the
 including project.  This folder contains several files:
@@ -44,6 +121,7 @@ including project.  This folder contains several files:
 - =stdlib.dict.h= - contains the dictionary, excluding private words (see ???)
 - =stdlib_size.h= - some constants which are generated during byte code compilation and
   used in the VM implementation
+
 * VM Implementation
 The VM is a [[http://en.wikipedia.org/wiki/Stack_machine][stack machine]] with three stacks, a *data stack*, *return stack* and a *retain
 stack*.
@@ -166,8 +244,8 @@ to be executed.
 void interpreter(short_jump_target);
 #+end_src
 
-* Complete Source Files
-** interpreter.h
+** Complete Source Files
+*** interpreter.h
 #+name: interpreter_h
 #+begin_src C :tangle ../src/interpreter.h
 #ifndef INTERPRETER_H
