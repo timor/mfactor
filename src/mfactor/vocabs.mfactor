@@ -38,6 +38,7 @@ IN: vocabs
       [ dict-next _dict-find-helper ] if ]
     [ drop f ] if ;
 
+! find entry named str in dictionary. If found, return the entry and t, otherwise leave str and nil
 : dict-find ( str -- dict-entry/str ? )
     dictstart _dict-find-helper ;
 
