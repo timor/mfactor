@@ -1,0 +1,13 @@
+!-*- mode: factor -*-
+USING: kernel io prettyprint vocabs exceptions ;
+IN: exceptions.util
+
+! Get the name of an exception on the stack. Since exceptions are only symbols right now,
+! this is just a name lookup.
+: exception-name ( symbol -- name ) name>> ;
+
+! call quotation, reporting any unhandled errors to output, drop quotation
+: report-errors ( quot -- )
+    [ call ] catch
+    dup 0 = not [ "unhandled exception: " print exception-name print nl drop ]
+    [ drop ] if ;
