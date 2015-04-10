@@ -146,6 +146,7 @@ module MFactor
     # generate bytecode in data segment, return address
     def generate_data(item)
       acc = []
+      extra_offset=0
       case item
       when MFComplexSequence
         inline_seq_header(HEADER_TYPES[:boxed], cell_width + 1, item.content.length, acc)
@@ -165,6 +166,7 @@ module MFactor
         inline_seq_header(HEADER_TYPES[:quotation], 1, quotation_length(item.body), acc)
         item.body.each {|w| word_bytecode(w,acc)}
         acc << prim(:qend)
+        extra_offset=1
       when MFStringLit then word_bytecode(item,acc)
       when MFLitSequence then word_bytecode(item,acc)
       else
@@ -174,7 +176,9 @@ module MFactor
       puts "constant data at #{loc} " if Rake.verbose == true
       @data.concat acc
       @data_counter += acc.length
-      return loc + 2            # referenced address should point to count byte
+      # referenced address should point to count byte, except for quotations, where it
+      # points directly to the first instruction
+      return loc + 2 + extra_offset
     end
     def quotation_length(arr)
       l=arr.map{|e| element_size(e)}.reduce(:+)
