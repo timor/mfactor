@@ -17,7 +17,7 @@ IN: listener
 ! word, which is called with 0 on the stack (represents empty parser accumulator).  If it
 ! is not a parsing word, call it, else handle unknown word.
 : listener ( -- )
-    prompt token dict-find
+    prompt token dict-find      ! ( entry ? )
     [ dup parsing-word? [ definition 0 swap _call-safe [ drop ] times ]
       [ definition _call-safe ] if ]
     [ unknown-token ] if listener ;
