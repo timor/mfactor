@@ -1,7 +1,8 @@
 !-*- mode: factor -*-
-USING: kernel math headers memory strings io ;
+USING: kernel math headers memory strings io exceptions ;
 IN: sequences
 
+SYMBOLS: unbox-error index-bounds-error ;
 
 ! access the second byte in the header (see headers.mfactor), which by default al sequence pointers point to
 : element-size ( seq -- n ) 1 - getmem8 7 bitand 1 + ;
@@ -50,10 +51,10 @@ IN: sequences
     dup 0 = [ drop getmem ]
     [ dup 2 = [ drop resolve-bref ]
       [ dup 3 = [ drop resolve-aref ]
-        [ "unable to unbox type: " print pwrite error ] if ] if ] if ;
+        [ unbox-error throw ] if ] if ] if ;
 
 : _assert-nth-index-range ( n seq -- n seq )
-    [ length 0 swap in-range [ "sequence index out of bound" print error ] unless ] 2keep ;
+    [ length 0 swap in-range [ index-bounds-error throw ] unless ] 2keep ;
 
 : nth ( n seq -- elt )
     _assert-nth-index-range
