@@ -180,7 +180,7 @@ static void print_error(char * str)
 
 	#define restart() do {pc = (inst*)RESTART; goto restart;} while(0)
 
-	#define assert_pop(sp,min) if (sp <= min) { print_error("stack underflow");BACKTRACE();restart();}
+	#define assert_pop(sp,min,name) if (sp <= min) { print_error(name "stack underflow");BACKTRACE();restart();}
 	#define assert_push(sp,min,size) if (sp > min+size){ print_error("stack overflow");BACKTRACE();restart();}
 
 
@@ -188,11 +188,11 @@ static void print_error(char * str)
 	#define push_(sp,val) *sp=val;sp++;
 	#define pop_(sp) --sp;*sp;
 	#define ppush(val) ({assert_push(psp,pstack,VM_PSTACK);push_(psp,val)})
-	#define ppop() ({assert_pop(psp,pstack);pop_(psp)})
+	#define ppop() ({assert_pop(psp,pstack,"p");pop_(psp)})
 	#define returnpush(val) ({assert_push(returnsp,returnstack,VM_RETURNSTACK);push_(returnsp,val)})
-	#define returnpop() ({assert_pop(returnsp,returnstack);pop_(returnsp)})
+	#define returnpop() ({assert_pop(returnsp,returnstack,"return");pop_(returnsp)})
 	#define retainpush(val) ({assert_push(retainsp,retainstack,VM_RETAINSTACK);push_(retainsp,val)})
-	#define retainpop() ({assert_pop(retainsp,retainstack);pop_(retainsp)})
+	#define retainpop() ({assert_pop(retainsp,retainstack,"retain");pop_(retainsp)})
 
 	#define peek_n(sp,nth) (*(sp-nth))
 
