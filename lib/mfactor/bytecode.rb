@@ -89,6 +89,7 @@ module MFactor
       @compiled_definitions.each do |cdef|
         cdef.code.each_with_index do |w,i|
           if w.is_a? Array and w[0] == :dict_address
+            puts "replacing placeholder in '#{cdef.definition.name}'" if Rake.verbose == true
             addr = @dict_positions[w[1]]
             cdef.code[i,cell_width]=int_bytes(addr,cell_width)
           end
