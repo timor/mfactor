@@ -146,11 +146,11 @@ module MFactor
          :effect => subtree(:effect),
          :definition_body => subtree(:body),
          :definition_mods => sequence(:mods)) { MFDefinition.new(name,definer,effect,Quotation.new(body),mods)}
-    rule(:used_dict_name => simple(:dname)) { dname.to_s }
+    rule(:used_dict_name => simple(:dname)) { dname }
     rule(:using => simple(:junk)) { MFSearchPath.new([]) }
-    rule(:using => sequence(:vocabs)) {MFSearchPath.new(vocabs.map{|v| v.to_s})}
+    rule(:using => sequence(:vocabs)) {MFSearchPath.new(vocabs)}
     rule(:wrapped_word_name => simple(:n)) {WrappedWord.new(n.to_s)}
-    rule(:symbol_name => simple(:n)) { n.to_s }
+    rule(:symbol_name => simple(:n)) { n }
     rule(:symbols_decl => sequence(:names)) {SymbolsDecl.new(names)}
     rule(:current_dict => simple(:vocab)) {MFCurrentVocab.new(vocab.to_s)}
     rule(:program => subtree(:p)) { p }

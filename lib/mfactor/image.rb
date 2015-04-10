@@ -42,6 +42,7 @@ module MFactor
       # @current_file=nil
       @dictionary={"kernel"=>Vocabulary.new("kernel")}
       @vocab_roots=[*roots,File.expand_path(File.dirname(__FILE__)+"/../../src/mfactor")]
+      @filestack = []
       puts "vocab load path: #{@vocab_roots}" if $mf_verbose
     end
     # call the parser on an input object (file)
@@ -73,7 +74,7 @@ module MFactor
     end
     def parse_file(file)
       $current_mfactor_file=file
-      puts "parsing #{file}" if $mf_verbose
+      puts "parsing '#{file}'" if $mf_verbose
       STDOUT.flush
       result=@@transform.apply(parse(File.read(file)))
       # pp result
@@ -98,8 +99,12 @@ module MFactor
       @dictionary[name.to_s]
     end
     def find_vocab_file(vocab_name)
-      @vocab_roots.map{|path| Dir.glob("#{path}/#{vocab_name}.mfactor")}.flatten.first ||
-        raise("vocabulary not found: #{vocab_name} (in #{$current_mfactor_file})")
+      res = @vocab_roots.map{|path| Dir.glob("#{path}/#{vocab_name.to_s}.mfactor")}.flatten.first
+      unless res
+        line,col=vocab_name.line_and_column
+        raise("#{@filestack[-1]}:#{line}:#{col}:Error: vocabulary not found: '#{vocab_name}'")
+      end
+      res
     end
     # load one colon definition
     def load_def (d,file,current_vocab,search_vocabs)
@@ -128,8 +133,9 @@ module MFactor
       current_vocab=nil
       search_vocabs=[]
       file=find_vocab_file(vocab_name)
+      @filestack.push(file)
       if @files.member?(file)
-        return @dictionary[vocab_name]||raise("file '#{file}' loaded, but no vocabulary '#{vocab_name} found!")
+        return @dictionary[vocab_name.to_s]||raise("file '#{file}' loaded, but no vocabulary '#{vocab_name} found!")
       end
       puts "trying to load '#{vocab_name}.mfactor'" if $mf_verbose == true
       program=parse_file(file)
@@ -139,33 +145,41 @@ module MFactor
         when MFCurrentVocab then
           puts "define vocab: #{d.vocab}" if $mf_verbose == true
           current_vocab=get_vocabulary_create(d.vocab)
-          @dictionary[d.vocab]=current_vocab
+          @dictionary[d.vocab.to_s]=current_vocab
         when MFSearchPath then    # USING: directive
           search_vocabs=[]
           d.vocabs.each do |v|
-            if @dictionary[v] && !(@dictionary[v].definitions.empty?)
+            if @dictionary[v.to_s] && !(@dictionary[v.to_s].definitions.empty?)
               puts "#{v} already loaded" if $mf_verbose == true
             else
               puts "loading #{v}" if $mf_verbose == true
               load_vocab(v)
               puts "done loading #{v}" if $mf_verbose == true
             end
-            search_vocabs.unshift(@dictionary[v])
+            raise "no dictionary entry for vocab '#{v}'" unless @dictionary[v.to_s]
+            search_vocabs.unshift(@dictionary[v.to_s])
           end
-          puts "file:#{file}\n searchpath:" if $mf_verbose == true
+          puts "file: #{file}\n searchpath:" if $mf_verbose == true
           pp search_vocabs.map{|v| v.name} if $mf_verbose == true
         when MFDefinition then
+          puts "defining: #{d.name}" if $mf_verbose == true
           load_def(d,file,current_vocab,search_vocabs)
+        # expand SYMBOLS: declaration
         when SymbolsDecl then
           d.names.each do |name|
-            sym_def = MFDefinition.new(name,":",StackEffect.new([],[MFEffectItem.new("sym",:sym)]),
-                                       Quotation.new([WrappedWord.new(name)]),[])
+            puts "defining symbol: #{name}" if $mf_verbose == true
+            sym_def = MFDefinition.new(name,
+                                       Parslet::Slice.new(name.position,":",name.line_cache),
+                                       StackEffect.new([],[MFEffectItem.new("sym",:sym)]),
+                                       Quotation.new([WrappedWord.new(name.to_s)]),
+                                       [])
             load_def(sym_def,file,current_vocab,search_vocabs)
           end
         else
           raise "don't know how to load program item #{d}"
         end
       end
+      @filestack.pop
     end
   end
 end
