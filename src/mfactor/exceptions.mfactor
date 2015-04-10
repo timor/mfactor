@@ -35,15 +35,3 @@ IN: exceptions
     0 set-sp                      ! rewind data stack
     drop r>                       ! drop original quotation, put error code back on top
 ;
-
-USING: kernel io prettyprint vocabs ;
-
-! Get the name of an exception on the stack. Since exceptions are only symbols right now,
-! this is just a name lookup.
-: exception-name ( symbol -- name ) name>> ;
-
-! call quotation, reporting any unhandled errors to output, drop quotation
-: report-errors ( quot -- )
-    [ call ] catch
-    dup 0 = not [ "unhandled exception: " print exception-name print nl drop ]
-    [ drop ] if ;
