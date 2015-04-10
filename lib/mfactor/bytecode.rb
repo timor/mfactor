@@ -270,7 +270,7 @@ module MFactor
       maybe_generate
       @compiled_definitions.each do |cdef|
         next if cdef.definition.primitive?
-        io << "/* #{cdef.location}: #{cdef.definition.name} */ "
+        io << "/* 0x#{cdef.location.to_s(16)}: #{cdef.definition.name} */ "
         io << cdef.code.map{|w| w.is_a?(Integer) ?  w.to_s(16).prepend("0x") : w}.join(", ")
         io << ",\n"
       end
