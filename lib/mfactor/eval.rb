@@ -95,7 +95,7 @@ module MFactor
       when Symbol then
         # first check current vocab for definition
         unless (d=search n.to_s).nil?
-          self.[] *d.body      # execute body
+          self.[] *d.code      # execute body
         else
           if @primitives[n]
             @primitives[n].call
