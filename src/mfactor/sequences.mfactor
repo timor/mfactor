@@ -66,3 +66,10 @@ SYMBOLS: unbox-error index-bounds-error ;
         [ dup 3 = [ 2drop resolve-aref ]
           [ dup 4 = [ 2drop unbox-data ]
             [ "unknown element type: " print pwrite "size: " pwrite error ] if ] if ] if ] if ] if ;
+
+: each ( ... seq quot: ( ..a x -- ..b ) -- ... )
+    swap dup length             ! quot seq len
+    [                           ! quot seq i
+      2over                     ! quot seq i quot seq
+      [ swap nth swap call ] 2dip ] each-integer
+    2drop ; inline
