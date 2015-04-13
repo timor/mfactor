@@ -6,8 +6,7 @@ IN: exceptions.util
 ! this is just a name lookup.
 : exception-name ( symbol -- name ) name>> ;
 
-! call quotation, reporting any unhandled errors to output, drop quotation
-: report-errors ( quot -- )
-    [ call ] catch
-    dup 0 = not [ "unhandled exception: " print exception-name print nl drop ]
+! take the return value of catch, reporting any unhandled errors to output
+: report-errors ( code -- )
+    dup 0 = not [ "unhandled exception: " print exception-name print nl ]
     [ drop ] if ;
