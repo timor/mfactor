@@ -45,13 +45,12 @@ SYMBOLS: unbox-error index-bounds-error ;
     * + 1 + ;
 
 ! boxed data is 5 bytes long, (see headers, type 4)
-! TODO: throw proper exception!
-: unbox-data ( boxed-data-addr -- data )
-    [ 1 + ] [ getmem8 ] bi
-    dup 0 = [ drop getmem ]
-    [ dup 2 = [ drop resolve-bref ]
-      [ dup 3 = [ drop resolve-aref ]
-        [ unbox-error throw ] if ] if ] if ;
+: _unbox-data ( boxed-data-addr -- data )
+    [ 1 + ] [ getmem8 ] bi      ! ( address type )
+    { { 0 [ getmem ] }
+      { 2 [ resolve-bref ] }
+      { 3 [ resolve-aref ] }
+      [ drop unbox-error throw ] } case ;
 
 : _assert-nth-index-range ( n seq -- n seq )
     [ length 0 swap in-range [ index-bounds-error throw ] unless ] 2keep ;
