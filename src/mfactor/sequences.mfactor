@@ -31,13 +31,6 @@ SYMBOLS: unbox-error index-bounds-error element-type-error ;
 : _ia-each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+4 quot ) 2dup [ [ getmem ] dip call ] 2dip [ 4 + ] dip ;
 : ia-each ( ... seq quot: ( ... x -- ... ) -- ... ) [ uncount ] dip swap [ _ia-each-step ] times 2drop ;
 
-! known bad
-! : each ( ... seq quot: ( ... x -- ... ) -- ... )
-!     over [ 1 + ] 2dip
-!     getmem8 [ dup 0 = [ ba-each ]
-!               [ 2 = [ ia-each ]
-!                 [ "each: unknown sequence type: " print '0' + emit error ] if ] if ] if ;
-
 ! return address of nth element without checking for size
 : _nth-address-unsafe ( n seq -- elt-address )
     swap
