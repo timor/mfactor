@@ -2,7 +2,7 @@
 USING: kernel math headers memory strings io exceptions ;
 IN: sequences
 
-SYMBOLS: unbox-error index-bounds-error ;
+SYMBOLS: unbox-error index-bounds-error element-type-error ;
 
 ! access the second byte in the header (see headers.mfactor), which by default al sequence pointers point to
 : element-size ( seq -- n ) 1 - getmem8 7 bitand 1 + ;
@@ -52,19 +52,26 @@ SYMBOLS: unbox-error index-bounds-error ;
       { 3 [ resolve-aref ] }
       [ drop unbox-error throw ] } case ;
 
+! return the correct piece of access code for a given type
+: _seqtype>accessor ( seq -- accessor: ( address -- item ) )
+    [ element-size ] [ element-type ] bi
+    { { 0 [ 1 = [ [ getmem8 ] ] [ [ getmem ] ] if ] }
+      { 1 [ drop [ getmem ] ] }
+      { 2 [ drop [ resolve-bref ] ] }
+      { 3 [ drop [ resolve-aref ] ] }
+      { 4 [ drop [ _unbox-data ] ] }
+      [ "unknown element type: " print pwrite "size: " pwrite nl element-type-error throw ] }
+    case ; inline
+
 : _assert-nth-index-range ( n seq -- n seq )
     [ length 0 swap in-range [ index-bounds-error throw ] unless ] 2keep ;
 
+! access nth element in sequence seq.  Checks sequence type, and performs corresponding
+! element access operation.
 : nth ( n seq -- elt )
     _assert-nth-index-range
     [ _nth-address-unsafe ] keep
-    [ element-size ] [ element-type ] bi
-    dup 0 = [ drop 1 = [ getmem8 ] [ getmem ] if ]
-    [ dup 1 = [ 2drop getmem ]
-      [ dup 2 = [ 2drop resolve-bref ]
-        [ dup 3 = [ 2drop resolve-aref ]
-          [ dup 4 = [ 2drop unbox-data ]
-            [ "unknown element type: " print pwrite "size: " pwrite error ] if ] if ] if ] if ] if ;
+    _seqtype>accessor call ;
 
 : each ( ... seq quot: ( ..a x -- ..b ) -- ... )
     swap dup length             ! quot seq len
