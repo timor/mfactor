@@ -1,5 +1,5 @@
 !-*- mode: factor -*-
-USING: kernel parser vocabs prettyprint io memory exceptions.util syntax ;
+USING: kernel parser vocabs prettyprint io memory exceptions.util syntax exceptions ;
 IN: listener
 
 ! listener, the interactive frontend
@@ -10,19 +10,16 @@ IN: listener
 
 : prompt ( -- ) level pwrite '>' emit ' ' emit ;
 
-: _call-safe ( quot: ( ..a -- ..b ) -- ..b )
-    [ call ] report-errors ; inline
-
 ! Repeatedly prompt for a token nad try to find it.  If found, see if it is a parsing
 ! word, which is called with 0 on the stack (represents empty parser accumulator).  If it
 ! is not a parsing word, call it, else handle unknown word.
 : listener ( -- )
-    prompt token dict-find      ! ( entry ? )
-    [ dup parsing-word? [ definition 0 swap _call-safe [ drop ] times ]
-      [ definition _call-safe ] if ]
-    [ unknown-token ] if listener ;
-
-! : listener ( -- ) [ _unsafe-listener ] report-errors listener ;
+    [ prompt token dict-find      ! ( entry ? )
+      [ dup parsing-word? [ definition 0 swap call [ drop ] times ]
+        [ definition call ] if ]
+      [ unknown-token ] if ] catch
+      [ report-errors drop ] when*  ! extra item! drop!
+      listener ;
 
 SYNTAX: \ ( -- quot type ) token dict-find [ 3 suffix ] [ _bad-input ] if ;
 
