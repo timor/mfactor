@@ -76,7 +76,7 @@ module MFactor
       end
       @size=@memloc
       puts "total bytecode size: #{@memloc}" if Rake.verbose
-      puts "memory map:" if Rake.verbose
+      puts "memory map:" if Rake.verbose == true
       @compiled_definitions.each do |d|
         puts "@#{d.location}: #{d.definition.name} #{d.definition.primitive? ? 'prim' : '' }"
         print d.code
