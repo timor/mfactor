@@ -42,6 +42,7 @@ IN: kernel
 : if ( ..a ? true: ( ..a -- ..b ) false: ( ..a -- ..b ) -- ..b )
     ? call ; inline
 : when ( ..a ? true: ( ..a -- ..a ) -- ..a ) [ nop ] if ; inline nocompile
+: when* ( ..a ? true: ( ..a ? -- ..b ) -- ..b ) over [ call ] [ 2drop ] if ; inline nocompile
 : unless ( ..a ? false: ( ..a -- ..a ) -- ..a ) [ nop ] swap if ; inline nocompile
 
 ! call pred until it returns f
