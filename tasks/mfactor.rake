@@ -9,7 +9,7 @@ require_relative '../lib/mfactor/analyze'
 THISDIR=File.dirname(__FILE__)
 ISETFILE=File.join(THISDIR,"../instructionset.yml")
 # make target application's object file depend on the generated stuff
-MFACTOR_DEPENDING_OBJECT ||= "mfactor/src/interpreter.c"
+MFACTOR_DEPENDING_OBJECTS ||= ["mfactor/src/interpreter.c"]
 # can be a hash table that contains pairs of the form (mfactor-word -> name-of-c-define)
 MFACTOR_C_WORDS ||= {}
 puts "no c translations" if MFACTOR_C_WORDS == {}
