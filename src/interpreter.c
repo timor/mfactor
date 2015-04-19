@@ -178,7 +178,10 @@ static void print_error(char * str)
 
 	#define BACKTRACE() (printstack(psp,pstack),printstack(retainsp,retainstack),backtrace(returnsp,returnstack,(inst *)BASE,pc));
 
-	#define restart() do {pc = (inst*)RESTART; goto restart;} while(0)
+#define restart() do {if (RESTART == 0)         \
+                      {printf("No restart defined with >>restart, resetting\n"); \
+                           reset_system();} else {                      \
+                           pc = (inst*)RESTART; goto restart;}} while(0)
 
 	#define assert_pop(sp,min,name) if (sp <= min) { print_error(name "stack underflow");BACKTRACE();restart();}
 	#define assert_push(sp,min,size) if (sp > min+size){ print_error("stack overflow");BACKTRACE();restart();}
