@@ -80,4 +80,4 @@ IN: kernel
 
 ! set restart quotation in case of unrecoverable interpreter errors
 : >>restart ( quot -- )
-    3 >special ;
+    3 >special ; nocompile

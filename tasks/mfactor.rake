@@ -5,9 +5,11 @@ require 'tempfile'
 # set up load path
 $:.unshift(File.join(File.dirname(__FILE__),"..","lib"))
 require_relative '../lib/mfactor/analyze'
+require_relative '../lib/mfactor/c_emitter'
 
 THISDIR=File.dirname(__FILE__)
 ISETFILE=File.join(THISDIR,"../instructionset.yml")
+TRANSLATION_YAML_FILE ||= nil
 # make target application's object file depend on the generated stuff
 MFACTOR_DEPENDING_OBJECTS ||= ["mfactor/src/interpreter.c"]
 # can be a hash table that contains pairs of the form (mfactor-word -> name-of-c-define)
@@ -178,10 +180,11 @@ end
 task :mftest => "generated"
 
 directory "generated/cfg"
+directory "generated/ccode"
 
 # iterate through all vocabularies
 # generate a subdir in generated for each vocabulary, generate a control flow graphic for each word, if applicable
-task :compile_all => "generated/cfg" do
+task :compile_all => ["generated/cfg","generated/ccode"] do
   $stdout.sync=true
   if defined? MFACTOR_FF
     ffyaml=YAML.load_file(MFACTOR_FF)
@@ -190,6 +193,8 @@ task :compile_all => "generated/cfg" do
   mf=MFactor::Image.new([MFACTOR_SRC_DIR,"generated"])
   mf.load_vocab(MFACTOR_ROOT_VOCAB)
   a=MFactor::MFStaticCompiler.new(mf)
+  puts "translation file: #{TRANSLATION_YAML_FILE}" if TRANSLATION_YAML_FILE
+  e=MFactor::CEmitter.new(TRANSLATION_YAML_FILE ? YAML.load_file(TRANSLATION_YAML_FILE) : nil)
   mf.dictionary.each do |name,vocab|
     dir="generated/cfg/#{name}"
     mkdir_p dir
@@ -197,9 +202,12 @@ task :compile_all => "generated/cfg" do
       next unless d.compilable?
       begin
         dotfname=dir+"/#{MFactor::filename_escape(d.name)}.dot"
-        dotfile= File.new(dotfname,"w")
-        a.definition_dot_graph d, dotfile
-        dotfile.close
+        begin
+          dotfile= File.new(dotfname,"w")
+          a.definition_dot_graph d, dotfile
+        ensure
+          dotfile.close
+        end
       rescue MFactor::UncompilableError => msg
         puts "#{d.err_loc}:Warning: cannot compile '#{d.name}', reason: "
         puts msg
@@ -210,16 +218,39 @@ task :compile_all => "generated/cfg" do
         puts d.compile_log
         raise
       rescue Exception
-        puts "Compilation Log:"
+        puts "general Exception! Compilation Log:"
         puts d.compile_log
         raise
       ensure
-        sh "dot -Tpng #{dotfname} -o #{dotfname.ext('png')} " if File.exist?(dotfname)
-        File.open(dotfname.ext('log'),"w") do |f|
-          f.puts d.compile_log
+        begin                   # if dot fails, tell so and contiue
+          sh "dot -Tpng #{dotfname} -o #{dotfname.ext('png')} " if File.exist?(dotfname)
+          File.open(dotfname.ext('log'),"w") do |f|
+            f.puts d.compile_log
+          end
+        rescue
+          puts "unable to produce graph"
         end
-
       end
+    end
+    # call the c code emitter for all vocabularies
+    cfile="generated/ccode/#{name}.c"
+    f= File.open(cfile,"w")
+    begin
+      vocab.definitions.each do |d|
+        c=""
+        begin
+          puts "emitting c code for #{d.name}" if Rake.verbose == true
+          if d.compiled and (not d.inline?) and (not d.primitive?)
+            e.emit(d,c)
+          end
+          f << c
+        rescue MFactor::CompileError => msg
+          puts "WARNING: not emitting C code for #{d.name}: #{msg}"
+        end
+      end
+    ensure
+      f.flush
+      f.close
     end
   end
 end

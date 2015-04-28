@@ -30,13 +30,22 @@
   in interactive mode
 - substitute debug mode with single stepping handler
 - change string reading and quotation accumulation to use memory instead of stack
-- split code into platform dependent and platform independent parts
+- DONE: get rid of phi functions in generated cdfg (happens when phi'd data is requested)
+- DONE: insert dummy nodes at ends of conditional branches, _before_
+  returning to main code.  This should fix empty branches not being
+  registered as then or else nodes.  Alternatively, retroactively mark
+  branches as then or else when returning from an if and creating the
+  join.  This needs some stack inspection
+- c_emitter should generate all representations for nodes, maybe inline, and then collect based on graph traversal, emitting when done
+- pull any and all type definition or inference out of the emitter code into the analyzer (stack checker)
+- in c_emitter, unify handling of node representation. Either generate as needed, or pre-generate everything,
+  but not both (as currently)
+- split mfactor code into platform dependent and platform independent parts
+- handle constants like functions regarding application overrides
 - demote ruby vocab loader to bootstrapping, switching to
   parsing primitives after base system is loaded.  This might incur a
   performance hit, depending on how Parslet's performance compares to
   forward parsing using generated image.
-- get rid of phi functions in generated cdfg (either only in output,
-  or don't generate phis at all, depending on difficulty of variable naming)
 - ensure that mutual tail-recursive combinators work
 - support non-tail-recursive combinators (involves generating an
   "anonymous" function for every usage of the combinator), also

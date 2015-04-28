@@ -5,6 +5,25 @@
 # optionally provide dot_record() which
 # returns [record_object, position ]
 module MFactor
+  def c_escape(str)
+    s=str.to_s.gsub(/^<(.+)>$/,'make_\1');
+    s.gsub!(/(\w)(-)(\w)/){ $1+'_'+$3 };
+    s.gsub!(/[-+.><*=,?@]/,{
+              '+' => 'Plus',
+              '-' => 'Minus',
+              '.' => 'Show',
+              '>' => 'Lt',
+              '<' => 'Gt',
+              '|' => 'Pipe',
+              '*' => 'Times',
+              '=' => 'Equal',
+              ',' => 'Compile',
+                '?' => 'Flag',
+              '@' => 'At'
+            })
+    s
+  end
+  module_function :c_escape
   def dot_escape(str)
     # str.to_s.gsub(/[-+.><*=]/,{
     str.to_s.gsub(/[><|]/,{
@@ -27,42 +46,10 @@ module MFactor
     require 'set'
     require 'ostruct'
     @@unique='1'
-    attr_accessor :record
-    # def add_child(*clist)
-    #   puts "maybe add child to #{node_name}..."
-    #   @child_nodes ||= []
-    #   clist.each do |c|
-    #     MFactor::assert_is_node(c)
-    #     unless @child_nodes.member? c
-    #       puts "yes"
-    #       @child_nodes.push c
-    #       c.add_parent self
-    #     end
-    #   end
-    # end
-    # def add_parent(*clist)
-    #   puts "maybe add parent to #{node_name}..."
-    #   @parent_nodes ||= []
-    #   clist.each do |c|
-    #     MFactor::assert_is_node(c)
-    #     unless @parent_nodes.member? c
-    #       puts "yes"
-    #       @parent_nodes.push c
-    #       c.add_child self
-    #     end
-    #   end
-    # end
-    # def add_sibling(*clist)
-    #   puts "sibling to #{node_name}"
-    #   @sibling_nodes ||= []
-    #   clist.each do |c|
-    #     MFactor::assert_is_node(c)
-    #     unless @sibling_nodes.member? c
-    #       @sibling_nodes.push c
-    #       c.add_sibling self
-    #     end
-    #   end
-    # end
+    attr_accessor :record       # parent record, if this is a port node
+    attr_accessor :control_out  # successor in control graph, convenience access
+    attr_accessor :control_in_edge  # predecessor in control graph, only valid for non-join nodes (these have two)
+    attr_accessor :symbol       # graph-local symbol name (for use as c variable, etc)
     # overwrite equality test
     def ==(x)
       self.equal? x
@@ -79,43 +66,8 @@ module MFactor
       # @name||=gensym("node")
       @name
     end
-    # traverse from 1 node, collect all reachable nodes
-    # def collect_nodes(nodes=[],transitions=Set.new)
-    #   return nodes,transitions if nodes.member?(self)
-    #   @child_nodes ||= []
-    #   @parent_nodes ||= []
-    #   @sibling_nodes ||= []
-    #   self.record ||= nil
-    #   nodes.push self
-    #   puts "collected #{node_name}"
-    #   if is_record?
-    #     puts "collect port"
-    #     get_port_nodes.map do |n|
-    #       n.collect_nodes(nodes,transitions)
-    #     end
-    #   end
-    #   if self.record
-    #     puts "node in record"
-    #     self.record.collect_nodes(nodes,transitions)
-    #   end
-    #   @child_nodes.each do |n|
-    #     puts "collect child"
-    #     transitions.add [self,n]
-    #     n.collect_nodes(nodes,transitions)
-    #   end
-    #   @parent_nodes.each do |n|
-    #     puts "collect parent"
-    #     transitions.add [n,self]
-    #     n.collect_nodes(nodes,transitions)
-    #   end
-    #   @sibling_nodes.each do |n|
-    #     puts "collect sibling"
-    #     n.collect_nodes(nodes,transitions)
-    #   end
-    #   return nodes,transitions
-    # end
-
   end
+
   module DotRecord
     attr_accessor :handle_port
     def props
@@ -140,7 +92,7 @@ module MFactor
       props
       if @port_nodes.empty?
         # puts "ports lazy"
-        pnodes = self.port_nodes()
+        pnodes = self.port_nodes() # TODO: not used, but should really compute everything instead of having to add ports manually!xb
         pnodes.each do |n|
           add_port n
         end
@@ -157,50 +109,82 @@ module MFactor
       props
       portinfos = get_port_nodes.map do |n|
         OpenStruct.new(name: n.node_name,
-                       label: MFactor::dot_escape(n.dot_label))
+                       label: MFactor::dot_escape(n.dot_label)+(n.symbol ? "(#{n.symbol})":""))
       end
-      io << node_name << " [label=\"{{"
-      io << portinfos.map do |p|
-        "<#{p.name}> #{p.label}"
-      end.join(" | ")
-      io << "}}\"]\n"
+      label= '"{{'
+      label << (portinfos.map do |p|
+                  "<#{p.name}> #{p.label}"
+                end.join(" | "))
+      label << '}}"'
+      attrs={:label => label}
+      attr_string=attrs.map do |k,v|
+        "#{k.to_s}=#{v}"
+      end.join(", ")
+      io << node_name << ' ' << '[' << attr_string << "]\n"
     end
   end
   # control flow and data flow, enough information to generate some code (after de-SSA-ing)
   class CDFG
+    attr_accessor :inputs
+    attr_accessor :outputs
+    attr_accessor :start
+    attr_accessor :end
+    attr_reader :nodes
+    attr_writer :logger
     def initialize
       @nodes=[]
-      @control_edges=[]
-      @data_edges=[]
+      @control_edges=[]         # an edge is an array [source,dest]
+      @data_edges=[]            # an edge is an array [source,dest]
+      @inputs=[]
+      @outputs=[]
+      @start,@end=nil
+      @branch_stack = []             # :else or :then can be pushed when following an if choice
+      @uid="0"                  # local variable suffix counter
+      @logger=nil               # proc |msg| can be supplied for logging
     end
     # this needs only to be used when there is a node without a transition in the graph
     def add_node(n)
       @nodes.push n unless @nodes.include? n
     end
+    def log (msg)
+      if @logger
+         @logger.call msg
+      end
+    end
+    def backwards_annotate_last(node, tag, target)
+      # move upwards through graph until target, tag the last edge that was follwed
+      log "looking back at: #{node}"
+      if node.control_in_edge[0] == target
+        log "target found, tagging edge"
+        node.control_in_edge[2] = tag
+      else
+        backwards_annotate_last(node.control_in_edge[0],tag,target)
+      end
+    end
     def add_control_edge(s,d)
       add_transition s,d
       label=nil
-      # Check if we come from choice node.  If yes, label the correspondig edges
-      if s.class == ChoiceNode
-        if s.else_edge
-          raise "choice node has more than one outgoing edge"
-        elsif s.then_edge
-          s.else_edge = true
-          label="else"
-        else
-          s.then_edge = true
-          label="then"
-        end
-      end
-      @control_edges.push [s,d,label]
+      s.control_out=d
+      e = [s,d,label]
+      log "adding non-unique control-in edge!" if d.is_a? IfJoinNode
+      d.control_in_edge = e
+      @control_edges.push e
     end
     def add_data_edge(s,d)
-      add_transition s,d
-      @data_edges.push [s,d]
+      # Check if source is a PhiNode.  If so, add edges directly
+      # between the inputs to the phi node and the destination.
+      if s.is_a? PhiNode
+        s.inputs.each do |i|
+          add_data_edge i,d
+        end
+      else
+        add_transition s,d
+        @data_edges.push [s,d]
+      end
     end
     # generate graph from this node on, reachability determined by self
     def dot(io)
-      # puts "drawing"
+      log "drawing graph "
       io << <<END
 digraph test_definition {
 graph [ rankdir=TB ]
@@ -214,8 +198,11 @@ END
         if n.is_record?          # if we are a record, call specialized function
           n.dot_code(io)
         else
-          label_sym = (n.class == JoinNode ? :xlabel : :label)
+          label_sym = (n.is_a?(JoinNode) ? :xlabel : :label)
           attrs={label_sym => '"'+n.dot_label+'"'}
+          # if n.symbol
+          #   attrs[:xlabel]=n.symbol
+          # end
           if n.respond_to? :dot_node_shape
             attrs[:shape]='"'+n.dot_node_shape+'"'
           end
@@ -226,20 +213,36 @@ END
         end
       end
       @control_edges.each do |s,d,label|
+        log "adding control edge: [#{s},#{d},#{label}]"
         attrs={color:"red",fontcolor:"red"}
-        attrs[:label] = '"'+label+'"' if label
+        attrs[:label] = '"'+label.to_s+'"' if label
         draw_transition(s,d,io,attrs)
       end
       @data_edges.each do |s,d|
+        log "adding data edge"
         draw_transition(s,d,io,{color: "green"})
       end
       io.puts "}"
       self
     end
-    
+    def control_out_edges node
+      @control_edges.find_all{ |s,d| s == node}
+    end
     # return all nodes that are followers of a given node (TODO: check performance)
     def data_successors node
       @data_edges.find_all{ |s,d| s == node }.map{ |s,d| d}
+    end
+    def data_predecessors node
+      @data_edges.find_all{ |s,d| d == node }.map{ |s,d| s}
+    end
+    # iterate through nodes, mapping all connected nodes to the same symbol
+    def assign_names
+      @nodes.select{|n| n.is_a? MFInput}.each { |n| assign_arc_name n}
+      @nodes.select{|n| n.is_a? Output}.each { |n| assign_arc_name n}
+      @nodes.select{|n| n.is_a? MFCallResult}.each { |n| assign_arc_name n}
+      # by now, all assigned literals (loop variables) should be named
+      @nodes.select{|n| n.is_a? MFIntLit}.each { |n| assign_arc_name n}
+      @nodes.select{|n| n.is_a? MFStringLit}.each { |n| assign_arc_name n} # TODO combine with other lits
     end
     private
     def draw_transition(s,d,io,attrs={})
@@ -275,6 +278,27 @@ END
       end
       if dest.record 
         add_node dest.record
+      end
+    end
+    def assign_arc_name(node,symbol=nil)
+      return if node.symbol
+      # if this is a choice node, and no name has been computed, skip
+      return if node.is_a? ChoiceNode and !symbol
+      symbol ||=
+        if node.is_a? MFIntLit
+          node.value.to_s
+        elsif node.is_a? MFStringLit
+          '\"'+node.value+'\"'  # TODO escaping should be done when drawing!
+        else
+          MFactor::c_escape(node.name)+@uid.succ!
+        end
+      log "assigning '#{symbol}' to #{node.class}"
+      node.symbol=symbol
+      succs = data_successors(node)
+      pres= data_predecessors(node)
+      (pres+succs).each do |s|
+        log "maybe assign same symbol name: #{s.class}"
+        assign_arc_name s,symbol
       end
     end
   end

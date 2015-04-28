@@ -48,6 +48,9 @@ module MFactor
       super *a
       @file=$current_mfactor_file
     end
+    def inspect
+      "#<Word:#{definition.vocab}:#{name}>"
+    end
     def see
       name.to_s.downcase
     end
@@ -64,7 +67,7 @@ module MFactor
   # Definition object, which can be moved into dictionary
   # file: source file of the definition
   # graph: if set, points to the graph resulted by partial evaluation.  basis for code generation and petri-net simulation
-  class MFDefinition < Struct.new(:name,:definer,:effect,:code,:mods,:vocabulary,:file,:graph,:compile_log)
+  class MFDefinition < Struct.new(:name,:definer,:effect,:code,:mods,:vocabulary,:file,:graph,:compile_log,:compiled)
     def syntax_word?
       definer == "SYNTAX:"
     end
@@ -93,6 +96,9 @@ module MFactor
     def see
       ": #{name} #{effect} "+
         code.body.map{ |elt| see_word(elt) }.join(" ")
+    end
+    def inspect
+      "#<MFDefinition:#{name}"
     end
     # TODO: move out of here, into emitter
     # attach something to the compilation log
@@ -148,6 +154,10 @@ module MFactor
       @body = body
       MFactor::convert_tailcall(@body)
       convert_case_statements
+    end
+    def initialize_copy(other)
+      super
+      other.body = body.map { |e| e.dup }
     end
     def case_if_chain (assoc)
       if assoc.content.length == 1
@@ -218,7 +228,26 @@ module MFactor
     end
   end
 
-  class ChoiceNode < Struct.new(:label,:then_edge,:else_edge)
+  class NopNode
+    include GraphNode
+    def dot_node_shape
+      "point"
+    end
+    def dot_label
+      ""
+    end
+  end
+
+  class IfJoinNode < JoinNode
+  end
+
+  class LoopJoinNode < JoinNode
+    def dot_label
+    "repeat"
+    end
+  end
+
+  class ChoiceNode < Struct.new(:label)
     include GraphNode
     def dot_label
       label
@@ -234,71 +263,32 @@ module MFactor
       name
     end
   end
-  # class CallOutput < Struct.new(:label)
-  #   include GraphNode
-  #   def dot_label
-  #     label
-  #   end
-  # end
 
-  class MFCompiledCall < Struct.new(:definition,:inputs,:outputs)
+  class MFCompiledCall
     include GraphNode
     include DotRecord
-    def port_nodes
-      inputs+[LabelNode.new(definition.name)]+outputs
-    end
-  end
-
-  class PhiInput < Struct.new(:name)
-    include GraphNode
-    def dot_label
-      name
-    end
-  end
-  # records concrete output of phi node
-  # class PhiOutput < Struct.new(:label)
-  #   include GraphNode
-  #   def dot_label
-  #     label
-  #   end
-  # end
-
-  class PhiResult < Struct.new(:phi,:index)
-    include GraphNode
-    def dot_label
-      "phi_#{index}"
-    end
-  end
-  # Input_lists is a list (actually Array) of pointers to all inputs that have to be phi'd.
-  # Input_lists usually are of the same length, one list corresponds to one alternative stack
-  # image.
-  class MFPhiNode
-    include GraphNode
-    include DotRecord
-    attr_accessor :input_lists
+    attr_reader :definition
+    attr_reader :inputs
     attr_reader :outputs
-    attr_accessor :condition
-    attr_reader :phi_inputs
-    def initialize(condition,input_lists)
-      @condition=condition
-      @input_lists=input_lists
-      @longest_input_list=input_lists.sort{|a,b| a.length <=> b.length}.last
-      @phi_inputs=@longest_input_list.map.with_index do |input,i|
-        phi_in=PhiInput.new("phi_i#{i}")
-        add_port phi_in
-        # @input_lists.each do |l|
-        #   phi_in.add_parent l[i]
-        # end
-        phi_in
+    def initialize(definition, inputs, outputs)
+      @definition=definition
+      @inputs=inputs
+      @outputs=outputs
+      inputs.each do |i|
+        add_port i
       end
-      add_port LabelNode.new("phi"),true
-      @outputs = @longest_input_list.map.with_index do |input,i|
-        o=PhiResult.new(self,i)
+      add_port LabelNode.new(definition.name)
+      outputs.each do |o|
         add_port o
-        o
       end
     end
-    # used as nodes for graphing
+  end
+
+  class PhiNode < Struct.new(:inputs)
+    include GraphNode
+    def dot_label
+       raise "Phi node not substituted by data edges!"
+    end
   end
 
   # input nodes of compiled call
@@ -316,13 +306,13 @@ module MFactor
   # That is a result of a call to another word, which points to the corresponding call.
   # Index associates this result with the corresponding element in call's output stack
   # effect sequence.
-  class MFCallResult < Struct.new(:call,:index)
+  class MFCallResult < Struct.new(:output_effect, :index)
     include GraphNode
     def name
-      call.definition.effect.outputs[index][:name]
+      output_effect[:name]
     end
     def type
-      call.definition.effect.outputs[index][:type]
+      output_effect[:type]
     end
     def see
       name

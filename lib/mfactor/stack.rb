@@ -2,15 +2,12 @@ require 'mfactor/graph'
 require 'mfactor/datatypes'
 
 module MFactor
-
   # stack for virtual interpretation
   class MFStack
     include GraphNode
     include DotRecord
-    attr_accessor :marks
-    def initialize(a=[],definition=nil)
+    def initialize(a=[])
       @a = a
-      @definition = definition
     end
     def initialize_copy(source)
       super
@@ -68,7 +65,7 @@ module MFactor
         case x
         when MFInput then "#{x.name}(#{x.type})"
         when MFCallResult then "res[#{x.index}]"
-        when PhiResult then "phi[#{x.index}]"
+        when PhiNode then "phi"
         when MFIntLit then x.value.to_s
         when Quotation then "[...]"
         when Symbol then x.inspect
@@ -90,12 +87,6 @@ module MFactor
       raise "trying to diff inconsistent stack lengths" unless
         other.length == items.length
       items.each_index.select { |i| items[i] != other.items[i] }
-    end
-    private
-    def log s
-      if @definition
-        @definition.log s
-      end
     end
   end
 end
