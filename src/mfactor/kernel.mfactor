@@ -29,6 +29,8 @@ IN: kernel
     [ 4dup ] dip 4dip ; inline
 : bi ( x p q -- ) [ keep ] dip call ; inline
 : tri ( x p q r -- ) [ [ keep ] dip keep ] dip call ; inline
+: tri* ( x y z p q r -- ) [ [ 2dip ] dip dip ] dip call ; inline
+: tri@ ( x y z quot -- ) dup dup tri* ; inline
 : bi* ( x y p q -- ) [ dip ] dip call ; inline
 : bi@ ( x y quot -- ) dup bi* ; inline
 : 2bi ( x y  p q -- ) [ 2keep ] dip call ; inline
