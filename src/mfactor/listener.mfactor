@@ -21,7 +21,7 @@ IN: listener
       [ report-errors drop ] when*  ! extra item! drop!
       listener ;
 
-SYNTAX: \ ( -- quot type ) token dict-find [ 3 suffix ] [ _bad-input ] if ;
+SYNTAX: \\ ( -- quot type ) token dict-find [ 3 suffix ] [ _bad-input ] if ;
 
 : showmem ( -- ) memstart _get-MP [ 2dup >= [ f ] [ [ dup getmem8 .x 1 + ] dip t ] if ] loop 2drop ;
 

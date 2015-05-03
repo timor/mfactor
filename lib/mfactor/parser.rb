@@ -112,6 +112,17 @@ module MFactor
   class MFCurrentVocab < Struct.new(:vocab)
   end
 
+  # use for getting rid of backslashes in names which had to be used to escape comment characters
+  def unescape(s)
+    case s
+    when Parslet::Slice
+      Parslet::Slice.new(s.position,s.str.gsub(/\\(\S)/,"\\1"),s.line_cache)
+    when String
+      str.gsub(/\\(\S)/,"\\1")
+    end
+  end
+  module_function :unescape
+
   # tree transformation to output a structure that represents one file
   class MFTransform < Parslet::Transform
     # rule(:unsigned => simple(:lit)) {
@@ -145,7 +156,7 @@ module MFactor
          :name => simple(:name),
          :effect => subtree(:effect),
          :definition_body => subtree(:body),
-         :definition_mods => sequence(:mods)) { MFDefinition.new(name,definer,effect,Quotation.new(body),mods)}
+         :definition_mods => sequence(:mods)) { MFDefinition.new(MFactor::unescape(name),definer,effect,Quotation.new(body),mods)}
     rule(:used_dict_name => simple(:dname)) { dname }
     rule(:using => simple(:junk)) { MFSearchPath.new([]) }
     rule(:using => sequence(:vocabs)) {MFSearchPath.new(vocabs)}
