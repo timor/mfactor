@@ -28,8 +28,10 @@
 - DONE: get rid of phi functions in generated cdfg (either only in output,
   or don't generate phis at all, depending on difficulty of variable naming)
 - DONE: change qhead, according to usage in bytecode compiler
+- get rid of qstart, substitute with general skip-inline-data-like call
 - create dictionary entry right after reading name in `:` to allow recursive definitions
   in interactive mode
+- switch stack pointers to indexes of arrays
 - substitute debug mode with single stepping handler
 - change string reading and quotation accumulation to use memory instead of stack
 - DONE: get rid of phi functions in generated cdfg (happens when phi'd data is requested)
