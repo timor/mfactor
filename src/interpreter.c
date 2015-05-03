@@ -242,11 +242,12 @@ void interpreter(short_jump_target start_base_address) {
 
 	/* initialize state */
 	pc = &image[(start_base_address ? : START_WORD_OFFSET)];
+	BASE = (cell)image;
+	init_specials();
 	restart:							  /* used for restarting, expect pc to be set beforehand */
 	psp = &pstack[0];
 	returnsp = &returnstack[0];
 	retainsp = &retainstack[0];
-	BASE = (cell)image;
 	tailcall = true;
 
 	cell x;								/* temporary value for operations */
@@ -258,7 +259,6 @@ void interpreter(short_jump_target start_base_address) {
 	#if DEBUG
 	debug_mode=true;
 	#endif
-	init_specials();
 	returnpush(start_entry);
 	while(1) {
 		inst i;
