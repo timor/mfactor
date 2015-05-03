@@ -23,13 +23,18 @@ IN: bcomp
 ! compile parser accumulator to memory
 : _stack2code ( acc -- ) _get-MP + [ _set-MP ] keep [ [ _-q, ] times ] with-MP ;
 
-! return size of word when stored in quotation
-: _wordsize ( type -- size ) dup 0 = [ drop 1 ]
-    [ dup 1 = [ drop 3 ]
-      [ dup [ 2 = ] [ 5 = ] bi or [ drop cell 1 + ]
-        [ dup 3 = [ drop cell 1 + ]
-          [ dup 4 = [ drop 2 ]
-            [ 6 = [ 0 ] [ "size for item unknown" print error 0 ] if ] if ] if ] if ] if ] if ;
+! return size of word when stored in quotation depending on parser item type
+: _wordsize ( type -- size )
+    {
+        { 0 [ 1 ] }
+        { 1 [ 3 ] }
+        { 2 [ cell 1 + ] }
+        { 3 [ cell 1 + ] }
+        { 4 [ cell 2 ] }
+        { 5 [ cell 1 + ] }
+        { 6 [ 0 ] }
+        [ drop "size for item unknown" print error ]
+    } case 0 ;
 
 ! determine size of quotation accumulated, careful: not tail recursive, return stack must be able to hold number of elements, retain stack must hold twice the number of elements in accumulator
 ! reminder: acc === .. item type n
