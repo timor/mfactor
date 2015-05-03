@@ -21,7 +21,7 @@ IN: headers
 ! put quotation head to memory, note that checking sequence type of quotations is
 ! undefined behaviour, since inline quotations in code do not have corresponding header!
 ! (would increase code size _substantially_)
-: _qhead, ( length-in-bytes -- ) drop oplit qstart , ;
+: _qhead, ( length-in-bytes -- ) 8 b, b, ;
 
 ! put string header into memory
 : _strhead, ( length -- ) 0 0 _seqhead, ;
