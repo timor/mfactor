@@ -8,5 +8,5 @@ IN: exceptions.util
 
 ! take the return value of catch, reporting any unhandled errors to output
 : report-errors ( code -- )
-    dup 0 = not [ "unhandled exception: " print exception-name print nl ]
+    dup 0 = not [ "unhandled exception: " write exception-name print ]
     [ drop ] if ;

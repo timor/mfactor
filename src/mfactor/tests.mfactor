@@ -6,10 +6,10 @@ IN: tests
 : _assert-result ( quot a -- )
     [ call ] dip tuck
     = [ drop ]
-    [ "test failed, expected " print pwritex nl ] if ;
+    [ "test failed, expected " write pwritex nl ] if ;
 
 ! some unit tests
-: _lcheck ( -- ) level 0 = [ "!stack not empty!" print nl ] unless ;
+: _lcheck ( -- ) level 0 = [ "!stack not empty!" print ] unless ;
 : _test-emit ( -- ) 'c' emit [ f ] loop nl ;
 : _test-int ( -- ) 0xaffecafe .x ;
 : _test-loop ( -- ) 5 [ dup '0' + emit 1 - dup ] loop . ;
@@ -24,26 +24,26 @@ IN: tests
 : _test_bcomp_rev ( -- ) 'f' -b, 'e' -b, 'd' -b, _get-MP 3 [ dup getmem8 emit 1 + ] times drop ;
 : _test_bcomp_both ( -- ) _test_bcomp _test_bcomp_rev nl ;
 : _test-string ( -- ) "abcde" 7 [ [ getmem8 pwritex ' ' emit ] [ 1 + ] bi ] times drop nl ;
-: _test-receive-until ( -- ) "enter stuff, end with 'x'" print nl [ 'x' = ] [ receive ] do until ;
-: _test-stack2string ( -- ) 'h' 'e' 'l' 'l' 'o' 5 _stack2string print nl ;
+: _test-receive-until ( -- ) "enter stuff, end with 'x'" write [ 'x' = ] [ receive ] do until ;
+: _test-stack2string ( -- ) 'h' 'e' 'l' 'l' 'o' 5 _stack2string print ;
 ! that one is interactive!
-: _test-string-reader ( -- ) "enter some chars, terminate with \"" print
+: _test-string-reader ( -- ) "enter some chars, terminate with \"" write
    0 _read-string-and-compile nl
-   [ 5 = ] dip 1 = and [ "!accumulator wrong!" print nl ] unless
-   print nl ;
+   [ 5 = ] dip 1 = and [ "!accumulator wrong!" print ] unless
+   print ;
 : _test-seq-headers ( -- )
-    "testing sequence headers" print nl
-    "byteseq" print nl
+    "testing sequence headers" print
+    "byteseq" print
     B{ 1 2 3 }
     [ [ element-size ] 1 _assert-result ] keep
     [ [ element-type ] 0 _assert-result ] keep
     [ [ seq-size ] 3 _assert-result ] call
-    "intseq" print nl
+    "intseq" print
     I{ 1 2 3 }
     [ [ element-size ] 4 _assert-result ] keep
     [ [ element-type ] 0 _assert-result ] keep
     [ [ seq-size ] 12 _assert-result ] call
-    "anyseq" print nl
+    "anyseq" print
     { 1 2 3 }
     [ [ element-size ] 5 _assert-result ] keep
     [ [ element-type ] 4 _assert-result ] keep
@@ -53,7 +53,7 @@ IN: tests
     _test-int _lcheck           ! prints "0xaffecafe"
     _test-loop _lcheck          ! prints 543210
     _test-mem _lcheck           ! prints 0xaffe
-    _init_storage _lcheck       ! need to clean up after _test-mem!
+    _init-storage _lcheck       ! need to clean up after _test-mem!
     _test-times _lcheck         ! prints "!!!"
     _test-while _lcheck         ! prints 543210
     _test-string _lcheck        ! prints 0x5 0x61 0x62 0x63 x64 0x65 and another byte
@@ -66,11 +66,11 @@ IN: tests
     _test-ia _lcheck            ! prints 0x2 0x1 0 0 0 0x2 0 0 0 and another byte
     _test-ia-each _lcheck       ! prints 543210
     _test-seq-headers _lcheck   ! verbose test
-    [ "tests done." print ] call nl ;
+    [ "tests done." print ] call ;
 
 ! listener
 ! top level loop
-: top ( -- ) _run-tests _init_storage listener ;
+: top ( -- ) _run-tests _init-storage listener ;
 
 : testloop ( -- ) [ '!' emit t ] loop ;
 
@@ -83,18 +83,18 @@ IN: tests
 !! exception testing
 
 : _showpointers ( -- )
- "dstack: " print 0 get-sp pwritex nl
- "retainstack: " print 1 get-sp pwritex nl
- "returnstack: " print 2 get-sp pwritex nl
- "handler: " print 1 special> pwritex nl
+ "dstack: " write 0 get-sp pwritex nl
+ "retainstack: " write 1 get-sp pwritex nl
+ "returnstack: " write 2 get-sp pwritex nl
+ "handler: " write 1 special> pwritex nl
  st
 ;
 
 ! interactive test only, need to factor into an assertion
 : _test_throw ( -- ? )
- "testing nocatch" print nl _showpointers
- [ "leaving 5 on stack" print nl 5 _showpointers ] catch "back after catch" print nl _showpointers
+ "testing nocatch" print _showpointers
+ [ "leaving 5 on stack" print 5 _showpointers ] catch "back after catch" print _showpointers
  . .
- "testing catching" print nl _showpointers
- [ 1 [ "throwing 5" print nl 5 _showpointers throw ] call drop ] catch "caught" print nl _showpointers
- 5 = [ "caught 5" print nl t ] [ "did'nt catch 5!" f ] if ;
+ "testing catching" print _showpointers
+ [ 1 [ "throwing 5" print 5 _showpointers throw ] call drop ] catch "caught" print _showpointers
+ 5 = [ "caught 5" print t ] [ "did'nt catch 5!" f ] if ;

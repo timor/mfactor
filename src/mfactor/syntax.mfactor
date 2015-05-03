@@ -13,7 +13,7 @@ IN: syntax
 
 ! colon compiler
 ! read in name and quotation, compile to memory, create dictionary entry
-SYNTAX: : ( -- ) read-token 0 ";" parse-until >quotation swap [ dup dict-find nip [ "re" print ] when "defining: " print print nl ] keep name ;
+SYNTAX: : ( -- ) read-token 0 ";" parse-until >quotation swap [ dup dict-find nip [ "re" write ] when "defining: " write print ] keep name ;
 
 ! accumulate bytes on stack (expensive, but hey)
 : _readstr ( -- ..bytes num ) 0 [ receive dup 34 = [ drop f ] [ swap 1 + t ] if ] loop ;
@@ -25,7 +25,7 @@ SYNTAX: : ( -- ) read-token 0 ";" parse-until >quotation swap [ dup dict-find ni
 : _read-string-and-compile ( acc -- acc )
     _readstr _stack2string 5 suffix ;
 SYNTAX: " ( acc -- acc" ) _read-string-and-compile ;
-SYNTAX: B{ ( acc -- acc ) 0 "}" [ parsenum [ swap 1 + ] [ "not a byte literal: " print print error ] if ] scan-until-str _stack2string 5 suffix ;
+SYNTAX: B{ ( acc -- acc ) 0 "}" [ parsenum [ swap 1 + ] [ "not a byte literal: " write print error ] if ] scan-until-str _stack2string 5 suffix ;
 
 : ] ( -- ) "unmatched ] " print error ;
 

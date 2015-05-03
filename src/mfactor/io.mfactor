@@ -6,6 +6,8 @@ IN: io
 : _print_bytes ( str len -- ) [ dup getmem8 emit 1 + ] times drop ;
 
 ! print byte string in memory
-: print ( byte-array -- ) uncount _print_bytes ;
+: write ( byte-array -- ) uncount _print_bytes ;
 
 : nl ( -- ) 10 emit ;
+
+: print ( byte-array -- ) write nl ;

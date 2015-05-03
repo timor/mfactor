@@ -53,7 +53,7 @@ SYMBOLS: unbox-error index-bounds-error element-type-error ;
       { 2 [ drop [ resolve-bref ] ] }
       { 3 [ drop [ resolve-aref ] ] }
       { 4 [ drop [ _unbox-data ] ] }
-      [ "unknown element type: " print pwrite "size: " pwrite nl element-type-error throw ] }
+      [ "unknown element type: " write pwrite "size: " pwrite nl element-type-error throw ] }
     case ; inline
 
 : _assert-nth-index-range ( n seq -- n seq )
