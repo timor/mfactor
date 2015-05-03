@@ -129,7 +129,7 @@ GDBEND
   sh "#{GDB} #{args} #{PROG}"
 end
 
-import "tasks/stdlib.rake"
+import "tasks/mfactor.rake"
 
 # $mfactor_sources=FileList["lib/*.mfactor"]
 MFACTOR_SRC_DIR=""
