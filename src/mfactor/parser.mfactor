@@ -48,6 +48,12 @@ IN: parser
 : scan-until-str ( str quot: ( tok -- ) -- )  swap [ token swap 2dup str= [ drop f ] [ [ swap [ call ] keep ] dip t ] if ] loop 2drop ;
 
 ! comments
-SYNTAX: \! ( -- ) [ receive 10 = [ f ] [ t ] if ] loop ;
+SYNTAX: \! ( -- ) [ receive [ 10 = ] [ 13 = ] bi or [ f ] [ t ] if ] loop ;
 ! stack effects, also comments for now
-SYNTAX: ( ( -- ) [ receive 41 = [ f ] [ t ] if ] loop ;
+: _skip-effect ( -- )
+    [ receive
+      { { 40 [ _skip-effect ] }
+        { 41 [ f ] }
+        [ drop t ] } case
+    ] loop ;
+SYNTAX: ( ( -- ) _skip-effect ;
