@@ -25,6 +25,8 @@
 - DONE: implement symbols (SYMBOL:) and define some basic error conditions with them
 - rename `stdlib_size.h`, since there are more constants than size
 - DONE: rename all "stdlib" to "mfactor"
+- DONE: get rid of phi functions in generated cdfg (either only in output,
+  or don't generate phis at all, depending on difficulty of variable naming)
 - DONE: change qhead, according to usage in bytecode compiler
 - create dictionary entry right after reading name in `:` to allow recursive definitions
   in interactive mode
