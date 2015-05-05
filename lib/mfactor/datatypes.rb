@@ -88,6 +88,9 @@ module MFactor
     def recursive?
       mods.member? "recursive"
     end
+    def deferred?
+      definer.to_s == "DEFER:"
+    end
     # return printed location of definition
     def err_loc
       line,col=definer.line_and_column

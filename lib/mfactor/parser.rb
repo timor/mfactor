@@ -47,7 +47,9 @@ module MFactor
       (normal_word.as(:used_dict_name) >> space).repeat >> str(';')}
     rule(:symbols_declaration) { str('SYMBOLS:') >> space >>
       (normal_word.as(:symbol_name) >> space).repeat >> str(';')}
-    rule(:statement) { in_declaration | using_declaration.as(:using) |
+    rule(:deferred_declaration) { str('DEFER:').as(:def) >> space >>
+      normal_word.as(:deferred_name) }
+    rule(:statement) { deferred_declaration | in_declaration | using_declaration.as(:using) |
       symbols_declaration.as(:symbols_decl) | definition }
     rule(:program) { space? >> (statement >> space?).repeat.as(:program) }
     root(:program)
@@ -163,6 +165,8 @@ module MFactor
     rule(:wrapped_word_name => simple(:n)) {WrappedWord.new(n.to_s)}
     rule(:symbol_name => simple(:n)) { n }
     rule(:symbols_decl => sequence(:names)) {SymbolsDecl.new(names)}
+    rule(:def => simple(:definer),
+         :deferred_name => simple(:name)) {MFDefinition.new(MFactor::unescape(name),definer,nil,Quotation.new([]))}
     rule(:current_dict => simple(:vocab)) {MFCurrentVocab.new(vocab.to_s)}
     rule(:program => subtree(:p)) { p }
   end

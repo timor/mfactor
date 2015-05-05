@@ -111,8 +111,10 @@ module MFactor
       d.file=file
       name = d.name.to_s
       if old_def=find_name(name,[current_vocab] + search_vocabs)
-        raise "#{d.err_loc}:Error: word already exists: #{name}
+        unless old_def.deferred?
+          raise "#{d.err_loc}:Error: word already exists: #{name}
 #{old_def.err_loc}:Note: Location of previous definition"
+        end
       end
       # hack: assume kernel vocab is present, add all primitives to kernel
       if d.primitive?
@@ -162,8 +164,13 @@ module MFactor
           puts "file: #{file}\n searchpath:" if $mf_verbose == true
           pp search_vocabs.map{|v| v.name} if $mf_verbose == true
         when MFDefinition then
-          puts "defining: #{d.name}" if $mf_verbose == true
-          load_def(d,file,current_vocab,search_vocabs)
+          if d.deferred?
+            puts "deferring: #{d.name}" if $mf_verbose == true
+            load_def(d,file,current_vocab,search_vocabs)
+          else
+            puts "defining: #{d.name}" if $mf_verbose == true
+            load_def(d,file,current_vocab,search_vocabs)
+          end
         # expand SYMBOLS: declaration
         when SymbolsDecl then
           d.names.each do |name|

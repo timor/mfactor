@@ -18,7 +18,10 @@ module MFactor
     end
     def add(definition)
       existing=@index[definition.name.to_s]
-      raise "#{definition.err_loc}: Error: trying to add duplicate word #{definition.name.to_s}" if existing
+      if existing
+        raise "#{definition.err_loc}: Error: trying to add duplicate word #{definition.name.to_s}" unless existing.deferred?
+        raise "unable to remove old definition" unless @definitions.delete(existing)
+      end
       @index[definition.name.to_s]=definition
       definition.vocabulary = self  # doubly link
       @definitions.push(definition)

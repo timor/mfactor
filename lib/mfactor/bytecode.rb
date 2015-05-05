@@ -94,10 +94,24 @@ module MFactor
       # replace all placeholders with dictionary offsets
       @compiled_definitions.each do |cdef|
         cdef.code.each_with_index do |w,i|
-          if w.is_a? Array and w[0] == :dict_address
-            puts "replacing placeholder in '#{cdef.definition.name}'" if Rake.verbose == true
-            addr = @dict_positions[w[1]]
-            cdef.code[i,cell_width]=int_bytes(addr,cell_width)
+          case w
+          when Array
+            if w[0] == :dict_address
+              puts "replacing placeholder in '#{cdef.definition.name}'" if Rake.verbose == true
+              addr = @dict_positions[w[1]]
+              cdef.code[i,cell_width]=int_bytes(addr,cell_width)
+            elsif w[0] == :deferred
+              # CAVEAT: this here works by looking up the definition by name! for
+              # non-unique naming case, there must be a different way to get from the deferred definition to the actual definition
+              puts "replacing deffered definition in '#{cdef.definition.name}'" if Rake.verbose == true
+              actual_def = (@compiled_definitions.find{|cdef|
+                              # puts "checking #{cdef.definition.name}(#{cdef.definition.object_id}) against #{w[1].name}(#{w[1].object_id})"
+                              cdef.definition.name==w[1].name})
+              raise "no actual definition found for deferred definition" unless actual_def
+              cdef.code[i,2]=bcall_bytes(actual_def.location)
+            else
+              raise "dunno what to do with #{w}"
+            end
           end
         end
       end
@@ -219,8 +233,13 @@ module MFactor
           end
         else
           # puts "referring to #{word.name}"
+          target=@compiled_definitions.find{|cdef| cdef.definition==word.definition}
           image << ( word.is_tail ? prim(:btcall) : prim(:bcall) )
-          image.concat bcall_bytes(@compiled_definitions.find{|cdef| cdef.definition==word.definition}.location)
+          if target
+            image.concat bcall_bytes(target.location)
+          else
+            image << [:deferred, word.definition] << 0
+          end
         end
       when WrappedWord
         # replaced by [ dictstart liti offset[0,3] + ]
