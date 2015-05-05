@@ -55,6 +55,7 @@ module MFactor
       @memloc=0
       def_list=@dictionary.values.map{|v| v.definitions}.flatten.reject{|d| d.primitive?}
       def_list.each do |d|
+        begin
         code=[]
         cdef=MFCompiledDefinition.new
         cdef.location=@memloc
@@ -73,6 +74,11 @@ module MFactor
         puts "#{d.name} is at #{@memloc}" if Rake.verbose == true
         @memloc += (defsize + @data.length)
         cdef.code=code+@data
+        rescue
+          puts "failed to compile definition:"
+          puts "ERROR:#{d.err_loc}: #{d.see}"
+          raise
+        end
       end
       @size=@memloc
       puts "total bytecode size: #{@memloc}" if Rake.verbose
