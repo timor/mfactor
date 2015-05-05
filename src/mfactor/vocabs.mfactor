@@ -42,6 +42,20 @@ IN: vocabs
 : dict-find ( str -- dict-entry/str ? )
     dictstart _dict-find-helper ;
 
+! lookup address, return f unless found
+: dict-find-addr ( addr-to-check -- dict-entry )
+    dictstart
+    [                           ! ( addr-to-check dict-entry )
+      2dup
+      getmem = [
+          nip f ]
+      [
+          dict-next
+          dup dict-valid?
+          [ t ] [ 2drop f f ] if
+      ] if
+      ] loop ;
+
 ! save quotation in dictionary, non-immediate, name is counted string, add terminating 0 for compatibility
 : rename ( quot dictentry -- ) setmem ;
 : name ( quot name -- ) dict-find [ rename ] [ _free-name [ swap , 0 b, 0 b, dup strlen b, [ b, ] ba-each 0 b, ] with-MP ] if ;
