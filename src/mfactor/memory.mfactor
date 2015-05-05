@@ -30,6 +30,7 @@ IN: memory
 ! call quotation while setting MP to different address temporarily, restoring old value afterwards
 : with-MP ( addr quot -- ) swap _get-MP [ _set-MP call ] dip _set-MP ;
 
+! special variable, returns current segment base address
 : _code-base ( -- n )
     5 special> ;
 
