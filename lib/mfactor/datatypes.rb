@@ -97,8 +97,8 @@ module MFactor
       "#{file}:#{line}:#{col}"
     end
     def see
-      ": #{name} #{effect} "+
-        code.body.map{ |elt| see_word(elt) }.join(" ")
+      "#{definer} #{name} #{effect} "+
+        code.body.map{ |elt| MFactor::see_word(elt) }.join(" ")
     end
     def inspect
       "#<MFDefinition:#{name}"
