@@ -66,9 +66,23 @@ SYMBOLS: unbox-error index-bounds-error element-type-error ;
     [ _nth-address-unsafe ] keep
     _seqtype>accessor call ;
 
+!TODO: if not too big of performance hit, each can be implemented in terms of each-index pretty easy
 : each ( ... seq quot: ( ..a x -- ..b ) -- ... )
     swap dup length             ! quot seq len
     [                           ! quot seq i
       2over                     ! quot seq i quot seq
-      [ swap nth swap call ] 2dip ] each-integer
+      [                         ! quot seq i
+        swap nth                ! quot elt
+        swap call ] 2dip
+    ] each-integer
+    2drop ; inline
+
+: each-index ( ... seq quot: ( ..a elt index -- ..b ) -- ... )
+    swap dup length             ! quot seq len
+    [                           ! quot seq i
+      2over                     ! quot seq i quot seq
+      [                         ! quot seq i
+        [ swap nth ] keep       ! quot elt i
+        rot call ] 2dip
+    ] each-integer
     2drop ; inline
