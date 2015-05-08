@@ -25,9 +25,11 @@ module MFactor
       ((str('\\')>>any)|(str('"').absent? >> any)).repeat(0).as(:string) >>
       str('"') }
     rule(:quotation_body) {
-      ((quotation | wrapped_word | string | literal_sequence | atom) >> space).repeat }
+      ((quotation | fried_quotation | wrapped_word | string | literal_sequence | atom) >> space).repeat }
     rule(:literal_sequence) { sequence_opener_word.as(:seq_start) >> space >>
       quotation_body.as(:content) >> str('}') }
+    rule(:fried_quotation) { str("'[") >> space >>
+      quotation_body.as(:fried_quotation_body) >> str(']') }
     rule(:quotation) { str('[') >> space >>
       quotation_body.as(:quotation_body) >> str(']') }
     rule(:stack_effect_element) { normal_word.as(:effect_atom)>>
@@ -141,6 +143,7 @@ module MFactor
                                              end
     }
     rule(:quotation_body => subtree(:b)) { Quotation.new(b) }
+    rule(:fried_quotation_body => subtree(:b)) { FriedQuotation.new(b) }
     rule(:seq_start=>simple(:opener), :content => subtree(:content)) {
       if opener.str == "{"
         MFComplexSequence.new(content)

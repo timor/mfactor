@@ -191,6 +191,10 @@ module MFactor
     end
   end
 
+  class FriedQuotation < Quotation
+
+  end
+
   class WrappedWord < Struct.new(:name)
     def see
       "\\ #{self.name}"
