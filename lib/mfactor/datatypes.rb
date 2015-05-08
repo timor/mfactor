@@ -122,9 +122,9 @@ module MFactor
       arr.each do |elt|
         acc.push elt if elt.is_a? MFWord
         case elt
-          when MFComplexSequence then
+        when MFComplexSequence then
           flatten_quotation_words(elt.content,acc)
-          when Quotation then
+        when Quotation then
           flatten_quotation_words(elt.body,acc)
         end
       end
@@ -165,7 +165,7 @@ module MFactor
     def case_if_chain (assoc)
       if assoc.content.length == 1
         t_case = assoc.content.shift
-         return t_case
+        return t_case
       else
         a = assoc.content.shift
         a[1].body.unshift(MFWord.new("drop"))
@@ -250,7 +250,7 @@ module MFactor
 
   class LoopJoinNode < JoinNode
     def dot_label
-    "repeat"
+      "repeat"
     end
   end
 
@@ -294,7 +294,7 @@ module MFactor
   class PhiNode < Struct.new(:inputs)
     include GraphNode
     def dot_label
-       raise "Phi node not substituted by data edges!"
+      raise "Phi node not substituted by data edges!"
     end
   end
 
