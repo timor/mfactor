@@ -68,6 +68,11 @@ module MFactor
   # file: source file of the definition
   # graph: if set, points to the graph resulted by partial evaluation.  basis for code generation and petri-net simulation
   class MFDefinition < Struct.new(:name,:definer,:effect,:code,:mods,:vocabulary,:file,:graph,:compile_log,:compiled)
+    attr_accessor :forced_inline
+    def initialize *args
+      super *args
+      @forced_inline = false
+    end
     def syntax_word?
       definer == "SYNTAX:"
     end
@@ -110,24 +115,6 @@ module MFactor
       self.compile_log += s
       self.compile_log += "\n"
       s
-    end
-    # return a flat list of all words that might be somehow inside
-    def flatten_words
-      res=[]
-      flatten_quotation_words(code.body,res)
-      res
-    end
-    private
-    def flatten_quotation_words (arr,acc=[])
-      arr.each do |elt|
-        acc.push elt if elt.is_a? MFWord
-        case elt
-        when MFComplexSequence then
-          flatten_quotation_words(elt.content,acc)
-        when Quotation then
-          flatten_quotation_words(elt.body,acc)
-        end
-      end
     end
   end
 

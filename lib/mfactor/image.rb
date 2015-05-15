@@ -106,6 +106,41 @@ module MFactor
       end
       res
     end
+    def word_assign_definition(word, current_vocab, search_vocabs)
+      wname=word.name.to_s
+      def_of_w = find_name(wname,[current_vocab]+search_vocabs)
+      raise "#{d.err_loc}:Error: word '#{wname}' not found on #{search_vocabs.map{|s| s.name}}" unless def_of_w
+      word.definition=def_of_w
+      return def_of_w
+    end
+    # recursively scan through quotation, checking if words can be found (thereby
+    # associating a defininiton), expanding force-inlined definitions and expanding fried
+    # quotations
+    def expand_body(body, current_vocab, search_vocabs)
+      body.each_with_index do |elt, i|
+        # maybe replace next word by inline definition
+        if elt.is_a? MFWord
+          d=word_assign_definition(elt,current_vocab, search_vocabs)
+          if d.forced_inline
+            new_code = d.code.body.dup
+            # inline body, continue with new code
+            body.delete(i)
+            body.insert i, *new_code
+            elt = body[i]
+          end
+        end
+        #non-inline dispatch
+        case elt
+        when MFWord then word_assign_definition(elt,current_vocab, search_vocabs)
+        when Quotation then expand_body(elt.body, current_vocab, search_vocabs)
+        when MFComplexSequence then expand_body(elt.content, current_vocab, search_vocabs)
+        when Literal then           # skip literals
+        when MFLitSequence then     # skip literals
+        when WrappedWord then       # skip wrapped words, they are handled later
+        else raise "unable to expand item: #{elt}"
+        end
+      end
+    end
     # load one colon definition
     def load_def (d,file,current_vocab,search_vocabs)
       d.file=file
@@ -121,14 +156,8 @@ module MFactor
         @dictionary["kernel"].add d
       end
       current_vocab.add d    # need to add here because of recursion
-      # find all used words in vocabularies
-      d.flatten_words.each do |word|
-        wname=word.name.to_s
-        def_of_w = find_name(wname,[current_vocab]+search_vocabs)
-        raise "#{d.err_loc}:Error: word '#{wname}' not found on #{search_vocabs.map{|s| s.name}}" unless def_of_w
-        word.definition=def_of_w
-        # puts "word #{word.name} has def in \nFile:#{word.definition.err_loc}"
-      end
+      # find all used words in vocabularies, force inline any if necessary
+      expand_body(d.code.body, current_vocab, search_vocabs)
     end
     # try to load one vocabulary
     def load_vocab (vocab_name)
