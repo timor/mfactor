@@ -123,6 +123,63 @@ including project.  This folder contains several files:
 - =image.dict.h= - contains the dictionary, excluding private words (see ???)
 - =image_size.h= - some constants which are generated during byte code compilation and
   used in the VM implementation
+** Details
+*** Fried Quotations
+Fried Quotations (and their basic versions =curry= and =compose=) are the equivalent of
+closures.  Creating a closure always means allocating space somewhere.  If the closure
+creation is inlined, that space can be allocated by the compiler.  Therefore, fried
+quotations are currently only supported on the host compiler, and all quotations
+containing them are automatically inlined.
+
+To describe the transformation, consider the following example:
+#+BEGIN_SRC factor
+  ! for each i where i runs from 0 below n, x is added to it before applying quot to it
+  : each-int-added ( n x quot ( i -- ) -- )
+      '[ _ + @ ] each-integer; inline
+#+END_SRC
+
+Let's define a word that makes use of this word:
+#+BEGIN_SRC factor
+  ! print values that are passed to the quotation in each-int-added,
+  ! the value added to each element is n, it is called 10 times
+  : test ( n -- ) 10 swap [ . ] each-int-added ;
+#+END_SRC
+
+Conceptually, the following series of transformations is appplied internally when defining =test=:
+=test ( n -- ) 10 swap [ . ] '[ _ + @ ] each-integer=
+=test ( n -- ) 10 swap [ . ] '[ _ + _ call ] each-integer=
+=test ( n -- ) 10 swap 0x0001 setmem [ . ] 0x0002 setmem '[ (0x0001) + (0x0002) call ] each-integer=
+
+The locations sites where the "curried-in" data is used are made explicit, and before the
+quotation is passed to =each-integer=, code is generated that sets the actual memory
+locations to their values at runtime.  This is done even when the values are constant and
+known at compile time.
+
+Since it is effectively rewriting the quotation at
+runtime, this incurs a small performance hit.  That also illustrates why these words have
+to be inlined.  For every use, the quotation must essentially be copied if the rewritten
+items are to not interfere with different invocations.
+
+the =@= specifier actually does no splicing, but simply calls the original quotation.
+This must be kept in mind if the spliced quotation is mutable in any way.
+
+If code is stored in non-writable memory, another indirection is needed.  The placeholders
+are not substituted directly, but filled at runtime by a read to a known writable location:
+
+=test ( n -- ) 10 swap 0x0001 setmem [ . ] 0x0002 setmem '[ 0x0001 getmem + 0x0002 getmem call ] each-integer=
+
+This way, no actual code rewrite is performed, but the item use costs another indirection.
+Effectively, this allocates "variables" in a data segment, which the compiler assumes to be writable
+at runtime.
+
+Note that both versions introduce the overhead of copying the code of the original
+definition containing the fry at every call site!
+
+An obvious optimization here is to separate the last part of the definition, after the
+fried quotation, into an own word.  This is very probably almost always the case anyways,
+as the example definition above illustrates that typically the quotation is passed to
+another combinator.  If that one contains fried quotations, it will obviously further
+increase the copied code overhead.
 
 * VM Implementation
 The VM is a [[http://en.wikipedia.org/wiki/Stack_machine][stack machine]] with three stacks, a *data stack*, *return stack* and a *retain
