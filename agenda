@@ -40,6 +40,7 @@
   registered as then or else nodes.  Alternatively, retroactively mark
   branches as then or else when returning from an if and creating the
   join.  This needs some stack inspection
+- DOING: add support for fried quotations (host-compiler and compile-time only)
 - c_emitter should generate all representations for nodes, maybe inline, and then collect based on graph traversal, emitting when done
 - pull any and all type definition or inference out of the emitter code into the analyzer (stack checker)
 - in c_emitter, unify handling of node representation. Either generate as needed, or pre-generate everything,

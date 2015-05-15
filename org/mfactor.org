@@ -1,3 +1,4 @@
+# -*- org-babel-default-header-args:C: ((:noweb . "yes")); -*-
 #+TITLE:     MFactor Documentation
 #+EMAIL:     timor.dd@googlemail.com
 #+DATE:      2015-03-17 Di
@@ -19,7 +20,7 @@
 
 #+STARTUP: indent
 * Overview
-MFactor is an (incomplete) implementation of the [[http://factorcode.org/][factor language]] for embedded systems.
+MFactor is a (partial) implementation of the [[http://factorcode.org/][factor language]] for embedded systems.
 It consists of two parts:
 
 A *host compiler*, written in Ruby, which is used with the [[https://github.com/ruby/rake][Rake]] build system to produce a
@@ -30,7 +31,7 @@ A *c implementation of a bytecode vm* which is able to execute such an image.
 
 ** General Concept
 The general idea is as follows:
-#+BEGIN_SRC ditaa :file img/concept.png
+#+BEGIN_SRC ditaa :file img/concept.png :results none
   +---------+
   |.mfactor +----+
   |source   |    |
@@ -56,6 +57,7 @@ The general idea is as follows:
                     |        |
                     +--------+
 #+END_SRC
+
 
 In order to incorporate this into a project, several rake tasks are supplied in [[file:../tasks/mfactor.rake][tasks/mfactor.rake]]
 
@@ -182,9 +184,12 @@ another combinator.  If that one contains fried quotations, it will obviously fu
 increase the copied code overhead.
 
 * VM Implementation
-The VM is a [[http://en.wikipedia.org/wiki/Stack_machine][stack machine]] with three stacks, a *data stack*, *return stack* and a *retain
-stack*.
+The VM is a [[http://en.wikipedia.org/wiki/Stack_machine][stack machine]] with three stacks, a *data stack* (or parameter stack, pstack),
+*return stack* and a *retain stack*.
 
+The data stack is used for argument passing, while the return stack is used to save the
+program counter during sub-routines (and store some debug information).  The retain stack is only
+used for putting stack items out of the way temporarily.
 ** Instruction Set
 The Instruction Set for the VM is defined in [[file:instructionset.yml]].  For a description
 of the instructions see ??? the relevant section later on.
@@ -319,12 +324,4 @@ void interpreter(short_jump_target);
 #endif
 
 #+end_src
-
-
-* local vars                                                       :noexport:
-
-# Local Variables:
-# eval: (setq-local org-babel-default-header-args:C '((:noweb . "yes")))
-# End:
-
 
