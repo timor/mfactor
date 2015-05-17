@@ -351,6 +351,11 @@ void interpreter(short_jump_target start_base_address) {
 			x=(cell)(*(pc++));
 			ppush(x);
 			break;
+                case dref:
+                        x=(cell)(*((short_jump_target*) pc));
+                        ppush((cell)memory+x);
+                        pc += sizeof(short_jump_target);
+                        break;
 		case bref:              /* reference to short-length in-memory data (type can be seen on-site)*/
 		case blitq:             /* reference to in-memory quotation */
 			x=(cell)(*((short_jump_target*) pc));

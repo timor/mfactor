@@ -59,6 +59,8 @@ blitq: :private
 ref: :private
 # base-relative reference to other data 
 bref: :private
+# data-segment-based reference
+dref: :private
 # start of inline quotation
 qstart: :private
 # end of inline quotation
