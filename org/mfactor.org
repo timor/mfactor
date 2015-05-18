@@ -129,7 +129,11 @@ Fried Quotations (and their basic versions =curry= and =compose=) are the equiva
 closures.  Creating a closure always means allocating space somewhere.  If the closure
 creation is inlined, that space can be allocated by the compiler.  Therefore, fried
 quotations are currently only supported on the host compiler, and all quotations
-containing them are automatically inlined.
+containing them are automatically inlined.  Also, if looping code is used to return
+multiple results of fried quotation definitions, note that they will be equal to the last
+invocation, since no allocation is performed at compile time.  In theory, a runtime check
+could be implemented which signals a runtime error when a quotation is being fried more
+than once.
 
 To describe the transformation, consider the following example:
 #+BEGIN_SRC factor
