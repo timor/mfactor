@@ -31,16 +31,16 @@ IN: vocabs
 ! word lookup in dictionary
 ! return matching dictionary entry if found, string address otherwise
 
-: _dict-find-helper ( str dict-entry -- dict-entry/str ? )
+: dict-find-from ( str dict-entry -- dict-entry/str ? )
     dup dict-valid?
     [ 2dup name>> str=
       [ [ drop ] dip t ]
-      [ dict-next _dict-find-helper ] if ]
+      [ dict-next dict-find-from ] if ]
     [ drop f ] if ;
 
-! find entry named str in dictionary. If found, return the entry and t, otherwise leave str and nil
+! find entry named str in dictionary. If found, return the entry and t, otherwise leave str and nil. Use hash table lookup
 : dict-find ( str -- dict-entry/str ? )
-    dictstart _dict-find-helper ;
+    dup uncount lookup-name dict-find-from ;
 
 ! lookup address, return f unless found
 : dict-find-addr ( addr-to-check -- dict-entry )
