@@ -154,7 +154,7 @@ Let's define a word that makes use of this word:
 Conceptually, the following series of transformations is appplied internally when defining =test=:
 =test ( n -- ) 10 swap [ . ] '[ _ + @ ] each-integer=
 =test ( n -- ) 10 swap [ . ] '[ _ + _ call ] each-integer=
-=test ( n -- ) 10 swap 0x0001 setmem [ . ] 0x0002 setmem '[ (0x0001) + (0x0002) call ] each-integer=
+=test ( n -- ) 10 swap [ . ] 0x0002 setmem 0x0001 setmem [ (0x0001) + (0x0002) call ] each-integer=
 
 The locations sites where the "curried-in" data is used are made explicit, and before the
 quotation is passed to =each-integer=, code is generated that sets the actual memory
