@@ -44,9 +44,6 @@ module MFactor
     def inst_base()
       raise "overwrite inst_base in subclass"
     end
-    def bcall_bytes(val)
-      [val].pack("I").unpack("CC")
-    end
     # actual code generation routine
     def maybe_generate
       return if @generated
@@ -108,7 +105,7 @@ module MFactor
                               # puts "checking #{cdef.definition.name}(#{cdef.definition.object_id}) against #{w[1].name}(#{w[1].object_id})"
                               cdef.definition.name==w[1].name})
               raise "no actual definition found for deferred definition" unless actual_def
-              cdef.code[i,2]=bcall_bytes(actual_def.location)
+              cdef.code[i,2]=int_bytes(actual_def.location,2)
             else
               raise "dunno what to do with #{w}"
             end
@@ -236,7 +233,7 @@ module MFactor
           target=@compiled_definitions.find{|cdef| cdef.definition==word.definition}
           image << ( word.is_tail ? prim(:btcall) : prim(:bcall) )
           if target
-            image.concat bcall_bytes(target.location)
+            image.concat int_bytes(target.location,2)
           else
             image << [:deferred, word.definition] << 0
           end
