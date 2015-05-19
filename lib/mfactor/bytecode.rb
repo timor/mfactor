@@ -1,8 +1,8 @@
 # the code that actually emits something from a already parsed mfactor file set
 # performs dictionary validation among other stuff
 
-
 require 'mfactor/image'
+require 'mfactor/hash'
 
 module MFactor
 
@@ -242,13 +242,28 @@ module MFactor
     def prim(name)
       ISET[name.to_s] || raise( "unknown primitive: #{name}")
     end
+    def named_definitions
+      @compiled_definitions.select{|cdef| cdef.name[0] != "_"}
+    end
+    def dict_hash
+      res ||= MFactor::dictionary_hash_table(named_definitions)
+      res
+    end
+    def sorted_definitions
+      Enumerator.new do |y|
+        dict_hash.sort_by{|key, value| key}.each do |key,deflist|
+          deflist.each do |d|
+            y << d
+          end
+        end
+      end
+    end
     def calculate_dict_entries
       i = 0
-      @compiled_definitions.each do |cdef|
-        next if cdef.definition.name.to_s[0] == "_"
-        puts "dictionary entry for #{cdef.definition.name} is at offset #{i}" if Rake.verbose == true
-        @dict_positions[cdef.definition.name.to_s] = i
-        l = cell_width+3+cdef.definition.name.to_s.length + 1
+      sorted_definitions.each do |cdef|
+        puts "dictionary entry for #{cdef.name} is at offset #{i}" if Rake.verbose == true
+        @dict_positions[cdef.name] = i
+        l = cell_width+3+cdef.name.length + 1
         puts "length: #{l}" if Rake.verbose == true
         i += l
       end
@@ -257,12 +272,14 @@ module MFactor
     # c99 initializers for the dictionary
     def write_dictionary_entries(io="")
       maybe_generate
-      @compiled_definitions.each do |cdef|
-        if cdef.definition.name.to_s[0] == "_"
-          puts "skipping private word: #{cdef.definition.name} " if Rake.verbose == true
-        else
-          io << cdef.write_dict_entry(self) << ",\n"
+      if Rake.verbose == true
+        puts "Dictionary hash table buckets:"
+        dict_hash.sort_by{|key,value| key}.each do |hash, cdefs|
+          puts "#{hash}: "+cdefs.map{|d| d.name}.join(", ")
         end
+      end
+      sorted_definitions.each do |cdef|
+        io << cdef.write_dict_entry(self) << ",\n"
       end
     end
     # enum definitions for the instruction set
