@@ -1,4 +1,4 @@
-((nil . ((eval . (setq org-publish-project-alist
+((org-mode . ((eval . (setq org-publish-project-alist
 		       `(("org-mfactor"
 			  :base-directory ,(file-name-directory (or load-file-name buffer-file-name))
 			  :publishing-directory
@@ -19,4 +19,4 @@
 			  :recursive t
                           )
                          ("org" :components ("org-mfactor" "org-mfactor-static")))))
-         (eval . (setq org-confirm-babel-evaluate (lambda (lang body) (not (string= lang "ditaa"))))))))
+              (eval . (setq org-confirm-babel-evaluate (lambda (lang body) (not (string= lang "ditaa"))))))))
