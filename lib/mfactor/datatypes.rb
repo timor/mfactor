@@ -118,6 +118,18 @@ module MFactor
     end
   end
 
+  # holds specialized compiled information
+  class MFCompiledDefinition < Struct.new(:definition,:location,:code,:flags)
+    def write_dict_entry(bytecode,io="")
+      loc = definition.primitive? ? "0x#{(location << (8*(bytecode.cell_width-1))).to_s(16)}" : "&image+#{location.to_s}"
+      io <<
+        "{ .address = (inst *)#{loc}, .flags = #{flags}, .name = #{definition.name.to_s.inspect}, .name_length=#{definition.name.to_s.length}}"
+    end
+    def name
+      definition.name.to_s
+    end
+  end
+
   class MFInput < Struct.new(:name,:type)
     include GraphNode
     def see
