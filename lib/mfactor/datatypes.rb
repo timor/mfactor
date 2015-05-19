@@ -182,6 +182,16 @@ module MFactor
 
   end
 
+  # these are inserted whenever some data has to be compiled to the non-constant data
+  # segment.
+  class DataItem
+    attr_accessor :size, :value
+    def initialize(size, value)
+      @size = size or raise "unknown size for DataItem"
+      @value = value || 0
+    end
+  end
+
   class WrappedWord < Struct.new(:name)
     def see
       "\\ #{self.name}"

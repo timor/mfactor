@@ -84,6 +84,7 @@ def build_image
     f.write "inst image[#{mf.bytecode_size}]= {\n"
     mf.write_bytecode_image f
     f.write "};\n"
+    f.write_data_segment
   end
   File.open("generated/image.dict.h","w") do |f|
     f.write "dict_entry dict[VM_DICT] __attribute((aligned(1))) = {\n"

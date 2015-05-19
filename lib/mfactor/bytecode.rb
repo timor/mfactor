@@ -33,6 +33,8 @@ module MFactor
       @dict_positions={}    # store dictionary addresses
       @generated                    # flag for on-demand bytecode generation
       @size                         # store bytecode size here after generation
+      @data_counter                 # counts the size of the data segment
+      @data_segment={}              # DataItems => position
     end
     # some architecture-specific definitions
     def cell_width(elt)
@@ -100,7 +102,7 @@ module MFactor
             elsif w[0] == :deferred
               # CAVEAT: this here works by looking up the definition by name! for
               # non-unique naming case, there must be a different way to get from the deferred definition to the actual definition
-              puts "replacing deffered definition in '#{cdef.definition.name}'" if Rake.verbose == true
+              puts "replacing deferred definition in '#{cdef.definition.name}'" if Rake.verbose == true
               actual_def = (@compiled_definitions.find{|cdef|
                               # puts "checking #{cdef.definition.name}(#{cdef.definition.object_id}) against #{w[1].name}(#{w[1].object_id})"
                               cdef.definition.name==w[1].name})
@@ -141,6 +143,9 @@ module MFactor
       when WrappedWord then
         # replaced by [ dictstart liti offset[0,3] + ]
         1 + 1 + cell_width + 1
+      when DataItem then
+        # replaced by [ dref highbyte lowbyte ]
+        3
       else atom_size(elt)
       end
     end
@@ -160,7 +165,7 @@ module MFactor
         c
       end
     end
-    # generate bytecode in data segment, return address
+    # generate bytecode in data space (still in code segment), return address
     def generate_data(item)
       acc = []
       extra_offset=0
@@ -243,7 +248,22 @@ module MFactor
         image << prim(:dictstart) << prim(:liti) << [:dict_address, word.name]
         image.concat Array.new(cell_width()-1,0)
         image << prim(:+)
+      when DataItem
+        loc=data_location(DataItem)
+        image << prim(:dref)
+        image.int_bytes()
       else raise "don't know how to compile #{word}"
+      end
+    end
+    # return position of item in data segment, register if necessary
+    def data_location(item)
+      l=@data_segment[item]
+      if l
+        ret = l
+      else
+        ret = @data_counter
+        @data_segment[item] = @data_counter
+        @data_counter += item.size
       end
     end
     def prim?(name)
@@ -302,6 +322,13 @@ module MFactor
         io << ",\n"
       end
     end
+    def write_data_segment(io="")
+      io << "static uint8_t data_segment = {\n"
+      @data_segment.each do |item, location|
+        io << int_bytes(item.value, item.size).join(", ")
+      end
+      io << "};"
+    end
     # find a word in the compiled dictionary
     def get_word_address(wordname)
       d=@compiled_definitions.find{|cdef| cdef.definition.name == wordname } ||
@@ -310,6 +337,10 @@ module MFactor
     end
     def int_bytes(val,width)
       [val].pack("I").unpack("C"*width)
+    end
+    # deprecated
+    def bcall_bytes(val)
+      [val].pack("I").unpack("CC")
     end
   end
 

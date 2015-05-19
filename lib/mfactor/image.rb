@@ -35,6 +35,7 @@ module MFactor
     attr_accessor :dictionary
     attr_accessor :vocab_roots
     attr_accessor :files
+    attr_accessor :data         # data to be allocated in writable memory
     @@parser = MFP.new
     @@transform = MFTransform.new
     def initialize(roots)
@@ -43,6 +44,7 @@ module MFactor
       @dictionary={"kernel"=>Vocabulary.new("kernel")}
       @vocab_roots=[*roots,File.expand_path(File.dirname(__FILE__)+"/../../src/mfactor")]
       @filestack = []
+      @data = {}
       puts "vocab load path: #{@vocab_roots}" if $mf_verbose
     end
     # call the parser on an input object (file)
@@ -116,30 +118,35 @@ module MFactor
     # recursively scan through quotation, checking if words can be found (thereby
     # associating a defininiton), expanding force-inlined definitions and expanding fried
     # quotations
-    def expand_body(body, current_vocab, search_vocabs)
-      body.each_with_index do |elt, i|
+    def expand_item(elt, current_vocab, search_vocabs)
+      case elt
+      when FriedQuotation then
+        puts "expanding fried quotation" if $mf_verbose == true
+        elt.expand
+        elt.body = expand_body(elt.body, current_vocab, search_vocabs)
+      when Quotation then
+        elt.body = expand_body(elt.body, current_vocab, search_vocabs)
+      when MFComplexSequence then
+        elt.content = expand_body(elt.content, current_vocab, search_vocabs)
+      # all others are returned as is
+      end
+      return [elt]
+    end
+    def expand_body(body, current_vocab, search_vocabs, acc = [])
+      body.each do |elt|
         # maybe replace next word by inline definition
         if elt.is_a? MFWord
           d=word_assign_definition(elt,current_vocab, search_vocabs)
           if d.forced_inline
             new_code = d.code.body.dup
             # inline body, continue with new code
-            body.delete(i)
-            body.insert i, *new_code
-            elt = body[i]
+            acc += expand_body(new_code,acc,current_vocab, search_vocabs)
+          else
+            acc += expand_item(elt, current_vocab, search_vocabs)
           end
         end
-        #non-inline dispatch
-        case elt
-        when MFWord then word_assign_definition(elt,current_vocab, search_vocabs)
-        when Quotation then expand_body(elt.body, current_vocab, search_vocabs)
-        when MFComplexSequence then expand_body(elt.content, current_vocab, search_vocabs)
-        when Literal then           # skip literals
-        when MFLitSequence then     # skip literals
-        when WrappedWord then       # skip wrapped words, they are handled later
-        else raise "unable to expand item: #{elt}"
-        end
       end
+      acc
     end
     # load one colon definition
     def load_def (d,file,current_vocab,search_vocabs)
