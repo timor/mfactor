@@ -3,6 +3,7 @@
 
 module MFactor
   # compute the hash for all entries, bin, return bins
+  HTABLE_SIZE=256
   def hash_string(s,modulus)
     hash = 5381
     s.chars.each do |c|
@@ -13,7 +14,7 @@ module MFactor
   module_function :hash_string
   def dictionary_hash_table cdefs
     result = {}
-    modulus = [256,cdefs.length/2].min
+    modulus = HTABLE_SIZE
     cdefs.each do |cdef|
       name = cdef.definition.name.to_s
       hash = hash_string(name, modulus)

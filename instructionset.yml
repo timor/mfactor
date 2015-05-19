@@ -89,6 +89,8 @@ token:
 # find a token by name in the dictionary
 # ( countedstring -- dictentry/name found? )
 search:
+# ( length name -- dict-addr )
+lookup_name: "lookup-name"
 # memory bounds
 # code + data mem
 memstart:

@@ -309,6 +309,18 @@ module MFactor
         io << ",\n"
       end
     end
+    def write_hash_table(io="")
+      io << "uint16_t dict_hash_index[256] = {\n"
+      (0..HTABLE_SIZE-1).each do |i|
+        bucket=dict_hash[i]
+        dict_loc= bucket ?
+                    @dict_positions[bucket[0].name] :
+                    @dict_positions.to_a.last[1] ;
+        raise "no dictionary offset for bucket: #{bucket}" unless dict_loc
+        io << dict_loc << ",\n"
+      end
+      io << "};"
+    end
     # find a word in the compiled dictionary
     def get_word_address(wordname)
       d=@compiled_definitions.find{|cdef| cdef.definition.name == wordname } ||

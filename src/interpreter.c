@@ -73,6 +73,14 @@ static bool debug_lvl(unsigned int val) {
 	return (DEBUG_LEVEL >= val);
 }
 
+uint32_t lookup_ht_entry(uint8_t length, char* name) {
+	uint32_t hash = 5381;
+	for (int i = 0; i < length; i++) {
+		hash = hash * 33 + name[i];
+	}
+	return (cell)dict+dict_hash_index[hash%256];
+}
+
 /* check if name in dictionary entry is a null-terminated string */
 static unsigned char dict_entry_real_length( dict_entry * e)
 {
@@ -476,6 +484,11 @@ void interpreter(short_jump_target start_base_address) {
 			ppush(addr==NULL ? name_to_find : (cell)addr);
 			ppush(addr==NULL ? false : true);
 		}
+			break;
+		case lookup_name: {
+			cell length = ppop();
+			cell name = ppop();
+			ppush(lookup_ht_entry((uint8_t) length,(char *) name)); }
 			break;
 		case scall:
 		_scall:
