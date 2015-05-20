@@ -89,6 +89,7 @@ def build_image
     f.write "dict_entry dict[VM_DICT] __attribute((aligned(1))) = {\n"
     mf.write_dictionary_entries f
     f.write "};\n"
+    mf.write_hash_table f
   end
   File.open("generated/mfactor_words.h","w") do |f|
     f.puts "extern char image[];"
