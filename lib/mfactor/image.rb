@@ -109,7 +109,7 @@ module MFactor
     def word_assign_definition(word, current_vocab, search_vocabs)
       wname=word.name.to_s
       def_of_w = find_name(wname,[current_vocab]+search_vocabs)
-      raise "#{d.err_loc}:Error: word '#{wname}' not found on #{search_vocabs.map{|s| s.name}}" unless def_of_w
+      raise "#{word.err_loc}:Error: word '#{wname}' not found on #{search_vocabs.map{|s| s.name}}" unless def_of_w
       word.definition=def_of_w
       return def_of_w
     end

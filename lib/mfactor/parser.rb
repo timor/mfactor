@@ -139,7 +139,7 @@ module MFactor
                                                num=Integer(name)
                                                (num > 255 ? MFIntLit : MFByteLit).new(num)
                                              else
-                                               MFWord.new(name.to_s)
+                                               MFWord.new(name)
                                              end
     }
     rule(:quotation_body => subtree(:b)) { Quotation.new(b) }
