@@ -33,7 +33,8 @@
 	2: DEBUG_LEVEL - 0 to turn off, increasing will produce more verbose debug output
 	3: RESTART - word where to restart when hard error occured
 	4: STEP_HANDLER - address of handler which can be used for single stepping
-	5: BASE - address of current 64k segment base */
+	5: BASE - address of current 64k segment base
+	6: OUTPUT_STREAM: 1: stdout, 2: stderr*/
 	#define _NumSpecials 10
 static const unsigned char NumSpecials = _NumSpecials;
 static cell special_vars[_NumSpecials];
@@ -42,6 +43,7 @@ static cell special_vars[_NumSpecials];
 	#define DEBUG_LEVEL special_vars[2]
 	#define RESTART special_vars[3]
 	#define BASE special_vars[5]
+	#define OUTPUT_STREAM special_vars[6]
 
 /* main memory to work with */
 static cell memory[VM_MEM];
@@ -233,6 +235,15 @@ static void init_specials() {
 	HANDLER = 0;
 	MP = (cell)memory; /* start of user memory */
 	BASE = (cell)&image; /* start of bytecode segment */
+	OUTPUT_STREAM = 1;	/* output to standard output per default */
+}
+
+static FILE * current_fd(void)
+{
+	if (OUTPUT_STREAM == 2)
+		return stderr;
+	else
+		return stdout;
 }
 
 void interpreter(short_jump_target start_base_address) {
@@ -371,16 +382,16 @@ void interpreter(short_jump_target start_base_address) {
 			pc += sizeof(short_jump_target);
 			break;
 		case _pwrite:
-			printf("%ld",ppop());
+			fprintf(current_fd(), "%ld", ppop());
 			break;
 		case pwritex:
-			printf("%#lx",ppop());
+			fprintf(current_fd(), "%#lx", ppop());
 			break;
 		case writex:
-			printf("%lx",ppop());
+			fprintf(current_fd(), "%lx", ppop());
 			break;
 		case emit:
-			putchar(ppop());
+			fputc(ppop(),current_fd());
 			fflush(stdout);			/* TODO remove eventually */
 			break;
 		case receive:
