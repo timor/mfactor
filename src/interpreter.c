@@ -45,6 +45,12 @@ static cell special_vars[_NumSpecials];
 	#define BASE special_vars[5]
 	#define OUTPUT_STREAM special_vars[6]
 
+#define STDOUT 1					  /* not libc numbers, but the ones that are passed to _write() */
+#define STDERR 2
+
+static FILE * Ostream; /* used by reporting functions, so they can temporarily
+											  print to different file descriptor */
+
 /* main memory to work with */
 static cell memory[VM_MEM];
 
@@ -143,22 +149,22 @@ static bool parse_number(char *str, cell * number){
 
 static void printstack(cell * sp, cell * stack)
 {
-	printf("stack:");
+	fprintf(Ostream, "stack:");
 	for(cell* ptr = stack;ptr < sp;ptr++)
 		{
-			printf(" %#lx",*ptr);
+			fprintf(Ostream, " %#lx",*ptr);
 		}
-	printf("\n");
+	fprintf(Ostream, "\n");
 }
 static void print_return_stack(return_entry * sp, return_entry * stack, inst * base)
 {
-	printf("stack:");
+	fprintf(Ostream, "stack:");
 	for(return_entry* ptr = sp-1;ptr >= stack;ptr--)
 		{
-			printf(" {%#lx->%#lx}",((uintptr_t)ptr->current_call-(uintptr_t)base),
+			fprintf(Ostream, " {%#lx->%#lx}",((uintptr_t)ptr->current_call-(uintptr_t)base),
 					 ((uintptr_t)ptr->return_address)-(uintptr_t) base);
 		}
-	printf("\n");
+	fprintf(Ostream, "\n");
 }
 
 
@@ -169,24 +175,32 @@ enum nesting_type {
 
 static void backtrace(return_entry * sp, return_entry * stack, inst * base, inst * pc)
 {
-	printf("backtrace @ %#lx:\n",(uintptr_t)(pc-base));
+	fprintf(Ostream, "backtrace @ %#lx:\n",(uintptr_t)(pc-base));
 	for(return_entry* ptr = sp-1;ptr >= stack;ptr--)
 		{
 			char *current_name = find_by_address(ptr->current_call);
 			/* char *current_return = find_by_address(ptr->return_address); */
-			printf("%#lx %s\n",(uintptr_t)(ptr->current_call - base),current_name);
+			fprintf(Ostream, "%#lx %s\n",(uintptr_t)(ptr->current_call - base),current_name);
 		}
 }
 
 
 static void print_error(char * str)
 {
-	printf("error: ");
-	printf(str);
-	printf("\n");
+	fprintf(stderr, "error: ");
+	fprintf(stderr, str);
+	fprintf(stderr, "\n");
 }
 
-	#define BACKTRACE() (printstack(psp,pstack),printstack(retainsp,retainstack),backtrace(returnsp,returnstack,(inst *)BASE,pc));
+	#define BACKTRACE() do {															\
+	FILE * old_out = Ostream;															\
+	Ostream = stderr;																		\
+	printstack(psp,pstack);																\
+	printstack(retainsp,retainstack);												\
+	backtrace(returnsp,returnstack,(inst *)BASE,pc);							\
+	Ostream = old_out;																	\
+ }	while (0)																				\
+
 
 #define restart() do {if (RESTART == 0)         \
                       {printf("No restart defined with >>restart, resetting\n"); \
@@ -260,6 +274,7 @@ void interpreter(short_jump_target start_base_address) {
 	inst *pc;
 
 	/* initialize state */
+	Ostream = stdout;
 	pc = &image[(start_base_address ? : START_WORD_OFFSET)];
 	BASE = (cell)image;
 	init_specials();
