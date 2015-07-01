@@ -86,3 +86,6 @@ SYMBOLS: unbox-error index-bounds-error element-type-error ;
         rot call ] 2dip
     ] each-integer
     2drop ; inline
+
+: reduce ( ... seq identity quot: ( ... prev elt -- ... next ) -- ... result )
+    [ swap ] dip each ;
