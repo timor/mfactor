@@ -166,6 +166,8 @@ ccall_iis:
 ccall_is:
 # call with three ints
 ccall_iii:
+# call with two ints
+ccall_ii:
 # call with nothing
 ccall_v:
 # don't call, only leave symbol address

@@ -717,6 +717,14 @@ void interpreter(short_jump_target start_base_address) {
 				int res = fun(i1,i2,i3);
 				ppush((cell)res);
 			} break;
+		case ccall_ii:
+			{
+				int(*fun)(int,int) = (int (*)(int,int))ppop();
+				int i2 = (int)ppop();
+				int i1 = (int)ppop();
+				int res = fun(i1,i2);
+				ppush((cell)res);
+			} break;
 		case ccall_v:
 			{
 				int(*fun)(void) = (int (*)(void))ppop();
