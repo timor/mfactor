@@ -89,3 +89,8 @@ SYMBOLS: unbox-error index-bounds-error element-type-error ;
 
 : reduce ( ... seq identity quot: ( ... prev elt -- ... next ) -- ... result )
     [ swap ] dip each ;
+
+: cleave ( x seq -- ... )
+    [                           ! x quot
+      over [ call ] dip
+    ] each drop ;
