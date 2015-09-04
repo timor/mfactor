@@ -21,6 +21,7 @@ INSTBASE=
   elsif GENERATOR == "Linux64"
     0x80
   end
+SRC_REPO_PREFIX ||= ""          # prefix for generating the linked graph
 
 # generate the mfactor side of the ff code
 def ff_mfactor (yaml,out)
@@ -74,6 +75,8 @@ def build_image
   # stdlib=YAML_Mfactor.new("generated/mfactor.yml",iset)
   mf=MFactor::ByteCode.const_get(GENERATOR).new([MFACTOR_SRC_DIR,"generated"])
   mf.load_vocab(MFACTOR_ROOT_VOCAB)
+  write_dot_dependencies(mf, File.open("generated/all_dependencies.dot","w"), false)
+  write_dot_dependencies(mf, File.open("generated/app_dependencies.dot","w"), true)
   File.open("generated/image_size.h","w") do |f|
     f.puts "#define IMAGE_SIZE #{mf.bytecode_size}"
     # define the starting word for use in interpreter() call
@@ -183,6 +186,32 @@ task :mftest => "generated"
 directory "generated/cfg"
 directory "generated/ccode"
 
+def write_dot_dependencies(mf, out, no_core)
+  skip_vocabs = []
+  out.puts "digraph deps {"
+  mf.dictionary.each do |name, vocab|
+    puts "outputting deps for #{name}"
+    if vocab.definition_file
+      defpath= Pathname.new(vocab.definition_file)
+      if defpath.absolute?
+        if no_core
+          puts "adding #{vocab.name} to ignore list for output"
+          skip_vocabs.push vocab
+          next
+          # only output local stuff
+          # defpath=defpath.relative_path_from(Pathname.new(Dir.pwd))
+          url=SRC_REPO_PREFIX+"/"+defpath.to_s
+          out.puts "\"#{name}\"[URL=\"#{url}\", target=\"_blank\", fontcolor=\"blue\"]"
+        end
+      end
+    end
+    vocab.used_vocabs.each do |v|
+      out.puts "\"#{name}\" -> \"#{v.name}\"" unless skip_vocabs.member?(v)
+    end
+  end
+  out.puts "}"
+end
+
 # iterate through all vocabularies
 # generate a subdir in generated for each vocabulary, generate a control flow graphic for each word, if applicable
 task :compile_all => ["generated/cfg","generated/ccode"] do
@@ -256,26 +285,28 @@ task :compile_all => ["generated/cfg","generated/ccode"] do
   end
 end
 
+# old
 task :mfdeps do
   require 'tempfile'
   dotfile=Tempfile.new("_mfdeps_dot")
   dotfile << "digraph deps {\n"
-  files=FileList["lib/*.mfactor"]
+  # files=FileList["lib/*.mfactor"]
+  files = FileList["#{MFACTOR_SRC_DIR}/*.mfactor"]
   files.each do |f|
     puts "file: #{f}"
     cur=nil
     using=[]
     File.readlines(f).each do | line |
-      if line =~ /IN:\s+(\w+)/
+      if line =~ /IN:\s+(\S+)/
         cur=$1
       end
-      if line =~ /USING:\s+((\w+\s+)+)/
+      if line =~ /USING:\s+((\S+\s+)+)/
         using = $1.split("\s")
       end
     end
     puts "IN: #{cur}\nUSING:#{using}"
     using.each do |used|
-      dotfile << "#{used} -> #{cur}\n"
+      dotfile << "#{cur} -> #{used}\n"
     end
   end
   dotfile << "}\n"
