@@ -32,7 +32,7 @@ module MFactor
 
   # used to build up an application image composed of multiple source files
   class Image
-    attr_accessor :dictionary
+    attr_accessor :dictionary   # contains name -> Vocabulary pairs
     attr_accessor :vocab_roots
     attr_accessor :files
     @@parser = MFP.new
@@ -176,6 +176,10 @@ module MFactor
         when MFCurrentVocab then
           puts "define vocab: #{d.vocab}" if $mf_verbose == true
           current_vocab=get_vocabulary_create(d.vocab)
+          current_vocab.used_vocabs = search_vocabs.dup
+          puts "WARNING: current vocab already has a file associated!" if current_vocab.definition_file
+          puts "assigning #{file} to vocab #{current_vocab.name}"
+          current_vocab.definition_file = file
           @dictionary[d.vocab.to_s]=current_vocab
         when MFSearchPath then    # USING: directive
           search_vocabs=[]

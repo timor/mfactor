@@ -4,10 +4,13 @@ module MFactor
   class Vocabulary
     attr_accessor :name
     attr_accessor :definitions
+    attr_accessor :used_vocabs  # to store dependencies to other vocabs
+    attr_accessor :definition_file # stores file where this vocab has been defined first
     def initialize(name="__unnamed__")
       @name=name
       @index={}
       @definitions=[]
+      @used_vocabs = []
     end
     def see
       "IN: #{name}\n"+
