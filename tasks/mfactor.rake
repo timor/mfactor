@@ -198,11 +198,12 @@ def write_dot_dependencies(mf, out, no_core)
           puts "adding #{vocab.name} to ignore list for output"
           skip_vocabs.push vocab
           next
-          # only output local stuff
-          # defpath=defpath.relative_path_from(Pathname.new(Dir.pwd))
-          url=SRC_REPO_PREFIX+"/"+defpath.to_s
-          out.puts "\"#{name}\"[URL=\"#{url}\", target=\"_blank\", fontcolor=\"blue\"]"
         end
+      else
+        # only output local stuff
+        # defpath=defpath.relative_path_from(Pathname.new(Dir.pwd))
+        url=SRC_REPO_PREFIX+"/"+defpath.to_s
+        out.puts "\"#{name}\"[URL=\"#{url}\", target=\"_blank\", fontcolor=\"blue\"]"
       end
     end
     vocab.used_vocabs.each do |v|
