@@ -65,6 +65,7 @@ PRIM: ff ( i -- addr ) "ff";
 PRIM: ccall_b ( ff b -- x ) "ccall_b" ;
 PRIM: ccall_i ( ff i -- x ) "ccall_i" ;
 PRIM: ccall_bi ( ff b i -- x ) "ccall_bi" ;
+PRIM: ccall_ib ( ff i b -- x ) "ccall_ib" ;
 PRIM: ccall_is ( ff i s -- x ) "ccall_is" ;
 PRIM: ccall_iis ( ff i i s -- x ) "ccall_iis" ;
 PRIM: ccall_iii ( ff i i i -- x ) "ccall_iii" ;
