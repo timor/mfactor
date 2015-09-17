@@ -35,6 +35,7 @@ IN: kernel
 : bi@ ( x y quot -- ) dup bi* ; inline
 : 2bi ( x y  p q -- ) [ 2keep ] dip call ; inline
 : 3bi ( x y z p q -- ) [ 3keep ] dip call ; inline
+: 2tri ( x y p q r -- ) [ [ 2keep ] dip 2keep ] dip call ; inline
 ! deprecated ones
 : rot ( x y z -- y z x ) >r swap r> swap ; inline
 : spin ( x y z -- z y x ) swap rot ; inline
