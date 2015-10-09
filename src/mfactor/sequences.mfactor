@@ -24,6 +24,9 @@ SYMBOLS: unbox-error index-bounds-error element-type-error ;
 : ba-change-nth ( ..a i seq quot: ( ..a elt -- ..b newelt ) -- ..b )
     [ [ ba-nth ] dip call ] 3keep drop ba-set-nth ; inline
 
+
+! WARNING: <integer-array> has runtime allocation!
+: <integer-array> ( n -- integer-array ) [ 3 0 _seqhead, ] keep _get-MP [ [ 0xdeadcafe , ] times ] dip 1 - ;
 : ia-length ( ia -- n ) strlen ;
 : _ia-assert-index ( n seq -- n seq ) [ ia-length 0 swap in-range not [ "int-array index out of bound" print error ] when ] 2keep ;
 : ia-nth ( n seq -- elt ) _ia-assert-index 1 + swap 4 * + getmem ;
