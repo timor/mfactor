@@ -1,5 +1,5 @@
 ! -*- mode: factor -*-
-USING: kernel sequences listener memory bcomp io prettyprint syntax exceptions ;
+USING: kernel sequences listener memory bcomp io prettyprint syntax exceptions unit-test ;
 IN: tests
 
 ! helper

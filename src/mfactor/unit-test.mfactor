@@ -1,0 +1,40 @@
+! -*- mode: factor -*-
+USING: kernel sequences exceptions io prettyprint ;
+IN: unit-test
+
+SYMBOLS: unit-test-failed stack-not-empty-error ;
+
+! simple unit-testing
+
+! unit test test:
+! { 1 2 3 } [ 1 2 3 ] unit-test
+
+! expected stack level after unit test run
+: _expected-stack-level ( olist -- n )
+    length 2 + ;
+
+! check if the list corresponds to the stack elements
+: _compare-stack ( ...results olist -- ? )
+    t [ swap [ = ] dip and ] reduce-reverse ;
+
+: _assert-empty ( -- )
+    level 2 =
+    [ stack-not-empty-error throw ] unless ;
+
+: unit-test ( output-list test: ( -- expected-outputs ) -- )
+    _assert-empty
+    swap                ! test olist
+    ! get the expected number of arguments on stack after test call
+    dup _expected-stack-level  ! test olist n
+    ! run the test, leave expected results and number on top
+    [ call ] 2dip               ! ...results olist n
+    level 2dup = [                   ! is the level correct?
+                   2drop _compare-stack
+                   [
+                       "expected stack items don't match" print
+                       unit-test-failed throw ] unless
+    ] [
+        "number of stack items: " print 2 - .
+        "expected: " print 2 - .
+        unit-test-failed throw
+    ] if ;
