@@ -94,3 +94,14 @@ SYMBOLS: unbox-error index-bounds-error element-type-error ;
     [                           ! x quot
       over [ call ] dip
     ] each drop ;
+
+! call quot for each element, but in reverse order
+: each-reverse ( seq quot: ( ..a x -- b ) -- )
+    over length                 ! seq quot n
+    [                           ! seq quot i
+      -rot                      ! i seq quot
+      [ [ nth ] dip call ] 2keep ] each-integer-reverse
+      2drop ;
+
+: reduce-reverse ( ... seq identity quot: ( ... prev elt -- ... next ) -- ... result )
+    [ swap ] dip each-reverse ;

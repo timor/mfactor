@@ -6,6 +6,10 @@ IN: math
 
 : each-integer ( ... n quot: ( ... i -- ... ) -- ... ) swap 0 swap [ [ swap call ] 2keep 1 + ] times 2drop ;
 
+: each-integer-reverse ( n quot: ( i -- ) -- )
+    over [ 1 - ] 2dip           ! n-1 quot n
+    [ [ call ] 2keep [ 1 - ] dip ] times 2drop ;
+
 ! copied some math words from factor
 : _if-iterate? ( i n true false -- ) [ 2over < ] 2dip if ; inline ! TODO: analyzer fails bad when not declared inline
 : _iterate-step ( i n quot -- i n quot ) [ nip call ] 3keep ; inline
