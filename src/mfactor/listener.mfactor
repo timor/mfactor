@@ -10,7 +10,7 @@ IN: listener
 
 : prompt ( -- ) level pwrite '>' emit ' ' emit ;
 
-! Repeatedly prompt for a token nad try to find it.  If found, see if it is a parsing
+! Repeatedly prompt for a token and try to find it.  If found, see if it is a parsing
 ! word, which is called with 0 on the stack (represents empty parser accumulator).  If it
 ! is not a parsing word, call it, else handle unknown word.
 : listener ( -- )
