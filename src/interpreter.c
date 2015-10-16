@@ -276,7 +276,6 @@ void interpreter(short_jump_target start_base_address) {
 	/* initialize state */
 	Ostream = stdout;
 	pc = &image[(start_base_address ? : START_WORD_OFFSET)];
-	BASE = (cell)image;
 	init_specials();
 	restart:							  /* used for restarting, expect pc to be set beforehand */
 	psp = &pstack[0];
