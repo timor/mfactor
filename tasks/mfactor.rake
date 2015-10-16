@@ -7,6 +7,9 @@ $:.unshift(File.join(File.dirname(__FILE__),"..","lib"))
 require_relative '../lib/mfactor/analyze'
 require_relative '../lib/mfactor/c_emitter'
 
+$mfactor_image = nil            # this holds the ruby object after the image has been
+                                # built, can be used by other rake files
+
 THISDIR=File.dirname(__FILE__)
 ISETFILE=File.join(THISDIR,"../instructionset.yml")
 TRANSLATION_YAML_FILE ||= nil
@@ -139,7 +142,7 @@ IMAGE_FILES=["generated/image.code.h","generated/image.dict.h","generated/image_
 # requesting any of the to-be-generated files triggers generation of all
 IMAGE_FILES.each do |f|
   file f => ["generated","#{ISETFILE}"]+FileList["#{THISDIR}/../src/mfactor/*.mfactor"]+FileList["#{MFACTOR_SRC_DIR}/*.mfactor"] do
-    build_image
+    $mfactor_image = build_image
   end
   if defined? MFACTOR_FF
     file f => MFACTOR_FF
