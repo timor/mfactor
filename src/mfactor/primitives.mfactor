@@ -44,6 +44,8 @@ PRIM: oplit ( -- ) "oplit" ;
 PRIM: qstart ( -- ) "qstart" ;
 PRIM: qend ( -- ) "qend" ;
 PRIM: error ( -- ) "error" ;
+PRIM: tstart ( -- ) "tstart" ;
+PRIM: tend ( -- usecs secs ) "tend" ;
 PRIM: reset ( -- ) "reset" ;
 PRIM: dictstart ( -- addr ) "dictstart" ;
 PRIM: dictend ( -- addr ) "dictend" ;

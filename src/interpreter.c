@@ -636,7 +636,7 @@ void interpreter(short_jump_target start_base_address) {
 			/* end timer ( -- usecs secs ) */
 		case tend:
 			{
-				long int sec,usec;
+				unsigned int sec,usec;
 				end_timer(&sec,&usec);
 				ppush(usec);
 				ppush(sec);
