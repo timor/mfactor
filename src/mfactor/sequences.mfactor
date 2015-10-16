@@ -76,7 +76,7 @@ SYMBOLS: unbox-error index-bounds-error element-type-error max-array-size-exceed
     [ _nth-address-unsafe ] keep
     _seqtype>accessor call ;
 
-!TODO: if not too big of performance hit, each can be implemented in terms of each-index pretty easy
+! TODO: if not too big of performance hit, each can be implemented in terms of each-index pretty easy
 : each ( ... seq quot: ( ..a x -- ..b ) -- ... )
     swap dup length             ! quot seq len
     [                           ! quot seq i
