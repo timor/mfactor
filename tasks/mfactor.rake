@@ -14,6 +14,8 @@ TRANSLATION_YAML_FILE ||= nil
 MFACTOR_DEPENDING_OBJECTS ||= ["mfactor/src/interpreter.c"]
 # can be a hash table that contains pairs of the form (mfactor-word -> name-of-c-define)
 MFACTOR_C_WORDS ||= {}
+MFACTOR_IMAGE_SECTION ||= nil
+MFACTOR_DICT_SECTION ||= nil
 puts "no c translations" if MFACTOR_C_WORDS == {}
 INSTBASE=
   if GENERATOR == "Cortex"
@@ -82,14 +84,24 @@ def build_image
     # define the starting word for use in interpreter() call
     f.puts "#define START_WORD_OFFSET " + (mf.get_word_address(START_WORD)).to_s
   end
+  section_prefix = if MFACTOR_IMAGE_SECTION
+                     "__attribute__((section(\".#{MFACTOR_IMAGE_SECTION}\"))) "
+                   else
+                     ""
+                   end
   File.open("generated/image.code.h","w") do |f|
     ff_code(ffyaml || [],f)
-    f.write "inst image[#{mf.bytecode_size}]= {\n"
+    f.write "#{section_prefix}inst image[#{mf.bytecode_size}]= {\n"
     mf.write_bytecode_image f
     f.write "};\n"
   end
+  section_prefix = if MFACTOR_DICT_SECTION
+                     "__attribute__((section(\".#{MFACTOR_DICT_SECTION}\"))) "
+                   else
+                     ""
+                   end
   File.open("generated/image.dict.h","w") do |f|
-    f.write "dict_entry dict[VM_DICT] __attribute((aligned(1))) = {\n"
+    f.write "#{section_prefix} dict_entry dict[VM_DICT] __attribute((aligned(1))) = {\n"
     mf.write_dictionary_entries f
     f.write "};\n"
     mf.write_hash_table f
