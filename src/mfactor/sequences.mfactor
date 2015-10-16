@@ -2,7 +2,7 @@
 USING: kernel math headers memory strings io exceptions ;
 IN: sequences
 
-SYMBOLS: unbox-error index-bounds-error element-type-error ;
+SYMBOLS: unbox-error index-bounds-error element-type-error max-array-size-exceeded-error ;
 
 ! access the second byte in the header (see headers.mfactor), which by default al sequence pointers point to
 : element-size ( seq -- n ) 1 - getmem8 7 bitand 1 + ;
@@ -10,8 +10,13 @@ SYMBOLS: unbox-error index-bounds-error element-type-error ;
 : length ( seq -- n ) getmem8 ;
 : seq-size ( seq -- n ) [ element-size ] [ length ] bi * ;
 
+: _assert-max-array-size ( n -- n )
+    [ 255 > [ max-array-size-exceeded-error throw ] when ] keep ;
+
 ! WARNING: <byte-array> has runtime allocation!
-: <byte-array> ( n -- byte-array ) [ _strhead, ] keep _get-MP [ [ 0xa5 b, ] times ] dip 1 - ;
+: <byte-array> ( n -- byte-array )
+    _assert-max-array-size
+    [ _strhead, ] keep _get-MP [ [ 0xa5 b, ] times ] dip 1 - ;
 ! random access into byte-array or string, seq is assumed to point to the count byte of the sequence, and one byte before that the element size
 : _ba-assert-index ( n seq -- n seq ) [ strlen 0 swap in-range not [ "byte-array index out of bound" print error ] when ] 2keep ;
 : ba-nth ( n seq -- elt ) _ba-assert-index + 1 + getmem8 ;
@@ -26,7 +31,9 @@ SYMBOLS: unbox-error index-bounds-error element-type-error ;
 
 
 ! WARNING: <integer-array> has runtime allocation!
-: <integer-array> ( n -- integer-array ) [ 3 0 _seqhead, ] keep _get-MP [ [ 0xdeadcafe , ] times ] dip 1 - ;
+: <integer-array> ( n -- integer-array )
+    _assert-max-array-size
+    [ 3 0 _seqhead, ] keep _get-MP [ [ 0xdeadcafe , ] times ] dip 1 - ;
 : ia-length ( ia -- n ) strlen ;
 : _ia-assert-index ( n seq -- n seq ) [ ia-length 0 swap in-range not [ "int-array index out of bound" print error ] when ] 2keep ;
 : ia-nth ( n seq -- elt ) _ia-assert-index 1 + swap 4 * + getmem ;
