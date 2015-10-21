@@ -19,19 +19,19 @@
 
 
 #+STARTUP: indent
-* Overview
+* Introduction
 MFactor is a (partial) implementation of the [[http://factorcode.org/][factor language]] for embedded systems.
 It consists of two parts:
 
-A *host compiler*, written in Ruby, which is used with the [[https://github.com/ruby/rake][Rake]] build system to produce a
-binary image.
+1. A *host compiler*, written in Ruby, which is used with the [[https://github.com/ruby/rake][Rake]] build system to produce a
+   binary image.
 
-A *c implementation of a bytecode vm* which is able to execute such an image.
+2. A *c implementation of a bytecode vm* which is able to execute such an image.
 
 
 ** General Concept
 The general idea is as follows:
-#+BEGIN_SRC ditaa :file img/concept.png :results none
+#+BEGIN_SRC ditaa :file img/concept.png
   +---------+
   |.mfactor +----+
   |source   |    |
@@ -80,7 +80,12 @@ Currently, it is configured via setting global variables:
   #+BEGIN_SRC ruby
       { "mfactor-word-name" => "NAME_OF_CPP_DEFINE" }
   #+END_SRC
-- =FF_MFACTOR=: path to file containing interface definitions to c code (see [[*Making%20Existing%20C%20Functions%20Available][Making Existing C Functions Available]])
+- =FF_MFACTOR=: path to file containing interface definitions to c code (see [[*Making%20Existing%20C%20Functions%20Available][Making
+  Existing C Functions Available]])
+- =MFACTOR_IMAGE_SECTION=: a string describing the linker section that the bytecode-image
+  will pe placed into
+- =MFACTOR_DICT_SECTION=: same thing for the generated dictionary
+
 
 ** Making Existing C Functions Available
 Special global variable =FF_MFACTOR= can be set to a yaml file for
@@ -120,13 +125,13 @@ including project.  This folder contains several files:
 - =inst_enum.h= - enum which contains all instruction mnemonics.  These are used in
   =image.code.h=
 - =mfactor_words.h= - contains all exported words, which can then be referenced from C
-  context. (see ???)
+  context.
 - =image.code.h= - contains the actual byte code image
-- =image.dict.h= - contains the dictionary, excluding private words (see ???)
+- =image.dict.h= - contains the dictionary, excluding private words
 - =image_size.h= - some constants which are generated during byte code compilation and
   used in the VM implementation
 ** Details
-*** Fried Quotations
+*** Fried Quotations(WIP)
 Fried Quotations (and their basic versions =curry= and =compose=) are the equivalent of
 closures.  Creating a closure always means allocating space somewhere.  If the closure
 creation is inlined, that space can be allocated by the compiler.  Therefore, fried
