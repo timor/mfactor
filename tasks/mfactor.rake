@@ -7,9 +7,6 @@ $:.unshift(File.join(File.dirname(__FILE__),"..","lib"))
 require_relative '../lib/mfactor/analyze'
 require_relative '../lib/mfactor/c_emitter'
 
-$mfactor_image = nil            # this holds the ruby object after the image has been
-                                # built, can be used by other rake files
-
 THISDIR=File.dirname(__FILE__)
 ISETFILE=File.join(THISDIR,"../instructionset.yml")
 TRANSLATION_YAML_FILE ||= nil
@@ -134,7 +131,7 @@ task :see_dict => "generated" do
   puts build_image.see
 end
 
-IMAGE_FILES=["generated/image.code.h","generated/image.dict.h","generated/image_size.h","generated/mfactor_words.h"]
+IMAGE_FILES=["generated/image.code.h","generated/image.dict.h","generated/image_size.h","generated/mfactor_words.h","generated/image.dump"]
 # file "generated/_generated_" => IMAGE_FILES+["generated/inst_enum.h"] do
 #   touch "generated/_generated_"
 # end
@@ -142,7 +139,9 @@ IMAGE_FILES=["generated/image.code.h","generated/image.dict.h","generated/image_
 # requesting any of the to-be-generated files triggers generation of all
 IMAGE_FILES.each do |f|
   file f => ["generated","#{ISETFILE}"]+FileList["#{THISDIR}/../src/mfactor/*.mfactor"]+FileList["#{MFACTOR_SRC_DIR}/*.mfactor"] do
-    $mfactor_image = build_image
+    image = build_image
+    puts "saving internal image to 'generated/image.dump'"
+    image.serialize("generated/image.dump")
   end
   if defined? MFACTOR_FF
     file f => MFACTOR_FF

@@ -34,6 +34,15 @@ module MFactor
     def inst_base()
       raise "overwrite inst_base in subclass"
     end
+    # serialize to file
+    def serialize(fname)
+      File.open(fname,"wb"){|f| Marshal.dump(self, f)}
+    end
+    # load from serialized file
+    def self.deserialize(fname)
+      raise "unable to load image from file #{fname}" unless File.exist?(fname)
+      Marshal.load(File.open(fname,"rb").read)
+    end
     # actual code generation routine
     def maybe_generate
       return if @generated

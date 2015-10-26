@@ -130,6 +130,8 @@ including project.  This folder contains several files:
 - =image.dict.h= - contains the dictionary, excluding private words
 - =image_size.h= - some constants which are generated during byte code compilation and
   used in the VM implementation
+- =image.dump= - serialized MFactor::ByteCodeImage Object, can be loaded with =Marshal=.
+  This basically exposes all possible internals about the compiled image.
 ** Details
 *** Fried Quotations(WIP)
 Fried Quotations (and their basic versions =curry= and =compose=) are the equivalent of
