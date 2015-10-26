@@ -307,6 +307,9 @@ module MFactor
 
   # inputs and outputs are supposed to be lists of MFEffectItems
   class StackEffect < Struct.new(:inputs,:outputs)
+    def see
+      "( " + inputs.map {|i| i.name}.join(" ") + " -- " + outputs.map {|i| i.name}.join(" ") + " )"
+    end
   end
 
   # That is a result of a call to another word, which points to the corresponding call.
