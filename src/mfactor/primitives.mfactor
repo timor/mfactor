@@ -65,6 +65,7 @@ PRIM: liti ( -- i ) "liti" ;
 ! getting an address from the foreign-function lut ( i -- addr )
 PRIM: ff ( i -- addr ) "ff";
 PRIM: ccall_b ( ff b -- x ) "ccall_b" ;
+PRIM: ccall_s ( ff s -- x ) "ccall_s" ;
 PRIM: ccall_i ( ff i -- x ) "ccall_i" ;
 PRIM: ccall_bi ( ff b i -- x ) "ccall_bi" ;
 PRIM: ccall_ib ( ff i b -- x ) "ccall_ib" ;

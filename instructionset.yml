@@ -156,6 +156,8 @@ ff: :private
 # c function calling primitives
 # call with one int
 ccall_i:
+# call with one short
+ccall_s:
 # call with one byte
 ccall_b:
 # call with byte and int TODO: check if calling convention is same as ii
