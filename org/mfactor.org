@@ -72,9 +72,9 @@ Currently, it is configured via setting global variables:
 - =GENERATOR=: which bytecode backend to use, currently, only =Cortex= is supported
 - =START_WORD=: word, which will be executed when starting the vm
 - =MFACTOR_ROOT_VOCAB=: the root vocabulary, which is first loaded and loads all dependencies
-- =MFACTOR_DEPENDING_OBJECTS=: To cause Rake to recompile the whole application, this
+- =MFACTOR_DEPENDING_OBJECTS=: To cause Rake to recompile the whole image, this
   should be set to the object files in the application which depend on the generated
-  output. This usually means all file that use any of the words defined in
+  output. This usually means all files that use any of the words defined in
   =MFACTOR_C_WORDS=, as well as the object file that is built from =src/interpreter.c=
 - =MFACTOR_C_WORDS=: Hashtable for exposing word locations in bytecode to C. Format:
   #+BEGIN_SRC ruby
