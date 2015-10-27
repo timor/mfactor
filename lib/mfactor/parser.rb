@@ -6,8 +6,10 @@ module MFactor
   # called
   class MFP < Parslet::Parser
     rule(:newline) { str("\n") >> str("\r").maybe }
-    rule(:line_comment) { str('!') >> (newline.absent? >> any).repeat }
-    rule(:space) { (line_comment | match('\s').repeat(1)).repeat }
+    rule(:line_comment) { str('!') >> match('\s') >> (newline.absent? >> any).repeat >> newline }
+    # rule(:multiline_comment) { line_comment.repeat(1).as(:multiline_comment) }
+    rule(:space_no_comments) { match('\s').repeat(1) }
+    rule(:space) { ( space_no_comments | line_comment ).repeat }
     rule(:space?) { space.maybe }
     # rule(:unsigned_dec) { match('[0-9]').repeat(1) }
     # rule(:unsigned_hex) { str('0') >> match['xX'] >> match['0-9a-f'].repeat(1) }
@@ -43,7 +45,7 @@ module MFactor
       match('\S').repeat(1).as(:name) >> space >>
       (stack_effect.as(:effect) >> space) >>
       quotation_body.as(:definition_body) >> def_end >>
-      (space >> compiler_decl.as(:definition_mod)).repeat(0).as(:definition_mods) }
+      (space_no_comments >> compiler_decl.as(:definition_mod)).repeat(0).as(:definition_mods) }
     rule(:in_declaration) { str('IN:') >> space >> normal_word.as(:current_dict) }
     rule(:using_declaration) { str('USING:') >> space >>
       (normal_word.as(:used_dict_name) >> space).repeat >> str(';')}
@@ -52,8 +54,8 @@ module MFactor
     rule(:deferred_declaration) { str('DEFER:').as(:def) >> space >>
       normal_word.as(:deferred_name) }
     rule(:statement) { deferred_declaration | in_declaration | using_declaration.as(:using) |
-      symbols_declaration.as(:symbols_decl) | definition }
-    rule(:program) { space? >> (statement >> space?).repeat.as(:program) }
+      symbols_declaration.as(:symbols_decl) | definition | line_comment.repeat(1).as(:multiline_comment) }
+    rule(:program) { space >> (statement >> space_no_comments.maybe).repeat.as(:program) }
     root(:program)
   end
 
@@ -127,6 +129,12 @@ module MFactor
   end
   module_function :unescape
 
+  class Comment < Struct.new(:content)
+    def see
+      "! "+content.gsub("\n","\n! ")
+    end
+  end
+
   # tree transformation to output a structure that represents one file
   class MFTransform < Parslet::Transform
     # rule(:unsigned => simple(:lit)) {
@@ -142,6 +150,7 @@ module MFactor
                                                MFWord.new(name)
                                              end
     }
+    rule(:multiline_comment => simple(:content)) { Comment.new(content.to_s.chomp.gsub("! ",""))}
     rule(:quotation_body => subtree(:b)) { Quotation.new(b) }
     rule(:fried_quotation_body => subtree(:b)) { FriedQuotation.new(b) }
     rule(:seq_start=>simple(:opener), :content => subtree(:content)) {
@@ -197,6 +206,8 @@ module MFactor
       "{ " << tree.content.map{c| unparse(c)}.join(" ") << " }\n"
     when MFComplexSequence
       "{ " << tree.content.map{c| unparse(c)}.join(" ") << " }\n"
+    when Comment
+      tree.see
     else
       "<# #{tree.class} >"
     end

@@ -163,6 +163,7 @@ module MFactor
     def load_vocab (vocab_name)
       current_vocab=nil
       search_vocabs=[]
+      $definition_linecomment = nil   # last line comment
       file=find_vocab_file(vocab_name)
       @filestack.push(file)
       if @files.member?(file)
@@ -204,6 +205,8 @@ module MFactor
             puts "defining: #{d.name}" if $mf_verbose == true
             load_def(d,file,current_vocab,search_vocabs)
           end
+          d.description = $last_comment if $last_comment
+          $last_comment = nil
         # expand SYMBOLS: declaration
         when SymbolsDecl then
           d.names.each do |name|
@@ -215,6 +218,8 @@ module MFactor
                                        [])
             load_def(sym_def,file,current_vocab,search_vocabs)
           end
+        when Comment then
+          $last_comment = d.content
         else
           raise "don't know how to load program item #{d}"
         end

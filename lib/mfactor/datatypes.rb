@@ -67,7 +67,7 @@ module MFactor
   # Definition object, which can be moved into dictionary
   # file: source file of the definition
   # graph: if set, points to the graph resulted by partial evaluation.  basis for code generation and petri-net simulation
-  class MFDefinition < Struct.new(:name,:definer,:effect,:code,:mods,:vocabulary,:file,:graph,:compile_log,:compiled)
+  class MFDefinition < Struct.new(:name,:definer,:effect,:code,:mods,:vocabulary,:file,:graph,:compile_log,:compiled,:description)
     attr_accessor :forced_inline
     def initialize *args
       super *args
@@ -106,7 +106,7 @@ module MFactor
         code.body.map{ |elt| MFactor::see_word(elt) }.join(" ")
     end
     def inspect
-      "#<MFDefinition:#{name}"
+      "#<MFDefinition:#{name}>"
     end
     # TODO: move out of here, into emitter
     # attach something to the compilation log

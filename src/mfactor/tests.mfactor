@@ -80,7 +80,7 @@ IN: tests
 : testfact ( n -- n ) dup 0 = [ drop 1 ] [ dup 1 - testfact * ] if ;
 : testwhile ( n -- ) [ dup 0 = not ] [ 1 - dup pwrite ] while ;
 
-!! exception testing
+! exception testing
 
 : _showpointers ( -- )
  "dstack: " write 0 get-sp pwritex nl

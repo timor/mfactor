@@ -1,8 +1,8 @@
-!-*- mode: factor -*-
+! -*- mode: factor -*-
 USING: kernel ;
 IN: exceptions
 
-!! exceptions (eForth style)
+! exceptions (eForth style)
 
 : _get-handler ( -- addr )
     1 special> ;

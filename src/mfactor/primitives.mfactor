@@ -1,4 +1,4 @@
-!-*- mode: factor -*-
+! -*- mode: factor -*-
 USING: ;
 IN: primitives
 

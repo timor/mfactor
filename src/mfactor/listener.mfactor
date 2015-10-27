@@ -1,4 +1,4 @@
-!-*- mode: factor -*-
+! -*- mode: factor -*-
 USING: kernel parser vocabs prettyprint io memory exceptions.util syntax exceptions ;
 IN: listener
 

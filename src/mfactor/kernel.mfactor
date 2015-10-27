@@ -1,4 +1,4 @@
-!-*- mode: factor -*-
+! -*- mode: factor -*-
 USING: primitives ;
 IN: kernel
 
@@ -81,7 +81,7 @@ IN: kernel
 
 : most ( x y quot -- z ) 2keep ? ; inline
 
-!! access to some special variables in vm implementation
+! access to some special variables in vm implementation
 
 ! set restart quotation in case of unrecoverable interpreter errors
 : >>restart ( quot -- )

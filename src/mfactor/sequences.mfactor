@@ -1,4 +1,4 @@
-!-*- mode: factor -*-
+! -*- mode: factor -*-
 USING: kernel math headers memory strings io exceptions ;
 IN: sequences
 
