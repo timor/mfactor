@@ -7,7 +7,6 @@ module MFactor
   class MFP < Parslet::Parser
     rule(:newline) { str("\n") >> str("\r").maybe }
     rule(:line_comment) { str('!') >> match('\s') >> (newline.absent? >> any).repeat >> newline }
-    # rule(:multiline_comment) { line_comment.repeat(1).as(:multiline_comment) }
     rule(:space_no_comments) { match('\s').repeat(1) }
     rule(:space) { ( space_no_comments | line_comment ).repeat }
     rule(:space?) { space.maybe }
