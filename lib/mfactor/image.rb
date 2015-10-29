@@ -179,7 +179,7 @@ module MFactor
           current_vocab=get_vocabulary_create(d.vocab)
           current_vocab.used_vocabs = search_vocabs.dup
           puts "WARNING: current vocab already has a file associated!" if current_vocab.definition_file
-          puts "assigning #{file} to vocab #{current_vocab.name}"
+          puts "assigning #{file} to vocab #{current_vocab.name}" if $mf_verbose == true
           current_vocab.definition_file = file
           @dictionary[d.vocab.to_s]=current_vocab
         when MFSearchPath then    # USING: directive

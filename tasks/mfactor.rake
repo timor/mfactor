@@ -204,12 +204,11 @@ def write_dot_dependencies(mf, out, no_core)
   skip_vocabs = []
   out.puts "digraph deps {"
   mf.dictionary.each do |name, vocab|
-    puts "outputting deps for #{name}"
     if vocab.definition_file
       defpath= Pathname.new(vocab.definition_file)
       if defpath.absolute?
         if no_core
-          puts "adding #{vocab.name} to ignore list for output"
+          puts "adding #{vocab.name} to ignore list for output" if Rake.verbose == true
           skip_vocabs.push vocab
           next
         end
