@@ -2,6 +2,11 @@
 USING: kernel ;
 IN: exceptions
 
+SYMBOLS: pstack-underflow-error pstack-overflow-error rstack-underflow-error
+    rstack-overflow-error retainstack-underflow-error retainstack-overflow-error
+    invalid-opcode-error memory-access-error unknown-ff-entry-error token-reader-error
+    user-internal-error unknown-special-var-error unknown-internal-error ;
+
 ! exceptions (eForth style)
 
 : _get-handler ( -- addr )
@@ -35,3 +40,24 @@ IN: exceptions
     0 set-sp                      ! rewind data stack
     drop r>                       ! drop original quotation, put error code back on top
 ;
+
+! internal errors after restart, MUST CORRESPOND TO THE VALUES DEFINED IN interpreter.h!
+! 0 is no error, otherwise respective symbols are returned
+: get-restart-reason ( -- status )
+    7 special>
+    {
+        { 0 [ 0 ] }
+        { 1 [ pstack-underflow-error ] }
+        { 2 [ pstack-overflow-error ] }
+        { 3 [ rstack-underflow-error ] }
+        { 4 [ rstack-overflow-error ] }
+        { 5 [ retainstack-underflow-error ] }
+        { 6 [ retainstack-overflow-error ] }
+        { 7 [ invalid-opcode-error ] }
+        { 8 [ memory-access-error ] }
+        { 9 [ unknown-ff-entry-error ] }
+        { 10 [ token-reader-error ] }
+        { 11 [ user-internal-error ] }
+        { 12 [ unknown-special-var-error ] }
+        [ drop unknown-internal-error ]
+    } case ;
