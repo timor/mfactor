@@ -15,7 +15,7 @@ IN: listener
 ! is not a parsing word, call it, else handle unknown word.
 : listener ( -- )
     [ prompt token dict-find      ! ( entry ? )
-      [ dup parsing-word? [ definition 0 swap call [ drop ] times ]
+      [ dup parsing-word? [ definition [ 0 ] dip call [ drop ] times ]
         [ definition call ] if ]
       [ unknown-token ] if ] catch
       [ report-errors drop ] when*  ! extra item! drop!
