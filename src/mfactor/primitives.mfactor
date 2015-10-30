@@ -12,6 +12,7 @@ PRIM: r> ( -- x ) "r_from" ;
 PRIM: call ( x -- ) "call" ;
 PRIM: nop ( -- ) "nop" ;
 PRIM: instbase ( -- i ) "instbase" ;
+PRIM: quit ( -- ) "quit" ;
 PRIM: = ( x x -- ? ) "eql" ;
 PRIM: < ( x x -- ? ) "gt" ;
 PRIM: > ( x x -- ? ) "lt" ;
