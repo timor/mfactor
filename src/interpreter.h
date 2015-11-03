@@ -45,6 +45,6 @@ typedef uintptr_t cell;                 /* memory cell must at least hold pointe
  #endif
 #endif
 #define INSTBASE_CELL ((cell)INSTBASE<<(8*(sizeof(inst *)-sizeof(inst))))
-void interpreter(short_jump_target);
+int interpreter(short_jump_target);
 
 #endif

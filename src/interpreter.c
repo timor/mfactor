@@ -35,7 +35,7 @@
 	4: STEP_HANDLER - address of handler which can be used for single stepping
 	5: BASE - address of current 64k segment base
 	6: OUTPUT_STREAM: 1: stdout, 2: stderr
-	7: RESTART_REASON: code that can be checked after restart for errors */
+	has occured */
 	#define _NumSpecials 10
 static const unsigned char NumSpecials = _NumSpecials;
 static cell special_vars[_NumSpecials];
@@ -45,25 +45,23 @@ static cell special_vars[_NumSpecials];
 	#define RESTART special_vars[3]
 	#define BASE special_vars[5]
 	#define OUTPUT_STREAM special_vars[6]
-	#define RESTART_REASON special_vars[7]
-
 
 #define STDOUT 1					  /* not libc numbers, but the ones that are passed to _write() */
 #define STDERR 2
 
-/* these values can be in RESTART_REASON after a restart */
-#define INTERNAL_ERROR_PSTACK_UFLOW 1
-#define INTERNAL_ERROR_PSTACK_OFLOW 2
-#define INTERNAL_ERROR_RSTACK_UFLOW 3
-#define INTERNAL_ERROR_RSTACK_OFLOW 4
-#define INTERNAL_ERROR_RTSTACK_UFLOW 5
-#define INTERNAL_ERROR_RTSTACK_OFLOW 6
-#define INTERNAL_ERROR_INVALID_OPCODE 7
-#define INTERNAL_ERROR_MEM_FAULT 8
-#define INTERNAL_ERROR_UNKNOWN_FF 9
-#define INTERNAL_ERROR_TOKEN_READ 10
-#define INTERNAL_ERROR_GENERAL 11
-#define INTERNAL_ERROR_UNKNOWN_SPECIAL 12
+/* these values can be in LAST_INTERNAL_ERROR after a restart */
+#define INTERNAL_ERROR_PSTACK_UFLOW -1
+#define INTERNAL_ERROR_PSTACK_OFLOW -2
+#define INTERNAL_ERROR_RSTACK_UFLOW -3
+#define INTERNAL_ERROR_RSTACK_OFLOW -4
+#define INTERNAL_ERROR_RTSTACK_UFLOW -5
+#define INTERNAL_ERROR_RTSTACK_OFLOW -6
+#define INTERNAL_ERROR_INVALID_OPCODE -7
+#define INTERNAL_ERROR_MEM_FAULT -8
+#define INTERNAL_ERROR_UNKNOWN_FF -9
+#define INTERNAL_ERROR_TOKEN_READ -10
+#define INTERNAL_ERROR_GENERAL -11
+#define INTERNAL_ERROR_UNKNOWN_SPECIAL -12
 
 static FILE * Ostream; /* used by reporting functions, so they can temporarily
 											  print to different file descriptor */
@@ -219,14 +217,16 @@ static void print_error(char * str)
  }	while (0)																				\
 
 
-	#define restart(reason) do {if (RESTART == 0)										\
+	#define restart() do {if (RESTART == 0)										\
 								 {printf("No restart defined with >>restart, resetting\n"); \
 								  reset_system();} else {								\
-																 RESTART_REASON=reason;pc = (inst*)RESTART; goto restart;}} while(0)
+																 pc = (inst*)RESTART; goto restart;}} while(0)
+
+	#define handle_error(code) do {return code;} while(0)
 
 
-	#define assert_pop(sp,min,name,fail_reason) if (sp <= min) { print_error(name "stack underflow");BACKTRACE();restart(fail_reason);}
-	#define assert_push(sp,min,size,fail_reason) if (sp > min+size){ print_error("stack overflow");BACKTRACE();restart(fail_reason);}
+	#define assert_pop(sp,min,name,fail_reason) if (sp <= min) { print_error(name "stack underflow");BACKTRACE();handle_error(fail_reason);}
+	#define assert_push(sp,min,size,fail_reason) if (sp > min+size){ print_error("stack overflow");BACKTRACE();handle_error(fail_reason);}
 
 
 /* empty ascending stack */
@@ -242,7 +242,7 @@ static void print_error(char * str)
 	#define peek_n(sp,nth) (*(sp-nth))
 
 /* writes are only allowed into dedicated memory area for now */
-	#define assert_memwrite(x) if ((x < memory) || (x >= (memory+VM_MEM))) {printf("prevented memory access at %#lx\n",x); BACKTRACE();restart(INTERNAL_ERROR_MEM_FAULT);}
+	#define assert_memwrite(x) if ((x < memory) || (x >= (memory+VM_MEM))) {printf("prevented memory access at %#lx\n",x); BACKTRACE();handle_error(INTERNAL_ERROR_MEM_FAULT);}
 /* reads are only allowed inside data space */
 	#if __linux
 		#define DATA_START __data_start
@@ -268,7 +268,6 @@ static void init_specials() {
 	MP = (cell)memory; /* start of user memory */
 	BASE = (cell)&image; /* start of bytecode segment */
 	OUTPUT_STREAM = 1;	/* output to standard output per default */
-	RESTART_REASON = 0 ;	/* no special reason */
 }
 
 static FILE * current_fd(void)
@@ -279,7 +278,7 @@ static FILE * current_fd(void)
 		return stdout;
 }
 
-void interpreter(short_jump_target start_base_address) {
+int interpreter(short_jump_target start_base_address) {
 	/* parameter stack */
 	static cell pstack[VM_PSTACK]={0};
 	static cell* psp;
@@ -431,7 +430,7 @@ void interpreter(short_jump_target start_base_address) {
 			ppush(read_char()); break;
 		case quit:
 			printf("bye!\n");
-			return;
+			return 0;
 		case qend: {
 			return_entry e = returnpop();
 			/* if (debug_lvl(2)) { */
@@ -489,7 +488,7 @@ void interpreter(short_jump_target start_base_address) {
 					ppush(special_vars[i]);
 				else {
 					printf("illegal specials index: %d\n", i);
-					restart(INTERNAL_ERROR_UNKNOWN_SPECIAL);
+					handle_error(INTERNAL_ERROR_UNKNOWN_SPECIAL);
 				}
 			} break;
 			/* ( val n -- ) */
@@ -500,7 +499,7 @@ void interpreter(short_jump_target start_base_address) {
 					special_vars[i] = ppop();
 				else {
 					printf("illegal specials index: %d\n", i);
-					restart(INTERNAL_ERROR_UNKNOWN_SPECIAL);
+					handle_error(INTERNAL_ERROR_UNKNOWN_SPECIAL);
 				}
 			} break;
 			/* ( cond true false -- true/false ) */
@@ -519,7 +518,7 @@ void interpreter(short_jump_target start_base_address) {
             ppush((cell)tok);
 			} else {
             print_error("token reader error");
-            restart(INTERNAL_ERROR_TOKEN_READ);
+            handle_error(INTERNAL_ERROR_TOKEN_READ);
 			}} break;
 			/* (countedstr -- countedstr/dict_entry foundp) */
 		case search: {
@@ -605,7 +604,7 @@ void interpreter(short_jump_target start_base_address) {
 			ppush(x);
 		} break;
 		case aend:
-			restart(INTERNAL_ERROR_INVALID_OPCODE);
+			handle_error(INTERNAL_ERROR_INVALID_OPCODE);
 			break;
 			/* skip over to end of quotation , leave starting address on parameter stack*/
 		case qstart: {
@@ -646,7 +645,7 @@ void interpreter(short_jump_target start_base_address) {
 			printf("return");
 			print_return_stack(returnsp,returnstack,(inst *)BASE);
 			BACKTRACE();
-			restart(INTERNAL_ERROR_GENERAL);
+			handle_error(INTERNAL_ERROR_GENERAL);
 			break;
 		case tstart:
 			start_timer();
@@ -683,7 +682,7 @@ void interpreter(short_jump_target start_base_address) {
 					{
 						printf("no ff entry with index %f\n",i);
 						BACKTRACE();
-						restart(INTERNAL_ERROR_UNKNOWN_FF);
+						handle_error(INTERNAL_ERROR_UNKNOWN_FF);
 					}
 				ppush((cell)FF_Table[i]);
 			} break;
@@ -768,8 +767,7 @@ void interpreter(short_jump_target start_base_address) {
 		default:
 			printf("unimplemented instruction %#x\n",i);
 			/* BACKTRACE(); */
-			restart(INTERNAL_ERROR_INVALID_OPCODE);
-			return;
+			handle_error(INTERNAL_ERROR_INVALID_OPCODE);
 		}
 		goto end_inst;
 	nested_call:
