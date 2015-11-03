@@ -95,6 +95,7 @@ module MFactor
             if w[0] == :dict_address
               puts "replacing placeholder in '#{cdef.definition.name}'" if Rake.verbose == true
               addr = @dict_positions[w[1]]
+              raise "cannot get address of word '#{w[1]}'" unless addr
               cdef.code[i,cell_width]=int_bytes(addr,cell_width)
             elsif w[0] == :deferred
               # CAVEAT: this here works by looking up the definition by name! for
