@@ -256,9 +256,9 @@ Currently, it is configured via setting global variables:
 <li><code>GENERATOR</code>: which bytecode backend to use, currently, only <code>Cortex</code> is supported</li>
 <li><code>START_WORD</code>: word, which will be executed when starting the vm</li>
 <li><code>MFACTOR_ROOT_VOCAB</code>: the root vocabulary, which is first loaded and loads all dependencies</li>
-<li><code>MFACTOR_DEPENDING_OBJECTS</code>: To cause Rake to recompile the whole application, this
+<li><code>MFACTOR_DEPENDING_OBJECTS</code>: To cause Rake to recompile the whole image, this
 should be set to the object files in the application which depend on the generated
-output. This usually means all file that use any of the words defined in
+output. This usually means all files that use any of the words defined in
 <code>MFACTOR_C_WORDS</code>, as well as the object file that is built from <code>src/interpreter.c</code></li>
 <li><p>
 <code>MFACTOR_C_WORDS</code>: Hashtable for exposing word locations in bytecode to C. Format:
@@ -292,17 +292,19 @@ entries are in the form of
 <pre class="src src-yaml"><span style="color: #a0522d;">&lt;c_name&gt;</span>:
   <span style="color: #a0522d;">name</span>: <span style="color: #8b2252;">"&lt;mfactor-name&gt;"</span>
   <span style="color: #a0522d;">call</span>: &lt;callspec&gt;
+  <span style="color: #b22222;"># </span><span style="color: #b22222;">following optional line is for void functions, for functions returning a value, don't use</span>
+  <span style="color: #a0522d;">result</span>: discard
 </pre>
 </div>
 
 <p>
-where <code>&lt;callspec&gt;</code> describes the function's arguments, e.g. "iis" for a function like <code>fn( int, int, int16)</code>.
+where <code>&lt;callspec&gt;</code> describes the function's arguments, e.g. "iis" for a function like <code>fn(int, int, int16)</code>.
 Currently supported values are:
 </p>
 <ul class="org-ul">
 <li><code>v</code> -&gt; fn(void)</li>
 <li><code>lit</code> -&gt; for variables</li>
-<li><code>i</code>, <code>b</code>, <code>bi</code>, <code>iis</code>, <code>iii</code> where <code>i</code> is <code>int</code>, <code>b</code> is <code>int8</code> and <code>s</code> is <code>int16</code></li>
+<li><code>s</code>, <code>i</code>, <code>b</code>, <code>bi</code>, <code>ib</code>, <code>is</code>, <code>ii</code>, <code>iis</code>, <code>iii</code> where <code>i</code> is <code>int</code>, <code>b</code> is <code>int8</code> and <code>s</code> is <code>int16</code></li>
 </ul>
 </div>
 </div>

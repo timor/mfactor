@@ -35,13 +35,22 @@ END
   yaml.each do |cname,opts|
     mfname= opts["name"]
     callspec= opts["call"]
+    raise "no 'name:' entry for ff definition: '#{cname}'" unless mfname
+    raise "no 'call:' entry for ff definition: '#{cname}'" unless callspec
     call = callspec ? "ccall_"+callspec : "" ; # if no call, then taken as literal (e.g. variable access)
     effect_input = ""
     if (callspec != "lit") && (callspec != "v") then
       effect_input = callspec.chars.to_a.join " "
     end
+    if (opts["result"] == "discard") then
+      effect_output = ""
+      maybedrop = "drop"
+    else
+      effect_output = "result"
+      maybedrop = ""
+    end
     out << <<END
-: #{mfname} ( #{effect_input} -- res ) #{i} ff #{call} ;
+: #{mfname} ( #{effect_input} -- #{effect_output} ) #{i} ff #{call} #{maybedrop} ;
 END
     i += 1;
   end

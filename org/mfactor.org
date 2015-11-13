@@ -96,13 +96,15 @@ entries are in the form of
   <c_name>:
     name: "<mfactor-name>"
     call: <callspec>
+    # following optional line is for void functions, for functions returning a value, don't use
+    result: discard
 #+END_SRC
 
-  where =<callspec>= describes the function's arguments, e.g. "iis" for a function like =fn( int, int, int16)=.
+  where =<callspec>= describes the function's arguments, e.g. "iis" for a function like =fn(int, int, int16)=.
   Currently supported values are:
   - =v= -> fn(void)
   - =lit= -> for variables
-  - =i=, =b=, =bi=, =iis=, =iii= where =i= is =int=, =b= is =int8= and =s= is =int16=
+  - =s=, =i=, =b=, =bi=, =ib=, =is=, =ii=, =iis=, =iii= where =i= is =int=, =b= is =int8= and =s= is =int16=
 
 ** Invoking the Rake Task
 If =MFACTOR_DEPENDING_OBJECT= was set correctly, then a rebuild of the application
