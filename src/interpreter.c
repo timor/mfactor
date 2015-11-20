@@ -282,7 +282,6 @@ int interpreter(short_jump_target start_base_address) {
 	Ostream = stdout;
 	pc = &image[(start_base_address ? : START_WORD_OFFSET)];
 	init_specials();
-	restart:							  /* used for restarting, expect pc to be set beforehand */
 	psp = &pstack[0];
 	returnsp = &returnstack[0];
 	retainsp = &retainstack[0];
@@ -623,7 +622,6 @@ int interpreter(short_jump_target start_base_address) {
 			psp = &pstack[0];
 			break;
 		case error:
-		_error:
 			printf("error!\n");
 			printf("\np");
 			printstack(psp,pstack);
