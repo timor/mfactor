@@ -21,6 +21,10 @@
 	#include <stdio.h>
 	#include <stdbool.h>
 
+/* these are available after mfactor task has run */
+	#include "generated/bytecode.h"
+	#include "generated/inst_enum.h"
+
 /* target specific stuff */
 	#include "runtime.h"
 	#include "reset_system.h"
@@ -69,27 +73,10 @@ static FILE * Ostream; /* used by reporting functions, so they can temporarily
 /* main memory to work with */
 static cell memory[VM_MEM];
 
-/* entry in name dictionary */
-/* TODO: ensure correct scanning direction so that skipping over entries stays trivial */
-typedef struct dict_entry
-{
-	inst * address;					/* pointer into memory */
-	unsigned char flags;		/* may include other flags later (inline, recursive, etc) */
-	unsigned char name_header; /* should always be zero */
-	unsigned char name_length;
-	char name[];
-}	__attribute__((packed)) dict_entry;
-/* TODO: doc quirk that primitive names are null-terminated */
-
 typedef struct return_entry {
 	inst * return_address;
 	inst * current_call;
 } return_entry;
-
-	#include "generated/inst_enum.h"
-	#include "generated/image.code.h"
-/* dictionary grows up*/
-	#include "generated/image.dict.h"
 
 /* check if current value of debug is greater or equal to val */
 static bool debug_lvl(unsigned int val) {

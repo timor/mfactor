@@ -124,16 +124,17 @@ Parser -> Image -> ByteCodeImage
 ** Bytecode Generator Output
 Per default, the output of the rake task is place in subdirectory =generated= of the
 including project.  This folder contains several files:
-- =inst_enum.h= - enum which contains all instruction mnemonics.  These are used in
-  =image.code.h=
+- =inst_enum.h= - enum which contains all instruction mnemonics.  These are used in the
+  image generated in =bytecode.c"
 - =mfactor_words.h= - contains all exported words, which can then be referenced from C
   context.
-- =image.code.h= - contains the actual byte code image
-- =image.dict.h= - contains the dictionary, excluding private words
-- =image_size.h= - some constants which are generated during byte code compilation and
+- =bytecode.c= - contains the actual byte code image, dictionary and hash table
+- =bytecode.h= - some constants which are generated during byte code compilation and
   used in the VM implementation
-- =image.dump= - serialized MFactor::ByteCodeImage Object, can be loaded with =Marshal=.
-  This basically exposes all possible internals about the compiled image.
+- =image.dump= - serialized MFactor::ByteCodeImage Object, can be loaded with
+  =MFactor::ByteCodeImage::deserialize=.  This basically exposes all possible internals
+  about the compiled image.  Used to extract information after compilation, when the
+  =mfactor= task has finished.
 ** Details
 *** Fried Quotations(WIP)
 Fried Quotations (and their basic versions =curry= and =compose=) are the equivalent of
@@ -247,15 +248,18 @@ Size: 32 Bit
 typedef uintptr_t cell;                 /* memory cell must at least hold pointer */
 #+end_src
 
-**** The Image
-The image generated in =image.code.h= is declared here:
-
+Type of entries in the dictionary.  These map names to addresses, and hold the flags that
+mark a word inline, recursive, or a parsing word.
 #+begin_src C
-inst image[IMAGE_SIZE];
+typedef struct dict_entry
+{
+	inst * address;					/* pointer into memory */
+	unsigned char flags;		/* may include other flags later (inline, recursive, etc) */
+	unsigned char name_header; /* should always be zero */
+	unsigned char name_length;
+	char name[];
+}	__attribute__((packed)) dict_entry;
 #+end_src
-
-=IMAGE_SIZE= is generated, and exported in =image_size.h=.
-See also [[*Bytecode%20Generator%20Output][Bytecode Generator Output]]
 
 **** Preprocessor Macros
 
@@ -264,27 +268,27 @@ The following all indicate the size of the different components, in =cell= units
 #+begin_src C
   /* data memory (affects non-transient data) in cells*/
   #ifndef VM_MEM
-   #define VM_MEM 256
+          #define VM_MEM 256
   #endif
-  
+
   /* dictionary size (affects number of named items)*/
   #ifndef VM_DICT
-   #define VM_DICT 512
+          #define VM_DICT 512
   #endif
-  
+
   /* parameter stack size (affects transient data)*/
   #ifndef VM_PSTACK
-   #define VM_PSTACK 64
+          #define VM_PSTACK 64
   #endif
-  
+
   /* return stack size (affects nesting of functions)*/
   #ifndef VM_RETURNSTACK
-   #define VM_RETURNSTACK 64
+          #define VM_RETURNSTACK 64
   #endif
-  
+
   /* retain stack size (affects maximum amount of postponing data use) */
   #ifndef VM_RETAINSTACK
-   #define VM_RETAINSTACK 32
+          #define VM_RETAINSTACK 32
   #endif
 #+end_src
 
@@ -312,13 +316,27 @@ A =cell=-sized version for comparison to data values:
 #define INSTBASE_CELL ((cell)INSTBASE<<(8*(sizeof(inst *)-sizeof(inst))))
 #+end_src
 
+**** Defines for the generated data in =bytecode.c=
+
+#+begin_src C
+extern inst image[];
+extern dict_entry dict[VM_DICT];
+extern uint16_t dict_hash_index[];
+extern cell FF_Table[];
+#+end_src
+
+=image= holds the actual firmware image, =dict= is the dictioary, =dict_hash_index=
+creates a hash table for fast lookup of words (see ???). =dict= is declared with size
+because in the lookup function the =sizeof()= operator is used for bounds-checking.
+
 **** Main VM Function Prototype
 This is the prototype for the function that is supposed to be executed from the
 application program.  The only argument is the offset of the first in the bytecode image
-to be executed.
+to be executed.  The return value indicates the status after a bytecode-program has been
+executed.  If it is non-zero, an internal error happened.
 
 #+begin_src C
-void interpreter(short_jump_target);
+int interpreter(short_jump_target);
 #+end_src
 
 ** Complete Source Files
@@ -330,7 +348,7 @@ void interpreter(short_jump_target);
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "generated/image_size.h"
+#include "generated/bytecode.h"
 
 <<vm_h>>
 

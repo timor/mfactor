@@ -183,8 +183,8 @@ for the JavaScript code in this tag.
 <li><a href="#orgheadline16">3.2.1. Header File</a>
 <ul>
 <li><a href="#orgheadline12">3.2.1.1. Typedefs</a></li>
-<li><a href="#orgheadline13">3.2.1.2. The Image</a></li>
-<li><a href="#orgheadline14">3.2.1.3. Preprocessor Macros</a></li>
+<li><a href="#orgheadline13">3.2.1.2. Preprocessor Macros</a></li>
+<li><a href="#orgheadline14">3.2.1.3. Defines for the generated data in <code>bytecode.c</code></a></li>
 <li><a href="#orgheadline15">3.2.1.4. Main VM Function Prototype</a></li>
 </ul>
 </li>
@@ -347,16 +347,17 @@ Per default, the output of the rake task is place in subdirectory <code>generate
 including project.  This folder contains several files:
 </p>
 <ul class="org-ul">
-<li><code>inst_enum.h</code> - enum which contains all instruction mnemonics.  These are used in
-<code>image.code.h</code></li>
+<li><code>inst_enum.h</code> - enum which contains all instruction mnemonics.  These are used in the
+image generated in =bytecode.c"</li>
 <li><code>mfactor_words.h</code> - contains all exported words, which can then be referenced from C
 context.</li>
-<li><code>image.code.h</code> - contains the actual byte code image</li>
-<li><code>image.dict.h</code> - contains the dictionary, excluding private words</li>
-<li><code>image_size.h</code> - some constants which are generated during byte code compilation and
+<li><code>bytecode.c</code> - contains the actual byte code image, dictionary and hash table</li>
+<li><code>bytecode.h</code> - some constants which are generated during byte code compilation and
 used in the VM implementation</li>
-<li><code>image.dump</code> - serialized MFactor::ByteCodeImage Object, can be loaded with <code>Marshal</code>.
-This basically exposes all possible internals about the compiled image.</li>
+<li><code>image.dump</code> - serialized MFactor::ByteCodeImage Object, can be loaded with
+<code>MFactor::ByteCodeImage::deserialize</code>.  This basically exposes all possible internals
+about the compiled image.  Used to extract information after compilation, when the
+<code>mfactor</code> task has finished.</li>
 </ul>
 </div>
 </div>
@@ -545,32 +546,29 @@ Size: 32 Bit
 <pre class="src src-C"><span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">uintptr_t</span> <span style="color: #228b22;">cell</span>;                 <span style="color: #b22222;">/* </span><span style="color: #b22222;">memory cell must at least hold pointer </span><span style="color: #b22222;">*/</span>
 </pre>
 </div>
+
+<p>
+Type of entries in the dictionary.  These map names to addresses, and hold the flags that
+mark a word inline, recursive, or a parsing word.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-C"><span style="color: #a020f0;">typedef</span> <span style="color: #a020f0;">struct</span> <span style="color: #228b22;">dict_entry</span>
+{
+<span style="color: #b22222; background-color: #ffff00;">      </span>  <span style="color: #228b22;">inst</span> * <span style="color: #a0522d;">address</span>;                                 <span style="color: #b22222;">/* </span><span style="color: #b22222;">pointer into memory </span><span style="color: #b22222;">*/</span>
+<span style="color: #b22222; background-color: #ffff00;">      </span>  <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span> <span style="color: #a0522d;">flags</span>;            <span style="color: #b22222;">/* </span><span style="color: #b22222;">may include other flags later (inline, recursive, etc) </span><span style="color: #b22222;">*/</span>
+<span style="color: #b22222; background-color: #ffff00;">      </span>  <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span> <span style="color: #a0522d;">name_header</span>; <span style="color: #b22222;">/* </span><span style="color: #b22222;">should always be zero </span><span style="color: #b22222;">*/</span>
+<span style="color: #b22222; background-color: #ffff00;">      </span>  <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span> <span style="color: #a0522d;">name_length</span>;
+<span style="color: #b22222; background-color: #ffff00;">      </span>  <span style="color: #228b22;">char</span> <span style="color: #a0522d;">name</span>[];
+}       <span style="color: #a020f0;">__attribute__</span>((<span style="color: #228b22;">packed</span>)) <span style="color: #228b22;">dict_entry</span>;
+</pre>
+</div>
 </div>
 </div>
 
 <div id="outline-container-orgheadline13" class="outline-5">
-<h5 id="orgheadline13"><span class="section-number-5">3.2.1.2</span> The Image</h5>
+<h5 id="orgheadline13"><span class="section-number-5">3.2.1.2</span> Preprocessor Macros</h5>
 <div class="outline-text-5" id="text-3-2-1-2">
-<p>
-The image generated in <code>image.code.h</code> is declared here:
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-C"><span style="color: #228b22;">inst</span> <span style="color: #a0522d;">image</span>[IMAGE_SIZE];
-</pre>
-</div>
-
-<p>
-<code>IMAGE_SIZE</code> is generated, and exported in <code>image_size.h</code>.
-See also <a href="#orgheadline7">Bytecode Generator Output</a>
-</p>
-</div>
-</div>
-
-<div id="outline-container-orgheadline14" class="outline-5">
-<h5 id="orgheadline14"><span class="section-number-5">3.2.1.3</span> Preprocessor Macros</h5>
-<div class="outline-text-5" id="text-3-2-1-3">
 <p>
 The following all indicate the size of the different components, in <code>cell</code> units
 </p>
@@ -579,27 +577,27 @@ The following all indicate the size of the different components, in <code>cell</
 
 <pre class="src src-C"><span style="color: #b22222;">/* </span><span style="color: #b22222;">data memory (affects non-transient data) in cells</span><span style="color: #b22222;">*/</span>
 <span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_MEM
-<span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_MEM</span> 256
+<span style="color: #b22222; background-color: #ffff00;">      </span><span style="color: #483d8b;">  #define</span> <span style="color: #a0522d;">VM_MEM</span> 256
 <span style="color: #483d8b;">#endif</span>
 
 <span style="color: #b22222;">/* </span><span style="color: #b22222;">dictionary size (affects number of named items)</span><span style="color: #b22222;">*/</span>
 <span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_DICT
-<span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_DICT</span> 512
+<span style="color: #b22222; background-color: #ffff00;">      </span><span style="color: #483d8b;">  #define</span> <span style="color: #a0522d;">VM_DICT</span> 512
 <span style="color: #483d8b;">#endif</span>
 
 <span style="color: #b22222;">/* </span><span style="color: #b22222;">parameter stack size (affects transient data)</span><span style="color: #b22222;">*/</span>
 <span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_PSTACK
-<span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_PSTACK</span> 64
+<span style="color: #b22222; background-color: #ffff00;">      </span><span style="color: #483d8b;">  #define</span> <span style="color: #a0522d;">VM_PSTACK</span> 64
 <span style="color: #483d8b;">#endif</span>
 
 <span style="color: #b22222;">/* </span><span style="color: #b22222;">return stack size (affects nesting of functions)</span><span style="color: #b22222;">*/</span>
 <span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_RETURNSTACK
-<span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_RETURNSTACK</span> 64
+<span style="color: #b22222; background-color: #ffff00;">      </span><span style="color: #483d8b;">  #define</span> <span style="color: #a0522d;">VM_RETURNSTACK</span> 64
 <span style="color: #483d8b;">#endif</span>
 
 <span style="color: #b22222;">/* </span><span style="color: #b22222;">retain stack size (affects maximum amount of postponing data use) </span><span style="color: #b22222;">*/</span>
 <span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_RETAINSTACK
-<span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_RETAINSTACK</span> 32
+<span style="color: #b22222; background-color: #ffff00;">      </span><span style="color: #483d8b;">  #define</span> <span style="color: #a0522d;">VM_RETAINSTACK</span> 32
 <span style="color: #483d8b;">#endif</span>
 </pre>
 </div>
@@ -640,18 +638,39 @@ A <code>cell</code>-sized version for comparison to data values:
 </div>
 </div>
 
+<div id="outline-container-orgheadline14" class="outline-5">
+<h5 id="orgheadline14"><span class="section-number-5">3.2.1.3</span> Defines for the generated data in <code>bytecode.c</code></h5>
+<div class="outline-text-5" id="text-3-2-1-3">
+<div class="org-src-container">
+
+<pre class="src src-C"><span style="color: #a020f0;">extern</span> <span style="color: #228b22;">inst</span> <span style="color: #a0522d;">image</span>[];
+<span style="color: #a020f0;">extern</span> <span style="color: #228b22;">dict_entry</span> <span style="color: #a0522d;">dict</span>[VM_DICT];
+<span style="color: #a020f0;">extern</span> <span style="color: #228b22;">uint16_t</span> <span style="color: #a0522d;">dict_hash_index</span>[];
+<span style="color: #a020f0;">extern</span> <span style="color: #228b22;">cell</span> <span style="color: #a0522d;">FF_Table</span>[];
+</pre>
+</div>
+
+<p>
+<code>image</code> holds the actual firmware image, <code>dict</code> is the dictioary, <code>dict_hash_index</code>
+creates a hash table for fast lookup of words (see ???). <code>dict</code> is declared with size
+because in the lookup function the <code>sizeof()</code> operator is used for bounds-checking.
+</p>
+</div>
+</div>
+
 <div id="outline-container-orgheadline15" class="outline-5">
 <h5 id="orgheadline15"><span class="section-number-5">3.2.1.4</span> Main VM Function Prototype</h5>
 <div class="outline-text-5" id="text-3-2-1-4">
 <p>
 This is the prototype for the function that is supposed to be executed from the
 application program.  The only argument is the offset of the first in the bytecode image
-to be executed.
+to be executed.  The return value indicates the status after a bytecode-program has been
+executed.  If it is non-zero, an internal error happened.
 </p>
 
 <div class="org-src-container">
 
-<pre class="src src-C"><span style="color: #228b22;">void</span> <span style="color: #0000ff;">interpreter</span>(<span style="color: #228b22;">short_jump_target</span>);
+<pre class="src src-C"><span style="color: #228b22;">int</span> <span style="color: #0000ff;">interpreter</span>(<span style="color: #228b22;">short_jump_target</span>);
 </pre>
 </div>
 </div>
@@ -672,36 +691,43 @@ to be executed.
 
 <span style="color: #483d8b;">#include</span> <span style="color: #8b2252;">&lt;stdbool.h&gt;</span>
 <span style="color: #483d8b;">#include</span> <span style="color: #8b2252;">&lt;stdint.h&gt;</span>
-<span style="color: #483d8b;">#include</span> <span style="color: #8b2252;">"generated/image_size.h"</span>
+<span style="color: #483d8b;">#include</span> <span style="color: #8b2252;">"generated/bytecode.h"</span>
 
 <span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span> <span style="color: #228b22;">inst</span>;
 <span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">short</span> <span style="color: #228b22;">short_jump_target</span>;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">relative jumps in 64k on 32 bit </span><span style="color: #b22222;">*/</span>
 <span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">uintptr_t</span> <span style="color: #228b22;">jump_target</span>;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">long absolute jump </span><span style="color: #b22222;">*/</span>
 <span style="color: #a020f0;">typedef</span> <span style="color: #228b22;">uintptr_t</span> <span style="color: #228b22;">cell</span>;                 <span style="color: #b22222;">/* </span><span style="color: #b22222;">memory cell must at least hold pointer </span><span style="color: #b22222;">*/</span>
-<span style="color: #228b22;">inst</span> <span style="color: #a0522d;">image</span>[IMAGE_SIZE];
+<span style="color: #a020f0;">typedef</span> <span style="color: #a020f0;">struct</span> <span style="color: #228b22;">dict_entry</span>
+{
+<span style="color: #b22222; background-color: #ffff00;">      </span>  <span style="color: #228b22;">inst</span> * <span style="color: #a0522d;">address</span>;                                 <span style="color: #b22222;">/* </span><span style="color: #b22222;">pointer into memory </span><span style="color: #b22222;">*/</span>
+<span style="color: #b22222; background-color: #ffff00;">      </span>  <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span> <span style="color: #a0522d;">flags</span>;            <span style="color: #b22222;">/* </span><span style="color: #b22222;">may include other flags later (inline, recursive, etc) </span><span style="color: #b22222;">*/</span>
+<span style="color: #b22222; background-color: #ffff00;">      </span>  <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span> <span style="color: #a0522d;">name_header</span>; <span style="color: #b22222;">/* </span><span style="color: #b22222;">should always be zero </span><span style="color: #b22222;">*/</span>
+<span style="color: #b22222; background-color: #ffff00;">      </span>  <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span> <span style="color: #a0522d;">name_length</span>;
+<span style="color: #b22222; background-color: #ffff00;">      </span>  <span style="color: #228b22;">char</span> <span style="color: #a0522d;">name</span>[];
+}       <span style="color: #a020f0;">__attribute__</span>((<span style="color: #228b22;">packed</span>)) <span style="color: #228b22;">dict_entry</span>;
 <span style="color: #b22222;">/* </span><span style="color: #b22222;">data memory (affects non-transient data) in cells</span><span style="color: #b22222;">*/</span>
 <span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_MEM
-<span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_MEM</span> 256
+<span style="color: #b22222; background-color: #ffff00;">      </span><span style="color: #483d8b;">  #define</span> <span style="color: #a0522d;">VM_MEM</span> 256
 <span style="color: #483d8b;">#endif</span>
 
 <span style="color: #b22222;">/* </span><span style="color: #b22222;">dictionary size (affects number of named items)</span><span style="color: #b22222;">*/</span>
 <span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_DICT
-<span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_DICT</span> 512
+<span style="color: #b22222; background-color: #ffff00;">      </span><span style="color: #483d8b;">  #define</span> <span style="color: #a0522d;">VM_DICT</span> 512
 <span style="color: #483d8b;">#endif</span>
 
 <span style="color: #b22222;">/* </span><span style="color: #b22222;">parameter stack size (affects transient data)</span><span style="color: #b22222;">*/</span>
 <span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_PSTACK
-<span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_PSTACK</span> 64
+<span style="color: #b22222; background-color: #ffff00;">      </span><span style="color: #483d8b;">  #define</span> <span style="color: #a0522d;">VM_PSTACK</span> 64
 <span style="color: #483d8b;">#endif</span>
 
 <span style="color: #b22222;">/* </span><span style="color: #b22222;">return stack size (affects nesting of functions)</span><span style="color: #b22222;">*/</span>
 <span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_RETURNSTACK
-<span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_RETURNSTACK</span> 64
+<span style="color: #b22222; background-color: #ffff00;">      </span><span style="color: #483d8b;">  #define</span> <span style="color: #a0522d;">VM_RETURNSTACK</span> 64
 <span style="color: #483d8b;">#endif</span>
 
 <span style="color: #b22222;">/* </span><span style="color: #b22222;">retain stack size (affects maximum amount of postponing data use) </span><span style="color: #b22222;">*/</span>
 <span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> VM_RETAINSTACK
-<span style="color: #483d8b;"> #define</span> <span style="color: #a0522d;">VM_RETAINSTACK</span> 32
+<span style="color: #b22222; background-color: #ffff00;">      </span><span style="color: #483d8b;">  #define</span> <span style="color: #a0522d;">VM_RETAINSTACK</span> 32
 <span style="color: #483d8b;">#endif</span>
 <span style="color: #483d8b;">#if</span><span style="color: #483d8b;">n</span><span style="color: #483d8b;">def</span> INSTBASE
 <span style="color: #483d8b;"> #if</span> (__linux &amp;&amp; __LP64__)
@@ -713,7 +739,11 @@ to be executed.
 <span style="color: #483d8b;"> #endif</span>
 <span style="color: #483d8b;">#endif</span>
 <span style="color: #483d8b;">#define</span> <span style="color: #a0522d;">INSTBASE_CELL</span> ((<span style="color: #228b22;">cell</span>)INSTBASE&lt;&lt;(8*(<span style="color: #a020f0;">sizeof</span>(<span style="color: #228b22;">inst</span> *)-<span style="color: #a020f0;">sizeof</span>(inst))))
-<span style="color: #228b22;">void</span> <span style="color: #0000ff;">interpreter</span>(<span style="color: #228b22;">short_jump_target</span>);
+<span style="color: #a020f0;">extern</span> <span style="color: #228b22;">inst</span> <span style="color: #a0522d;">image</span>[];
+<span style="color: #a020f0;">extern</span> <span style="color: #228b22;">dict_entry</span> <span style="color: #a0522d;">dict</span>[VM_DICT];
+<span style="color: #a020f0;">extern</span> <span style="color: #228b22;">uint16_t</span> <span style="color: #a0522d;">dict_hash_index</span>[];
+<span style="color: #a020f0;">extern</span> <span style="color: #228b22;">cell</span> <span style="color: #a0522d;">FF_Table</span>[];
+<span style="color: #228b22;">int</span> <span style="color: #0000ff;">interpreter</span>(<span style="color: #228b22;">short_jump_target</span>);
 
 <span style="color: #483d8b;">#endif</span>
 </pre>

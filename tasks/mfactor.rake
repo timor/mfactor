@@ -13,6 +13,8 @@ TRANSLATION_YAML_FILE ||= nil
 # make target application's object file depend on the generated stuff
 MFACTOR_DEPENDING_OBJECTS ||= ["mfactor/src/interpreter.c"]
 # can be a hash table that contains pairs of the form (mfactor-word -> name-of-c-define)
+MFACTOR_GENERATED_C ||= "generated/bytecode.c"
+MFACTOR_GENERATED_H ||= "generated/bytecode.h"
 MFACTOR_C_WORDS ||= {}
 MFACTOR_IMAGE_SECTION ||= nil
 MFACTOR_DICT_SECTION ||= nil
@@ -62,7 +64,6 @@ def ff_code (yaml,out)
   yaml.each do |cname,opts|
     out << "extern void* #{cname};\n"
   end
-  out << "#define FF_LENGTH #{yaml.length}\n"
   out << "cell FF_Table[#{yaml.length}] = {\n"
   yaml.each do |cname,opts|
     out << "(cell)&#{cname},\n"
@@ -88,28 +89,29 @@ def build_image
   mf.load_vocab(MFACTOR_ROOT_VOCAB)
   write_dot_dependencies(mf, File.open("generated/all_dependencies.dot","w"), false)
   write_dot_dependencies(mf, File.open("generated/app_dependencies.dot","w"), true)
-  File.open("generated/image_size.h","w") do |f|
+  File.open(MFACTOR_GENERATED_H,"w") do |f|
     f.puts "#define IMAGE_SIZE #{mf.bytecode_size}"
     # define the starting word for use in interpreter() call
     f.puts "#define START_WORD_OFFSET " + (mf.get_word_address(START_WORD)).to_s
+    f.puts "#define FF_LENGTH #{ffyaml.length}" if defined? MFACTOR_FF
   end
-  section_prefix = if MFACTOR_IMAGE_SECTION
-                     "__attribute__((section(\".#{MFACTOR_IMAGE_SECTION}\"))) "
-                   else
-                     ""
-                   end
-  File.open("generated/image.code.h","w") do |f|
+  File.open(MFACTOR_GENERATED_C,"w") do |f|
+    f.puts "#include \"interpreter.h\""
+    f.puts "#include \"inst_enum.h\""
     ff_code(ffyaml || [],f)
+    section_prefix = if MFACTOR_IMAGE_SECTION
+                       "__attribute__((section(\".#{MFACTOR_IMAGE_SECTION}\"))) "
+                     else
+                       ""
+                     end
     f.write "#{section_prefix}inst image[#{mf.bytecode_size}]= {\n"
     mf.write_bytecode_image f
     f.write "};\n"
-  end
-  section_prefix = if MFACTOR_DICT_SECTION
-                     "__attribute__((section(\".#{MFACTOR_DICT_SECTION}\"))) "
-                   else
-                     ""
-                   end
-  File.open("generated/image.dict.h","w") do |f|
+    section_prefix = if MFACTOR_DICT_SECTION
+                       "__attribute__((section(\".#{MFACTOR_DICT_SECTION}\"))) "
+                     else
+                       ""
+                     end
     f.write "#{section_prefix} dict_entry dict[VM_DICT] __attribute((aligned(1))) = {\n"
     mf.write_dictionary_entries f
     f.write "};\n"
@@ -140,7 +142,7 @@ task :see_dict => "generated" do
   puts build_image.see
 end
 
-IMAGE_FILES=["generated/image.code.h","generated/image.dict.h","generated/image_size.h","generated/mfactor_words.h","generated/image.dump"]
+IMAGE_FILES=[MFACTOR_GENERATED_C, MFACTOR_GENERATED_H, "generated/mfactor_words.h", "generated/image.dump"]
 # file "generated/_generated_" => IMAGE_FILES+["generated/inst_enum.h"] do
 #   touch "generated/_generated_"
 # end
