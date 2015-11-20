@@ -667,7 +667,7 @@ int interpreter(short_jump_target start_base_address) {
 				unsigned int i = ppop();
 				if (i >= FF_LENGTH)
 					{
-						printf("no ff entry with index %f\n",i);
+						printf("no ff entry with index %i\n",i);
 						BACKTRACE();
 						handle_error(INTERNAL_ERROR_UNKNOWN_FF);
 					}
