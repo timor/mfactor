@@ -92,35 +92,6 @@ uint32_t lookup_ht_entry(uint8_t length, char* name) {
 	return (cell)dict+dict_hash_index[hash%256];
 }
 
-/* check if name in dictionary entry is a null-terminated string */
-static unsigned char dict_entry_real_length( dict_entry * e)
-{
-	if (e->name[e->name_length - 1] == 0)
-		return e->name_length - 1;
-	else
-		return e->name_length;
-}
-
-/* returns NULL if not found, otherwise points to dictionary entry */
-static dict_entry * find_by_name(char *fname, unsigned char length)
-{
-	/* if (debug_lvl(1)) printf("looking for '%s'(%d) ", fname,length); */
-	for(char * ptr=(char*)dict;
-		 (ptr < ((char*)dict+sizeof(dict)))&&(((dict_entry*)ptr)->name_length > 0);
-		 ptr += (((dict_entry*)ptr)->name_length + 4*sizeof(unsigned char) + sizeof(void*))) {
-		dict_entry *dptr = (dict_entry*)ptr;
-		unsigned char rl = dict_entry_real_length(dptr);
-		/* if (debug_lvl(1)) printf("comparing to (%#lx): %s(%d); ",(uintptr_t)dptr->name,dptr->name,rl); */
-		if (length != rl) continue;
-		if (strncmp(fname,dptr->name,length)==0) {
-			if (debug_lvl(1)) printf("found at: %#lx\n",(cell)dptr->address);
-			return dptr;
-		}
-	}
-	/* if (debug_lvl(1)) printf("not found\n"); */
-	return (dict_entry *) NULL;
-}
-
 /* get the name of the word, only for debugging */
 /* probably fails for non-null-terminated strings */
 static char* find_by_address( inst * word)
@@ -522,12 +493,9 @@ int interpreter(short_jump_target start_base_address) {
             handle_error(INTERNAL_ERROR_TOKEN_READ);
 			}} break;
 			/* (countedstr -- countedstr/dict_entry foundp) */
-		case search: {
-			cell name_to_find=ppop();
-			dict_entry * addr=find_by_name(((char*)name_to_find)+1,*((char *) name_to_find)); /* skip countbyte */
-			ppush(addr==NULL ? name_to_find : (cell)addr);
-			ppush(addr==NULL ? false : true);
-		}
+		case search:
+			/* deprecated, lookup is done using hash table */
+			handle_error(INTERNAL_ERROR_INVALID_OPCODE);
 			break;
 		case lookup_name: {
 			cell length = ppop();
