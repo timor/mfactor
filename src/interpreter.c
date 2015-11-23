@@ -49,8 +49,10 @@ static cell special_vars[_NumSpecials];
 	#define BASE special_vars[5]
 	#define OUTPUT_STREAM special_vars[6]
 
-#define STDOUT 1					  /* not libc numbers, but the ones that are passed to _write() */
+/* file descriptors passed down to system call */
+#define STDOUT 1
 #define STDERR 2
+#define NULLOUT 3
 
 /* these values can be in LAST_INTERNAL_ERROR after a restart */
 #define INTERNAL_ERROR_PSTACK_UFLOW -1
@@ -260,8 +262,10 @@ static FILE * current_fd(void)
 {
 	if (OUTPUT_STREAM == 2)
 		return stderr;
-	else
+	else if (OUTPUT_STREAM == 1)
 		return stdout;
+	else
+		return NULL;
 }
 
 int interpreter(short_jump_target start_base_address) {
@@ -399,17 +403,29 @@ int interpreter(short_jump_target start_base_address) {
 			pc += sizeof(short_jump_target);
 			break;
 		case _pwrite:
-			fprintf(current_fd(), "%ld", ppop());
+			if (current_fd() != NULL)
+				fprintf(current_fd(), "%ld", ppop());
+			else
+				(void) ppop();
 			break;
 		case pwritex:
-			fprintf(current_fd(), "%#lx", ppop());
+			if (current_fd() != NULL)
+				fprintf(current_fd(), "%#lx", ppop());
+			else
+				(void) ppop();
 			break;
 		case writex:
-			fprintf(current_fd(), "%lx", ppop());
+			if (current_fd() != NULL)
+				fprintf(current_fd(), "%lx", ppop());
+			else
+				(void) ppop();
 			break;
 		case emit:
-			fputc(ppop(),current_fd());
-			fflush(stdout);			/* TODO remove eventually */
+			if (current_fd() != NULL) {
+				fputc(ppop(),current_fd());
+				fflush(stdout);			/* TODO remove eventually */
+			} else
+				(void) ppop();
 			break;
 		case receive:
 			ppush(read_char()); break;

@@ -8,6 +8,33 @@ IN: io
 ! print byte string in memory
 : write ( byte-array -- ) uncount _print_bytes ;
 
+! emit newline
 : nl ( -- ) 10 emit ;
 
+! print character to current output stream
 : print ( byte-array -- ) write nl ;
+
+! set internal variable to different stream descriptor
+: ostream<< ( stream -- )
+    6 >special ;
+
+! get current internal stream descriptor
+: ostream>> ( -- stream )
+    6 special> ;
+
+! call quot with output temporarily set to <stream>
+: with-stream ( stream quot: ( ..a -- ..b ) -- ..b )
+    ostream>>                 ! stream quot old-stream
+    [                           ! stream quot
+      swap ostream<<
+      call
+    ] dip                ! old-stream
+    ostream<< ;
+
+! standard stream descriptors
+
+: stdout ( -- n ) 1 ;
+
+: stderr ( -- n ) 2 ;
+
+: nullout ( -- n ) 3 ;         ! special file, discards output
