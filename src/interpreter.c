@@ -38,7 +38,7 @@
 	3: RESTART - word where to restart when hard error occured
 	4: STEP_HANDLER - address of handler which can be used for single stepping
 	5: BASE - address of current 64k segment base
-	6: OUTPUT_STREAM: 1: stdout, 2: stderr
+	6: OUTPUT_STREAM: 1: stdout, 2: stderr,
 	has occured */
 	#define _NumSpecials 10
 static const unsigned char NumSpecials = _NumSpecials;
