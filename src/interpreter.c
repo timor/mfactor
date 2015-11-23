@@ -46,7 +46,6 @@ static cell special_vars[_NumSpecials];
 	#define MP special_vars[0]
 	#define HANDLER special_vars[1]
 	#define DEBUG_LEVEL special_vars[2]
-	#define RESTART special_vars[3]
 	#define BASE special_vars[5]
 	#define OUTPUT_STREAM special_vars[6]
 
