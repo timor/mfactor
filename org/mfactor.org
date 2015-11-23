@@ -1,4 +1,4 @@
-# -*- org-babel-default-header-args:C: ((:noweb . "yes")); -*-
+# -*- org-babel-default-header-args:C: ((:noweb . "yes") (:noweb-sep . "\n/*------------------*/\n\n")); -*-
 #+TITLE:     MFactor Documentation
 #+EMAIL:     timor.dd@googlemail.com
 #+DATE:      2015-03-17 Di
@@ -357,10 +357,11 @@ executed.  If it is non-zero, an internal error happened.
 int interpreter(short_jump_target);
 #+end_src
 
-** VM Implementation
+** C Implementation (=interpreter()=)
 :PROPERTIES:
 :noweb-ref: vm_c
 :END:
+
 This section describes the actual C implementation of [[file:src/interpreter.c]].
 *** Special Variables
 The internal state of the interpreter is exposed to the application by predefining an
@@ -375,7 +376,7 @@ First define an array that holds these Variables:
   static cell special_vars[_NumSpecials];
 #+END_SRC
 
-The list of currently implented specials:
+The list of currently implemented specials:
 #+BEGIN_SRC C
   /* currently implemented special variables
   0: MP - memory write pointer
@@ -388,7 +389,7 @@ The list of currently implented specials:
   */
 #+END_SRC
 
-Not all og them are actually in use, the ones that are, are defined as macros so that the
+Not all of them are actually in use, the ones that are, are defined as macros so that the
 =special_vars= array needs not be acccessed directly in the following source code:
 
 **** =MP=: The Memory Write Pointer
@@ -426,7 +427,70 @@ written as mfactor source.
 This hold the address that is added to *all* internal calls (TODO: link to relevant call
 primitives).  Usually it holds the address of the =image=-variable, that is generated in
 =generated/bytecode.c=.  This allows the image to be relocatable, so that the actuall call
-target (16 bit value)
+target (16 bit value) is computed by adding it to the value of =BASE=.
+
+**** =OUTPUT_STREAM=: Output Stream descriptor
+The value of this variable is used everytime something should be output.  It determines
+which =File= pointer is passed to the standard c output functions in =current_fd()= (TODO
+link)
+#+BEGIN_SRC C
+  #define OUTPUT_STREAM special_vars[6]
+#+END_SRC
+
+The possible values are defined as:
+#+BEGIN_SRC C
+  /* known stream descriptors for OUTPUT_STREAM */
+  #define STDOUT 1
+  #define STDERR 2
+  #define NULLOUT 3
+#+END_SRC
+
+*** Internal Debugging
+**** Output Handling
+One file-local variable that holds the current Output stream for internal messages:
+#+BEGIN_SRC C
+  static FILE * Ostream; /* used by reporting functions, so they can temporarily
+                            print to different file descriptor */
+#+END_SRC
+**** Debug Level
+One helper for checking if the current debug level is high enough for subsequent actions:
+
+#+BEGIN_SRC C
+  /* check if current value of debug is greater or equal to val */
+  static bool debug_lvl(unsigned int val) {
+          return (DEBUG_LEVEL >= val);
+  }
+#+END_SRC
+
+*** Work Memory
+For allocation of interactively-generated input sequences, such as strings, byte arrays and
+quotations, internal memory is reserved.  This is the default target area for the
+compilation primitives (TODO: link).
+
+#+BEGIN_SRC C
+  /* main memory to work with */
+  static cell memory[VM_MEM];
+#+END_SRC
+
+*** Return Stack Entry Format
+The return stack, which holds the links of the dynamic chain, has entries in the following
+format:
+#+BEGIN_SRC C
+  typedef struct return_entry {
+          inst * return_address;
+          inst * current_call;
+  } return_entry;
+#+END_SRC
+
+Technically, for execution, only the =return_address= portion is interesting.  But for
+debugging purposes and backtraces it is useful to record the starting address of the
+current quotation.  This is done with the =current_call= field.
+
+*** Word Lookup: Dictionary support
+There is built-in support for work lookup in the dictionary (TODO: link to section that
+explains dictionary format), mainly for speed and debugging reasons.
+
+
 ** Complete Source Files
 *** interpreter.h
 #+name: interpreter_h
