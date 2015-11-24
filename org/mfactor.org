@@ -136,7 +136,8 @@ entries are in the form of:
 ** Basic Factor concepts
 For the complete Factor language, see [[http://docs.factorcode.org/content/article-handbook-language-reference.html][the official documentation]].  The language is
 [[https://en.wikipedia.org/wiki/Concatenative_programming_language][concatenative]], and uses generally postfix syntax, e.g. the arguments are written before
-the "function call".
+the "function call".  [[http://concatenative.org/wiki/view/Concatenative%2520language/Name%2520code%2520not%2520values][This]] provides a good introduction to the concepts of concatenative
+languages.
 
 Terminology:
 - Word :: the basic user-defined abstraction, like functions in most languages.
@@ -146,7 +147,7 @@ Terminology:
 - Return Stack :: keeps track of program execution when calling into words and returning.
      In contrast to Forth, not directly accessible by user code.
 - Retain Stack :: second stack for data, which is used to set aside stack elements that
-     are needed for later.  Used internally by all [[http://docs.factorcode.org/content/article-dip-keep-combinators.html][preserving Combinators]].
+     are needed for later.  Used internally by all [[http://docs.factorcode.org/content/article-dip-keep-combinators.html][preserving combinators]].
 - Quotation :: block of code enclosed in square brackets (=[]=), that is pushed onto the
      stack as-is, without evaluation.
 - Combinator :: word that takes quotations as input.  Probably the most-used is:

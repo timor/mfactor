@@ -160,7 +160,7 @@ for the JavaScript code in this tag.
 <ul>
 <li><a href="#orgheadline3">1.1. General Concept</a></li>
 <li><a href="#orgheadline5">1.2. Configuring the Rake Task</a></li>
-<li><a href="#orgheadline6">1.3. <span class="todo nilTODO">TODO</span> Generated Output Files</a></li>
+<li><a href="#orgheadline6">1.3. Generated Output Files</a></li>
 <li><a href="#orgheadline4">1.4. Making Existing C Functions Available</a></li>
 <li><a href="#orgheadline7">1.5. Basic Factor concepts</a></li>
 <li><a href="#orgheadline8">1.6. Differences to Factor</a></li>
@@ -327,7 +327,7 @@ will pe placed into</li>
 </div>
 
 <div id="outline-container-orgheadline6" class="outline-3">
-<h3 id="orgheadline6"><span class="section-number-3">1.3</span> <span class="todo TODO">TODO</span> Generated Output Files</h3>
+<h3 id="orgheadline6"><span class="section-number-3">1.3</span> Generated Output Files</h3>
 <div class="outline-text-3" id="text-1-3">
 <p>
 In the application's main directory, a directory <code>generated</code> is created during the build
@@ -382,7 +382,8 @@ Currently supported values are:
 <p>
 For the complete Factor language, see <a href="http://docs.factorcode.org/content/article-handbook-language-reference.html">the official documentation</a>.  The language is
 <a href="https://en.wikipedia.org/wiki/Concatenative_programming_language">concatenative</a>, and uses generally postfix syntax, e.g. the arguments are written before
-the "function call".
+the "function call".  <a href="http://concatenative.org/wiki/view/Concatenative%20language/Name%20code%20not%20values">This</a> provides a good introduction to the concepts of concatenative
+languages.
 </p>
 
 <p>
@@ -396,7 +397,7 @@ file.  Contains a number of word definitions.</dd>
 <dt>Return Stack</dt><dd>keeps track of program execution when calling into words and returning.
 In contrast to Forth, not directly accessible by user code.</dd>
 <dt>Retain Stack</dt><dd>second stack for data, which is used to set aside stack elements that
-are needed for later.  Used internally by all <a href="http://docs.factorcode.org/content/article-dip-keep-combinators.html">preserving Combinators</a>.</dd>
+are needed for later.  Used internally by all <a href="http://docs.factorcode.org/content/article-dip-keep-combinators.html">preserving combinators</a>.</dd>
 <dt>Quotation</dt><dd>block of code enclosed in square brackets (<code>[]</code>), that is pushed onto the
 stack as-is, without evaluation.</dd>
 <dt>Combinator</dt><dd><p>
