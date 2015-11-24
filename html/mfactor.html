@@ -156,66 +156,69 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgheadline8">1. Introduction</a>
+<li><a href="#orgheadline9">1. Introduction</a>
 <ul>
 <li><a href="#orgheadline3">1.1. General Concept</a></li>
 <li><a href="#orgheadline5">1.2. Configuring the Rake Task</a></li>
 <li><a href="#orgheadline6">1.3. <span class="todo nilTODO">TODO</span> Generated Output Files</a></li>
 <li><a href="#orgheadline4">1.4. Making Existing C Functions Available</a></li>
-<li><a href="#orgheadline7">1.5. Invoking the Rake Task</a></li>
+<li><a href="#orgheadline7">1.5. Basic Factor concepts</a></li>
+<li><a href="#orgheadline8">1.6. Differences to Factor</a></li>
 </ul>
 </li>
 <li><a href="#orgheadline1">2. Host Compiler</a>
 <ul>
-<li><a href="#orgheadline9">2.1. Concept</a></li>
-<li><a href="#orgheadline10">2.2. <span class="todo nilTODO">TODO</span> Parser details</a></li>
-<li><a href="#orgheadline11">2.3. Bytecode Generator Output</a></li>
-<li><a href="#orgheadline13">2.4. Details</a>
+<li><a href="#orgheadline10">2.1. Concept</a></li>
+<li><a href="#orgheadline11">2.2. <span class="todo nilTODO">TODO</span> Parser details</a></li>
+<li><a href="#orgheadline12">2.3. Bytecode Generator Output</a></li>
+<li><a href="#orgheadline13">2.4. Invocation</a></li>
+<li><a href="#orgheadline14">2.5. <span class="todo nilTODO">TODO</span> Compilation example</a></li>
+<li><a href="#orgheadline16">2.6. Details</a>
 <ul>
-<li><a href="#orgheadline12">2.4.1. Fried Quotations(WIP)</a></li>
+<li><a href="#orgheadline15">2.6.1. Fried Quotations(WIP)</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li><a href="#orgheadline2">3. VM Implementation</a>
 <ul>
-<li><a href="#orgheadline14">3.1. Instruction Set</a></li>
-<li><a href="#orgheadline19">3.2. Definitions</a>
+<li><a href="#orgheadline17">3.1. Instruction Set</a></li>
+<li><a href="#orgheadline22">3.2. Definitions</a>
 <ul>
-<li><a href="#orgheadline15">3.2.1. Typedefs</a></li>
-<li><a href="#orgheadline16">3.2.2. Preprocessor Macros</a></li>
-<li><a href="#orgheadline17">3.2.3. Defines for the generated data in <code>bytecode.c</code></a></li>
-<li><a href="#orgheadline18">3.2.4. Main VM Function Prototype</a></li>
+<li><a href="#orgheadline18">3.2.1. Typedefs</a></li>
+<li><a href="#orgheadline19">3.2.2. Preprocessor Macros</a></li>
+<li><a href="#orgheadline20">3.2.3. Defines for the generated data in <code>bytecode.c</code></a></li>
+<li><a href="#orgheadline21">3.2.4. Main VM Function Prototype</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline34">3.3. C Implementation (<code>interpreter()</code>)</a>
+<li><a href="#orgheadline37">3.3. C Implementation (<code>interpreter()</code>)</a>
 <ul>
-<li><a href="#orgheadline27">3.3.1. Special Variables</a>
+<li><a href="#orgheadline30">3.3.1. Special Variables</a>
 <ul>
-<li><a href="#orgheadline20">3.3.1.1. <code>MP</code>: The Memory Write Pointer</a></li>
-<li><a href="#orgheadline21">3.3.1.2. <code>HANDLER</code>: Current Exception handling frame</a></li>
-<li><a href="#orgheadline22">3.3.1.3. <code>DEBUG_LEVEL</code>: VM Debug Verbosity</a></li>
-<li><a href="#orgheadline23">3.3.1.4. <code>RESTART</code>: Restart address (deprecated)</a></li>
-<li><a href="#orgheadline24">3.3.1.5. <code>STEP_HANDLER</code>: Single Stepping Handler (not in use)</a></li>
-<li><a href="#orgheadline25">3.3.1.6. <code>BASE</code>: Current Segment base address</a></li>
-<li><a href="#orgheadline26">3.3.1.7. <code>OUTPUT_STREAM</code>: Output Stream descriptor</a></li>
+<li><a href="#orgheadline23">3.3.1.1. <code>MP</code>: The Memory Write Pointer</a></li>
+<li><a href="#orgheadline24">3.3.1.2. <code>HANDLER</code>: Current Exception handling frame</a></li>
+<li><a href="#orgheadline25">3.3.1.3. <code>DEBUG_LEVEL</code>: VM Debug Verbosity</a></li>
+<li><a href="#orgheadline26">3.3.1.4. <code>RESTART</code>: Restart address (deprecated)</a></li>
+<li><a href="#orgheadline27">3.3.1.5. <code>STEP_HANDLER</code>: Single Stepping Handler (not in use)</a></li>
+<li><a href="#orgheadline28">3.3.1.6. <code>BASE</code>: Current Segment base address</a></li>
+<li><a href="#orgheadline29">3.3.1.7. <code>OUTPUT_STREAM</code>: Output Stream descriptor</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline30">3.3.2. Internal Debugging</a>
+<li><a href="#orgheadline33">3.3.2. Internal Debugging</a>
 <ul>
-<li><a href="#orgheadline28">3.3.2.1. Output Handling</a></li>
-<li><a href="#orgheadline29">3.3.2.2. Debug Level</a></li>
+<li><a href="#orgheadline31">3.3.2.1. Output Handling</a></li>
+<li><a href="#orgheadline32">3.3.2.2. Debug Level</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline31">3.3.3. Work Memory</a></li>
-<li><a href="#orgheadline32">3.3.4. Return Stack Entry Format</a></li>
-<li><a href="#orgheadline33">3.3.5. Word Lookup: Dictionary support</a></li>
+<li><a href="#orgheadline34">3.3.3. Work Memory</a></li>
+<li><a href="#orgheadline35">3.3.4. Return Stack Entry Format</a></li>
+<li><a href="#orgheadline36">3.3.5. Word Lookup: Dictionary support</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline37">3.4. Complete Source Files</a>
+<li><a href="#orgheadline40">3.4. Complete Source Files</a>
 <ul>
-<li><a href="#orgheadline35">3.4.1. interpreter.h</a></li>
-<li><a href="#orgheadline36">3.4.2. interpreter.c</a></li>
+<li><a href="#orgheadline38">3.4.1. interpreter.h</a></li>
+<li><a href="#orgheadline39">3.4.2. interpreter.c</a></li>
 </ul>
 </li>
 </ul>
@@ -223,8 +226,8 @@ for the JavaScript code in this tag.
 </ul>
 </div>
 </div>
-<div id="outline-container-orgheadline8" class="outline-2">
-<h2 id="orgheadline8"><span class="section-number-2">1</span> Introduction</h2>
+<div id="outline-container-orgheadline9" class="outline-2">
+<h2 id="orgheadline9"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 MFactor is a (partial) implementation of the <a href="http://factorcode.org/">factor language</a> for embedded systems.
@@ -233,18 +236,22 @@ It consists of two parts:
 
 <ol class="org-ol">
 <li>A <b>host compiler</b>, written in Ruby, which is used with the <a href="https://github.com/ruby/rake">Rake</a> build system to produce a
-binary image (see <a href="#orgheadline1">2</a>).</li>
+binary image (see <a href="#orgheadline1">Host Compiler</a>).</li>
 
-<li>A <b>c implementation of a bytecode vm</b> which is able to execute such an image. (see <a href="#orgheadline2">3</a>)</li>
+<li>A <b>c implementation of a bytecode vm</b> which is able to execute such an image. (see <a href="#orgheadline2">VM Implementation</a>)</li>
 </ol>
-</div>
 
+<p>
+It is intended to be used with a embedded C development environment, where its sources are
+compiled together with the host application.
+</p>
+</div>
 
 <div id="outline-container-orgheadline3" class="outline-3">
 <h3 id="orgheadline3"><span class="section-number-3">1.1</span> General Concept</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
-The general idea is as follows:
+The general idea: First compile .mfactor source files to bytecode image, then compile the 
 </p>
 
 <div class="figure">
@@ -255,8 +262,7 @@ The general idea is as follows:
 <p>
 A set of mfactor source files is translated by the host compiler (called through rake task
 <code>mfactor</code>) into a bytecode image.  This bytecode image is then successively executed by
-<code>interpeter()</code>, which is the actual VM implementation.  Since internally, all call
-addresses are represented by 16-bit vlaues
+<code>interpeter()</code>, which is the actual VM implementation.
 </p>
 
 <p>
@@ -274,21 +280,31 @@ In order to incorporate this into a project, several rake tasks are supplied in 
 <h3 id="orgheadline5"><span class="section-number-3">1.2</span> Configuring the Rake Task</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
-The rake file is supposed to be included with rake's <code>import</code> facility.
+The rake file is supposed to be included with rake's <code>import</code> facility in the host
+application's own Rakefile.
 </p>
 
 <p>
-Currently, it is configured via setting global variables:
+Currently, it is configured via setting global variables in the including rake file.
+The following must be set:
 </p>
 <ul class="org-ul">
-<li><code>MFACTOR_SRC_DIR</code>: determines the directory where the application's mfactor sources can be found</li>
+<li><code>MFACTOR_SRC_DIR</code>: Determines the directory where the application's mfactor sources can
+be found.  This should point to the application's mfactor source directory.</li>
 <li><code>GENERATOR</code>: which bytecode backend to use, currently, only <code>Cortex</code> is supported</li>
 <li><code>START_WORD</code>: word, which will be executed when starting the vm</li>
-<li><code>MFACTOR_ROOT_VOCAB</code>: the root vocabulary, which is first loaded and loads all dependencies</li>
+<li><code>MFACTOR_ROOT_VOCAB</code>: The root vocabulary, which is first loaded and loads all
+dependencies.  Must be found in <code>MFACTOR_SRC_DIR</code>.</li>
 <li><code>MFACTOR_DEPENDING_OBJECTS</code>: To cause Rake to recompile the whole image, this
 should be set to the object files in the application which depend on the generated
 output. This usually means all files that use any of the words defined in
 <code>MFACTOR_C_WORDS</code>, as well as the object file that is built from <code>src/interpreter.c</code></li>
+</ul>
+
+<p>
+The following are for advanced functionality:
+</p>
+<ul class="org-ul">
 <li><p>
 <code>MFACTOR_C_WORDS</code>: Hashtable for exposing word locations in bytecode to C. Format:
 </p>
@@ -296,7 +312,11 @@ output. This usually means all files that use any of the words defined in
 
 <pre class="src src-ruby">{ <span style="color: #8b2252;">"mfactor-word-name"</span> =&gt; <span style="color: #8b2252;">"NAME_OF_CPP_DEFINE"</span> }
 </pre>
-</div></li>
+</div>
+<p>
+This can be used to generate preprocessor symbols, which can be passed directly to
+<code>interpreter()</code>, for example.
+</p></li>
 <li><code>FF_MFACTOR</code>: path to file containing interface definitions to c code (see <a href="#orgheadline4">Making
 Existing C Functions Available</a>)</li>
 <li><code>MFACTOR_IMAGE_SECTION</code>: a string describing the linker section that the bytecode-image
@@ -318,7 +338,7 @@ process, where several files are generated:
 <dt><code>bytecode.c</code></dt><dd>main output from the ByteCodeImage class.</dd>
 <dt><code>bytecode.h</code></dt><dd>consists of defines that <code>interpreter()</code> and maybe the user application
 needs to know about</dd>
-<dt><code>image.dump</code></dt><dd>after translattion, the ByteCodeImage is written here using <a href="http://ruby-doc.org/core-2.2.3/Marshal.html">Marshal</a>.  It
+<dt><code>image.dump</code></dt><dd>after translation, the ByteCodeImage is written here using <a href="http://ruby-doc.org/core-2.2.3/Marshal.html">Marshal</a>.  It
 can be reloaded later in the build process with <code>ByteCodeImage.deserialize</code> to
 extract information about the image.</dd>
 </dl>
@@ -331,7 +351,7 @@ extract information about the image.</dd>
 <p>
 Special global variable <code>FF_MFACTOR</code> can be set to a yaml file for
 "importing" existing c functions into the interpreter's namespace (Foreign function interface).
-entries are in the form of
+entries are in the form of:
 </p>
 
 <div class="org-src-container">
@@ -357,12 +377,73 @@ Currently supported values are:
 </div>
 
 <div id="outline-container-orgheadline7" class="outline-3">
-<h3 id="orgheadline7"><span class="section-number-3">1.5</span> Invoking the Rake Task</h3>
+<h3 id="orgheadline7"><span class="section-number-3">1.5</span> Basic Factor concepts</h3>
 <div class="outline-text-3" id="text-1-5">
 <p>
-If <code>MFACTOR_DEPENDING_OBJECT</code> was set correctly, then a rebuild of the application
-automatically triggers a recompile of the bytecode image.
+For the complete Factor language, see <a href="http://docs.factorcode.org/content/article-handbook-language-reference.html">the official documentation</a>.  The language is
+<a href="https://en.wikipedia.org/wiki/Concatenative_programming_language">concatenative</a>, and uses generally postfix syntax, e.g. the arguments are written before
+the "function call".
 </p>
+
+<p>
+Terminology:
+</p>
+<dl class="org-dl">
+<dt>Word</dt><dd>the basic user-defined abstraction, like functions in most languages.</dd>
+<dt>Vocabulary</dt><dd>comparable to C's compilation unit with interface definition in a header
+file.  Contains a number of word definitions.</dd>
+<dt>Data Stack</dt><dd>or Parameter Stack, holds values that are manipulated by words.</dd>
+<dt>Return Stack</dt><dd>keeps track of program execution when calling into words and returning.
+In contrast to Forth, not directly accessible by user code.</dd>
+<dt>Retain Stack</dt><dd>second stack for data, which is used to set aside stack elements that
+are needed for later.  Used internally by all <a href="http://docs.factorcode.org/content/article-dip-keep-combinators.html">preserving Combinators</a>.</dd>
+<dt>Quotation</dt><dd>block of code enclosed in square brackets (<code>[]</code>), that is pushed onto the
+stack as-is, without evaluation.</dd>
+<dt>Combinator</dt><dd><p>
+word that takes quotations as input.  Probably the most-used is:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-factor">condition-value [
+    true-quotation
+] [
+    false-quotation
+] if
+</pre>
+</div></dd>
+<dt>Primitives</dt><dd>are the low-level instructions that are executed by the VM.  All words
+are defined in terms of Primitives and other words.</dd>
+</dl>
+</div>
+</div>
+<div id="outline-container-orgheadline8" class="outline-3">
+<h3 id="orgheadline8"><span class="section-number-3">1.6</span> Differences to Factor</h3>
+<div class="outline-text-3" id="text-1-6">
+<p>
+Mfactor implements a subset of factor's functionality useful for embedded systems programming.
+Major differences:
+</p>
+<ul class="org-ul">
+<li>no namestack, so no dynamic variables (may change, but high
+performance impact for embedded systems)</li>
+<li>vocabulary search is simplified, vocabulary <code>foo</code> would be found in
+<code>&lt;MFACTOR_SRC_DIR&gt;/foo.mfactor</code>, vocabulary <code>foo.bar</code> would be found in
+<code>&lt;MFACTOR_SRC_DIR&gt;/foo.bar.mfactor</code>.</li>
+<li>same-named words in different vocabularies not supported (yet)</li>
+<li>interactive support only for byte-array and integer-array sequences: <code>B{ }</code>, <code>I{ }</code>, at
+compile time, arbitrary sequences can be used.</li>
+<li>host compiler only supports a subset of syntax words: <code>:</code>, <code>SYNTAX:</code>, <code>{ }</code>, <code>B{ }</code>, <code>I{
+  }</code>, `SYMBOLS:`, <code>USING:</code>, <code>IN</code></li>
+<li><code>case</code> is implemented as a syntax word, so no interactive support</li>
+<li>words beginning with underscore(<code>_</code>) are not stored in the dictionary.  This is intended
+for helper functions, to prevent them from consuming dictionary space.</li>
+<li>no continuations, no quotation compositions(yet)</li>
+<li>simplified exception handling with `catch` and `throw`</li>
+<li>no Garbage Collector.  Since interactive usage is meant to be for developing, allocated
+objects by the reader are not released automatically.  Any data used in normal code is
+statically compiled into the image, so no runtime allocation is performed unless
+specified explicitely using sequence constructors <code>&lt;byte-array&gt;</code> and <code>&lt;integer-array&gt;</code></li>
+</ul>
 </div>
 </div>
 </div>
@@ -370,13 +451,15 @@ automatically triggers a recompile of the bytecode image.
 <div id="outline-container-orgheadline1" class="outline-2">
 <h2 id="orgheadline1"><span class="section-number-2">2</span> Host Compiler</h2>
 <div class="outline-text-2" id="text-2">
-</div><div id="outline-container-orgheadline9" class="outline-3">
-<h3 id="orgheadline9"><span class="section-number-3">2.1</span> Concept</h3>
+</div><div id="outline-container-orgheadline10" class="outline-3">
+<h3 id="orgheadline10"><span class="section-number-3">2.1</span> Concept</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
 The host compiler scans <code>MFACTOR_SRC_DIR</code> for the vocabulary specified with
-<code>MFACTOR_ROOT_VOCAB</code>, and loads it.  It recursively loads any formerly unloaded
-vocabularies in the process.  Loading a vocabulary involves following ruby classes:
+<code>MFACTOR_ROOT_VOCAB</code>, and loads it.  When loading a vocabulary, it searches it's own
+mfactor sources and the files in <code>MFACTOR_SRC_DIR</code> for a file named
+<code>&lt;vocab-name&gt;.mfactor</code>.  It recursively loads any formerly unloaded vocabularies in the
+process.  Loading a vocabulary involves following ruby classes:
 </p>
 
 <div class="figure">
@@ -392,11 +475,11 @@ object is turned into a <code>ByteCodeImage</code> object, which is the main out
 </div>
 </div>
 
-<div id="outline-container-orgheadline10" class="outline-3">
-<h3 id="orgheadline10"><span class="section-number-3">2.2</span> <span class="todo TODO">TODO</span> Parser details</h3>
-</div>
 <div id="outline-container-orgheadline11" class="outline-3">
-<h3 id="orgheadline11"><span class="section-number-3">2.3</span> Bytecode Generator Output</h3>
+<h3 id="orgheadline11"><span class="section-number-3">2.2</span> <span class="todo TODO">TODO</span> Parser details</h3>
+</div>
+<div id="outline-container-orgheadline12" class="outline-3">
+<h3 id="orgheadline12"><span class="section-number-3">2.3</span> Bytecode Generator Output</h3>
 <div class="outline-text-3" id="text-2-3">
 <p>
 Per default, the output of the rake task is place in subdirectory <code>generated</code> of the
@@ -417,12 +500,25 @@ about the compiled image.  Used to extract information after compilation, when t
 </ul>
 </div>
 </div>
+
 <div id="outline-container-orgheadline13" class="outline-3">
-<h3 id="orgheadline13"><span class="section-number-3">2.4</span> Details</h3>
+<h3 id="orgheadline13"><span class="section-number-3">2.4</span> Invocation</h3>
 <div class="outline-text-3" id="text-2-4">
-</div><div id="outline-container-orgheadline12" class="outline-4">
-<h4 id="orgheadline12"><span class="section-number-4">2.4.1</span> Fried Quotations(WIP)</h4>
-<div class="outline-text-4" id="text-2-4-1">
+<p>
+If <code>MFACTOR_DEPENDING_OBJECT</code> was set correctly in the host application's Rakefile, then a
+rebuild of the application automatically triggers a recompile of the bytecode image.
+</p>
+</div>
+</div>
+<div id="outline-container-orgheadline14" class="outline-3">
+<h3 id="orgheadline14"><span class="section-number-3">2.5</span> <span class="todo TODO">TODO</span> Compilation example</h3>
+</div>
+<div id="outline-container-orgheadline16" class="outline-3">
+<h3 id="orgheadline16"><span class="section-number-3">2.6</span> Details</h3>
+<div class="outline-text-3" id="text-2-6">
+</div><div id="outline-container-orgheadline15" class="outline-4">
+<h4 id="orgheadline15"><span class="section-number-4">2.6.1</span> Fried Quotations(WIP)</h4>
+<div class="outline-text-4" id="text-2-6-1">
 <p>
 Fried Quotations (and their basic versions <code>curry</code> and <code>compose</code>) are the equivalent of
 closures.  Creating a closure always means allocating space somewhere.  If the closure
@@ -530,8 +626,8 @@ used for putting stack items out of the way temporarily.
 </p>
 </div>
 
-<div id="outline-container-orgheadline14" class="outline-3">
-<h3 id="orgheadline14"><span class="section-number-3">3.1</span> Instruction Set</h3>
+<div id="outline-container-orgheadline17" class="outline-3">
+<h3 id="orgheadline17"><span class="section-number-3">3.1</span> Instruction Set</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
 The Instruction Set for the VM is defined in <a href="instructionset.yml">instructionset.yml</a>.  For a description
@@ -540,8 +636,8 @@ of the instructions see ??? the relevant section later on.
 </div>
 </div>
 
-<div id="outline-container-orgheadline19" class="outline-3">
-<h3 id="orgheadline19"><span class="section-number-3">3.2</span> Definitions</h3>
+<div id="outline-container-orgheadline22" class="outline-3">
+<h3 id="orgheadline22"><span class="section-number-3">3.2</span> Definitions</h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
 In <a href="src/interpreter.h">src/interpreter.h</a> are relevant data type definitions and preprocessor macro
@@ -550,8 +646,8 @@ defaults.  These are supposed to be overriden to configure the compiled runtime 
 </p>
 </div>
 
-<div id="outline-container-orgheadline15" class="outline-4">
-<h4 id="orgheadline15"><span class="section-number-4">3.2.1</span> Typedefs</h4>
+<div id="outline-container-orgheadline18" class="outline-4">
+<h4 id="orgheadline18"><span class="section-number-4">3.2.1</span> Typedefs</h4>
 <div class="outline-text-4" id="text-3-2-1">
 <p>
 The type of actual primitive instructions which are loaded and evaluated, and from which
@@ -615,8 +711,8 @@ mark a word inline, recursive, or a parsing word.
 </div>
 </div>
 
-<div id="outline-container-orgheadline16" class="outline-4">
-<h4 id="orgheadline16"><span class="section-number-4">3.2.2</span> Preprocessor Macros</h4>
+<div id="outline-container-orgheadline19" class="outline-4">
+<h4 id="orgheadline19"><span class="section-number-4">3.2.2</span> Preprocessor Macros</h4>
 <div class="outline-text-4" id="text-3-2-2">
 <p>
 The following all indicate the size of the different components, in <code>cell</code> units
@@ -687,8 +783,8 @@ A <code>cell</code>-sized version for comparison to data values:
 </div>
 </div>
 
-<div id="outline-container-orgheadline17" class="outline-4">
-<h4 id="orgheadline17"><span class="section-number-4">3.2.3</span> Defines for the generated data in <code>bytecode.c</code></h4>
+<div id="outline-container-orgheadline20" class="outline-4">
+<h4 id="orgheadline20"><span class="section-number-4">3.2.3</span> Defines for the generated data in <code>bytecode.c</code></h4>
 <div class="outline-text-4" id="text-3-2-3">
 <div class="org-src-container">
 
@@ -707,8 +803,8 @@ because in the lookup function the <code>sizeof()</code> operator is used for bo
 </div>
 </div>
 
-<div id="outline-container-orgheadline18" class="outline-4">
-<h4 id="orgheadline18"><span class="section-number-4">3.2.4</span> Main VM Function Prototype</h4>
+<div id="outline-container-orgheadline21" class="outline-4">
+<h4 id="orgheadline21"><span class="section-number-4">3.2.4</span> Main VM Function Prototype</h4>
 <div class="outline-text-4" id="text-3-2-4">
 <p>
 This is the prototype for the function that is supposed to be executed from the
@@ -726,15 +822,15 @@ executed.  If it is non-zero, an internal error happened.
 </div>
 </div>
 
-<div id="outline-container-orgheadline34" class="outline-3">
-<h3 id="orgheadline34"><span class="section-number-3">3.3</span> C Implementation (<code>interpreter()</code>)</h3>
+<div id="outline-container-orgheadline37" class="outline-3">
+<h3 id="orgheadline37"><span class="section-number-3">3.3</span> C Implementation (<code>interpreter()</code>)</h3>
 <div class="outline-text-3" id="text-3-3">
 <p>
 This section describes the actual C implementation of <a href="src/interpreter.c">src/interpreter.c</a>.
 </p>
 </div>
-<div id="outline-container-orgheadline27" class="outline-4">
-<h4 id="orgheadline27"><span class="section-number-4">3.3.1</span> Special Variables</h4>
+<div id="outline-container-orgheadline30" class="outline-4">
+<h4 id="orgheadline30"><span class="section-number-4">3.3.1</span> Special Variables</h4>
 <div class="outline-text-4" id="text-3-3-1">
 <p>
 The internal state of the interpreter is exposed to the application by predefining an
@@ -777,8 +873,8 @@ Not all of them are actually in use, the ones that are, are defined as macros so
 </p>
 </div>
 
-<div id="outline-container-orgheadline20" class="outline-5">
-<h5 id="orgheadline20"><span class="section-number-5">3.3.1.1</span> <code>MP</code>: The Memory Write Pointer</h5>
+<div id="outline-container-orgheadline23" class="outline-5">
+<h5 id="orgheadline23"><span class="section-number-5">3.3.1.1</span> <code>MP</code>: The Memory Write Pointer</h5>
 <div class="outline-text-5" id="text-3-3-1-1">
 <p>
 This holds a pointer to the memory location that is accessed by the compilation primitives
@@ -792,8 +888,8 @@ This holds a pointer to the memory location that is accessed by the compilation 
 </div>
 </div>
 
-<div id="outline-container-orgheadline21" class="outline-5">
-<h5 id="orgheadline21"><span class="section-number-5">3.3.1.2</span> <code>HANDLER</code>: Current Exception handling frame</h5>
+<div id="outline-container-orgheadline24" class="outline-5">
+<h5 id="orgheadline24"><span class="section-number-5">3.3.1.2</span> <code>HANDLER</code>: Current Exception handling frame</h5>
 <div class="outline-text-5" id="text-3-3-1-2">
 <p>
 This is used by the application to store information about the current exception handler.
@@ -808,8 +904,8 @@ basically a specialized global variable. TODO: reference the exception handling 
 </div>
 </div>
 
-<div id="outline-container-orgheadline22" class="outline-5">
-<h5 id="orgheadline22"><span class="section-number-5">3.3.1.3</span> <code>DEBUG_LEVEL</code>: VM Debug Verbosity</h5>
+<div id="outline-container-orgheadline25" class="outline-5">
+<h5 id="orgheadline25"><span class="section-number-5">3.3.1.3</span> <code>DEBUG_LEVEL</code>: VM Debug Verbosity</h5>
 <div class="outline-text-5" id="text-3-3-1-3">
 <p>
 Used to activate debug output for VM internals.  Only used for VM development and debugging.
@@ -822,8 +918,8 @@ Used to activate debug output for VM internals.  Only used for VM development an
 </div>
 </div>
 
-<div id="outline-container-orgheadline23" class="outline-5">
-<h5 id="orgheadline23"><span class="section-number-5">3.3.1.4</span> <code>RESTART</code>: Restart address (deprecated)</h5>
+<div id="outline-container-orgheadline26" class="outline-5">
+<h5 id="orgheadline26"><span class="section-number-5">3.3.1.4</span> <code>RESTART</code>: Restart address (deprecated)</h5>
 <div class="outline-text-5" id="text-3-3-1-4">
 <p>
 This used to hold an address that was jumped to in case of internal errors.  This has been
@@ -833,8 +929,8 @@ application deciding what to do then
 </div>
 </div>
 
-<div id="outline-container-orgheadline24" class="outline-5">
-<h5 id="orgheadline24"><span class="section-number-5">3.3.1.5</span> <code>STEP_HANDLER</code>: Single Stepping Handler (not in use)</h5>
+<div id="outline-container-orgheadline27" class="outline-5">
+<h5 id="orgheadline27"><span class="section-number-5">3.3.1.5</span> <code>STEP_HANDLER</code>: Single Stepping Handler (not in use)</h5>
 <div class="outline-text-5" id="text-3-3-1-5">
 <p>
 This shall hold an address which is called on every step of the currently executed bytecode
@@ -844,8 +940,8 @@ written as mfactor source.
 </div>
 </div>
 
-<div id="outline-container-orgheadline25" class="outline-5">
-<h5 id="orgheadline25"><span class="section-number-5">3.3.1.6</span> <code>BASE</code>: Current Segment base address</h5>
+<div id="outline-container-orgheadline28" class="outline-5">
+<h5 id="orgheadline28"><span class="section-number-5">3.3.1.6</span> <code>BASE</code>: Current Segment base address</h5>
 <div class="outline-text-5" id="text-3-3-1-6">
 <p>
 This hold the address that is added to <b>all</b> internal calls (TODO: link to relevant call
@@ -856,8 +952,8 @@ target (16 bit value) is computed by adding it to the value of <code>BASE</code>
 </div>
 </div>
 
-<div id="outline-container-orgheadline26" class="outline-5">
-<h5 id="orgheadline26"><span class="section-number-5">3.3.1.7</span> <code>OUTPUT_STREAM</code>: Output Stream descriptor</h5>
+<div id="outline-container-orgheadline29" class="outline-5">
+<h5 id="orgheadline29"><span class="section-number-5">3.3.1.7</span> <code>OUTPUT_STREAM</code>: Output Stream descriptor</h5>
 <div class="outline-text-5" id="text-3-3-1-7">
 <p>
 The value of this variable is used everytime something should be output.  It determines
@@ -885,11 +981,11 @@ The possible values are defined as:
 </div>
 </div>
 
-<div id="outline-container-orgheadline30" class="outline-4">
-<h4 id="orgheadline30"><span class="section-number-4">3.3.2</span> Internal Debugging</h4>
+<div id="outline-container-orgheadline33" class="outline-4">
+<h4 id="orgheadline33"><span class="section-number-4">3.3.2</span> Internal Debugging</h4>
 <div class="outline-text-4" id="text-3-3-2">
-</div><div id="outline-container-orgheadline28" class="outline-5">
-<h5 id="orgheadline28"><span class="section-number-5">3.3.2.1</span> Output Handling</h5>
+</div><div id="outline-container-orgheadline31" class="outline-5">
+<h5 id="orgheadline31"><span class="section-number-5">3.3.2.1</span> Output Handling</h5>
 <div class="outline-text-5" id="text-3-3-2-1">
 <p>
 One file-local variable that holds the current Output stream for internal messages:
@@ -902,8 +998,8 @@ One file-local variable that holds the current Output stream for internal messag
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline29" class="outline-5">
-<h5 id="orgheadline29"><span class="section-number-5">3.3.2.2</span> Debug Level</h5>
+<div id="outline-container-orgheadline32" class="outline-5">
+<h5 id="orgheadline32"><span class="section-number-5">3.3.2.2</span> Debug Level</h5>
 <div class="outline-text-5" id="text-3-3-2-2">
 <p>
 One helper for checking if the current debug level is high enough for subsequent actions:
@@ -921,8 +1017,8 @@ One helper for checking if the current debug level is high enough for subsequent
 </div>
 </div>
 
-<div id="outline-container-orgheadline31" class="outline-4">
-<h4 id="orgheadline31"><span class="section-number-4">3.3.3</span> Work Memory</h4>
+<div id="outline-container-orgheadline34" class="outline-4">
+<h4 id="orgheadline34"><span class="section-number-4">3.3.3</span> Work Memory</h4>
 <div class="outline-text-4" id="text-3-3-3">
 <p>
 For allocation of interactively-generated input sequences, such as strings, byte arrays and
@@ -939,8 +1035,8 @@ compilation primitives (TODO: link).
 </div>
 </div>
 
-<div id="outline-container-orgheadline32" class="outline-4">
-<h4 id="orgheadline32"><span class="section-number-4">3.3.4</span> Return Stack Entry Format</h4>
+<div id="outline-container-orgheadline35" class="outline-4">
+<h4 id="orgheadline35"><span class="section-number-4">3.3.4</span> Return Stack Entry Format</h4>
 <div class="outline-text-4" id="text-3-3-4">
 <p>
 The return stack, which holds the links of the dynamic chain, has entries in the following
@@ -963,8 +1059,8 @@ current quotation.  This is done with the <code>current_call</code> field.
 </div>
 </div>
 
-<div id="outline-container-orgheadline33" class="outline-4">
-<h4 id="orgheadline33"><span class="section-number-4">3.3.5</span> Word Lookup: Dictionary support</h4>
+<div id="outline-container-orgheadline36" class="outline-4">
+<h4 id="orgheadline36"><span class="section-number-4">3.3.5</span> Word Lookup: Dictionary support</h4>
 <div class="outline-text-4" id="text-3-3-5">
 <p>
 There is built-in support for work lookup in the dictionary (TODO: link to section that
@@ -975,11 +1071,11 @@ explains dictionary format), mainly for speed and debugging reasons.
 </div>
 
 
-<div id="outline-container-orgheadline37" class="outline-3">
-<h3 id="orgheadline37"><span class="section-number-3">3.4</span> Complete Source Files</h3>
+<div id="outline-container-orgheadline40" class="outline-3">
+<h3 id="orgheadline40"><span class="section-number-3">3.4</span> Complete Source Files</h3>
 <div class="outline-text-3" id="text-3-4">
-</div><div id="outline-container-orgheadline35" class="outline-4">
-<h4 id="orgheadline35"><span class="section-number-4">3.4.1</span> interpreter.h</h4>
+</div><div id="outline-container-orgheadline38" class="outline-4">
+<h4 id="orgheadline38"><span class="section-number-4">3.4.1</span> interpreter.h</h4>
 <div class="outline-text-4" id="text-3-4-1">
 <div class="org-src-container">
 
@@ -1065,8 +1161,8 @@ explains dictionary format), mainly for speed and debugging reasons.
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline36" class="outline-4">
-<h4 id="orgheadline36"><span class="section-number-4">3.4.2</span> interpreter.c</h4>
+<div id="outline-container-orgheadline39" class="outline-4">
+<h4 id="orgheadline39"><span class="section-number-4">3.4.2</span> interpreter.c</h4>
 <div class="outline-text-4" id="text-3-4-2">
 <div class="org-src-container">
 

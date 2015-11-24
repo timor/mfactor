@@ -24,13 +24,16 @@ MFactor is a (partial) implementation of the [[http://factorcode.org/][factor la
 It consists of two parts:
 
 1. A *host compiler*, written in Ruby, which is used with the [[https://github.com/ruby/rake][Rake]] build system to produce a
-   binary image (see [[Host Compiler]]).
+   binary image (see [[Host Compiler][Host Compiler]]).
 
-2. A *c implementation of a bytecode vm* which is able to execute such an image. (see [[VM Implementation]])
+2. A *c implementation of a bytecode vm* which is able to execute such an image. (see [[VM
+   Implementation][VM Implementation]])
 
+It is intended to be used with a embedded C development environment, where its sources are
+compiled together with the host application.
 
 ** General Concept
-The general idea is as follows:
+The general idea: First compile .mfactor source files to bytecode image, then compile the 
 #+BEGIN_SRC ditaa :file img/concept.png
   +---------+
   |.mfactor +----+
@@ -39,16 +42,16 @@ The general idea is as follows:
   +---------+    |
                  v
         +-----------+       +---------------------+
-        | rake task |       |vm implementation .c |
-        |           |       |{d}                  |
+        | rake task |       |interpreter.c        |
+        | "mfactor" |       |{d}                  |
         |           |       +---------------------+
-        +-----------+                |
-             |                       v
+        +-----------+                |             
+             |                       v             
              v                +----------------+    +--------------+
-      +--------------+        | regular        |    |c application |
-      |bytecode image|------->| compilation    |<---|{d}           |
-      |  {d}         |        |                |    +--------------+
-      +--------------+        +----------------+
+   +-----------------+        | regular        |    |c application |
+   | bytecode image  |------->| compilation    |<---|{d}           |
+   | bytecode.c {d}  |        | using gcc      |    +--------------+
+   +-----------------+        +----------------+
                                     |
                                     |
                     +--------+      |
@@ -58,10 +61,12 @@ The general idea is as follows:
                     +--------+
 #+END_SRC
 
+#+RESULTS:
+[[file:img/concept.png]]
+
 A set of mfactor source files is translated by the host compiler (called through rake task
 =mfactor=) into a bytecode image.  This bytecode image is then successively executed by
-=interpeter()=, which is the actual VM implementation.  Since internally, all call
-addresses are represented by 16-bit vlaues
+=interpeter()=, which is the actual VM implementation.
 
 In order to incorporate this into a project, several rake tasks are supplied in [[file:../tasks/mfactor.rake][tasks/mfactor.rake]]
 
@@ -69,42 +74,50 @@ In order to incorporate this into a project, several rake tasks are supplied in 
 - *mftest[word name]*: helper task, outputs a graphical representation of a specific word in the =generated= subdir.
 
 ** Configuring the Rake Task
-The rake file is supposed to be included with rake's =import= facility.
+The rake file is supposed to be included with rake's =import= facility in the host
+application's own Rakefile.
 
-Currently, it is configured via setting global variables:
-- =MFACTOR_SRC_DIR=: determines the directory where the application's mfactor sources can be found
+Currently, it is configured via setting global variables in the including rake file.
+The following must be set:
+- =MFACTOR_SRC_DIR=: Determines the directory where the application's mfactor sources can
+  be found.  This should point to the application's mfactor source directory.
 - =GENERATOR=: which bytecode backend to use, currently, only =Cortex= is supported
 - =START_WORD=: word, which will be executed when starting the vm
-- =MFACTOR_ROOT_VOCAB=: the root vocabulary, which is first loaded and loads all dependencies
+- =MFACTOR_ROOT_VOCAB=: The root vocabulary, which is first loaded and loads all
+  dependencies.  Must be found in =MFACTOR_SRC_DIR=.
 - =MFACTOR_DEPENDING_OBJECTS=: To cause Rake to recompile the whole image, this
   should be set to the object files in the application which depend on the generated
   output. This usually means all files that use any of the words defined in
   =MFACTOR_C_WORDS=, as well as the object file that is built from =src/interpreter.c=
+
+The following are for advanced functionality:
 - =MFACTOR_C_WORDS=: Hashtable for exposing word locations in bytecode to C. Format:
   #+BEGIN_SRC ruby
       { "mfactor-word-name" => "NAME_OF_CPP_DEFINE" }
   #+END_SRC
+  This can be used to generate preprocessor symbols, which can be passed directly to
+  =interpreter()=, for example.
 - =FF_MFACTOR=: path to file containing interface definitions to c code (see [[*Making%20Existing%20C%20Functions%20Available][Making
   Existing C Functions Available]])
 - =MFACTOR_IMAGE_SECTION=: a string describing the linker section that the bytecode-image
   will pe placed into
 - =MFACTOR_DICT_SECTION=: same thing for the generated dictionary
 
-** TODO Generated Output Files
+** Generated Output Files
 In the application's main directory, a directory =generated= is created during the build
 process, where several files are generated:
 
 - =bytecode.c= :: main output from the ByteCodeImage class.
 - =bytecode.h= :: consists of defines that =interpreter()= and maybe the user application
      needs to know about
-- =image.dump= :: after translattion, the ByteCodeImage is written here using [[http://ruby-doc.org/core-2.2.3/Marshal.html][Marshal]].  It
+- =image.dump= :: after translation, the ByteCodeImage is written here using [[http://ruby-doc.org/core-2.2.3/Marshal.html][Marshal]].  It
      can be reloaded later in the build process with =ByteCodeImage.deserialize= to
      extract information about the image.
 
 ** Making Existing C Functions Available
 Special global variable =FF_MFACTOR= can be set to a yaml file for
 "importing" existing c functions into the interpreter's namespace (Foreign function interface).
-entries are in the form of
+entries are in the form of:
 
 #+BEGIN_SRC yaml
   <c_name>:
@@ -120,16 +133,63 @@ entries are in the form of
   - =lit= -> for variables (returns their address)
   - =s=, =i=, =b=, =bi=, =ib=, =is=, =ii=, =iis=, =iii= where =i= is =int=, =b= is =int8= and =s= is =int16=
 
-** Invoking the Rake Task
-If =MFACTOR_DEPENDING_OBJECT= was set correctly, then a rebuild of the application
-automatically triggers a recompile of the bytecode image.
+** Basic Factor concepts
+For the complete Factor language, see [[http://docs.factorcode.org/content/article-handbook-language-reference.html][the official documentation]].  The language is
+[[https://en.wikipedia.org/wiki/Concatenative_programming_language][concatenative]], and uses generally postfix syntax, e.g. the arguments are written before
+the "function call".
+
+Terminology:
+- Word :: the basic user-defined abstraction, like functions in most languages.
+- Vocabulary :: comparable to C's compilation unit with interface definition in a header
+     file.  Contains a number of word definitions.
+- Data Stack :: or Parameter Stack, holds values that are manipulated by words.
+- Return Stack :: keeps track of program execution when calling into words and returning.
+     In contrast to Forth, not directly accessible by user code.
+- Retain Stack :: second stack for data, which is used to set aside stack elements that
+     are needed for later.  Used internally by all [[http://docs.factorcode.org/content/article-dip-keep-combinators.html][preserving Combinators]].
+- Quotation :: block of code enclosed in square brackets (=[]=), that is pushed onto the
+     stack as-is, without evaluation.
+- Combinator :: word that takes quotations as input.  Probably the most-used is:
+     #+BEGIN_SRC factor
+       condition-value [
+           true-quotation
+       ] [
+           false-quotation
+       ] if
+     #+END_SRC
+- Primitives :: are the low-level instructions that are executed by the VM.  All words
+     are defined in terms of Primitives and other words.
+** Differences to Factor
+Mfactor implements a subset of factor's functionality useful for embedded systems programming.
+Major differences:
+- no namestack, so no dynamic variables (may change, but high
+  performance impact for embedded systems)
+- vocabulary search is simplified, vocabulary =foo= would be found in
+  =<MFACTOR_SRC_DIR>/foo.mfactor=, vocabulary =foo.bar= would be found in
+  =<MFACTOR_SRC_DIR>/foo.bar.mfactor=.
+- same-named words in different vocabularies not supported (yet)
+- interactive support only for byte-array and integer-array sequences: =B{ }=, =I{ }=, at
+  compile time, arbitrary sequences can be used.
+- host compiler only supports a subset of syntax words: =:=, =SYNTAX:=, ={ }=, =B{ }=, =I{
+  }=, `SYMBOLS:`, =USING:=, =IN=
+- =case= is implemented as a syntax word, so no interactive support
+- words beginning with underscore(=_=) are not stored in the dictionary.  This is intended
+  for helper functions, to prevent them from consuming dictionary space.
+- no continuations, no quotation compositions(yet)
+- simplified exception handling with `catch` and `throw`
+- no Garbage Collector.  Since interactive usage is meant to be for developing, allocated
+  objects by the reader are not released automatically.  Any data used in normal code is
+  statically compiled into the image, so no runtime allocation is performed unless
+  specified explicitely using sequence constructors =<byte-array>= and =<integer-array>=
 
 * Host Compiler
 
 ** Concept
 The host compiler scans =MFACTOR_SRC_DIR= for the vocabulary specified with
-=MFACTOR_ROOT_VOCAB=, and loads it.  It recursively loads any formerly unloaded
-vocabularies in the process.  Loading a vocabulary involves following ruby classes:
+=MFACTOR_ROOT_VOCAB=, and loads it.  When loading a vocabulary, it searches it's own
+mfactor sources and the files in =MFACTOR_SRC_DIR= for a file named
+=<vocab-name>.mfactor=.  It recursively loads any formerly unloaded vocabularies in the
+process.  Loading a vocabulary involves following ruby classes:
 #+BEGIN_SRC ditaa :file img/rbcomp.png
 
 Parser -> Image -> ByteCodeImage
@@ -155,6 +215,11 @@ including project.  This folder contains several files:
   =MFactor::ByteCodeImage::deserialize=.  This basically exposes all possible internals
   about the compiled image.  Used to extract information after compilation, when the
   =mfactor= task has finished.
+
+** Invocation
+If =MFACTOR_DEPENDING_OBJECT= was set correctly in the host application's Rakefile, then a
+rebuild of the application automatically triggers a recompile of the bytecode image.
+** TODO Compilation example
 ** Details
 *** Fried Quotations(WIP)
 Fried Quotations (and their basic versions =curry= and =compose=) are the equivalent of
