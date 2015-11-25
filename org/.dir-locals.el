@@ -10,7 +10,7 @@
 			  )
                          ("org-mfactor-static"
                           :base-directory ,(file-name-directory (or load-file-name buffer-file-name))
-                          :base-extension "png\\|jpg\\|gif"
+                          :base-extension "png\\|jpg\\|gif\\|svg"
 			  :publishing-directory
 			  ,(concat (file-name-directory (or load-file-name buffer-file-name))
 				   (file-name-as-directory "..")

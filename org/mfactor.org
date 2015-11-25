@@ -17,6 +17,14 @@
 #+HTML_HEAD: <script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/bigblow.js"></script>
 #+HTML_HEAD: <script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/hideshow.js"></script>
 
+#+begin_src emacs-lisp :exports none
+  (setq org-confirm-babel-evaluate nil)
+  (add-hook 'org-src-mode-hook
+            (lambda () (setq indent-tabs-mode nil)))
+  nil
+#+end_src
+
+#+RESULTS:
 
 #+STARTUP: indent
 * Introduction
@@ -243,8 +251,8 @@ To describe the transformation, consider the following example:
 Let's define a word that makes use of this word:
 #+BEGIN_SRC factor
   ! print values that are passed to the quotation in each-int-added,
-  ! the value added to each element is n, it is called 10 times
-  : test ( n -- ) 10 swap [ . ] each-int-added ;
+  ! the value added to each element is x, it is called 10 times
+  : test ( x -- ) 10 swap [ . ] each-int-added ;
 #+END_SRC
 
 Conceptually, the following series of transformations is appplied internally when defining =test=:
@@ -305,6 +313,7 @@ defaults.  These are supposed to be overriden to configure the compiled runtime 
 
 *** Typedefs
 
+**** Scalar Types
 The type of actual primitive instructions which are loaded and evaluated, and from which
 byte code images are constructed. (see ???)
 Size: 1 byte
@@ -332,22 +341,26 @@ Size: 32 Bit
 typedef uintptr_t cell;                 /* memory cell must at least hold pointer */
 #+end_src
 
+**** Dictionary entries<<dict-entry-struct>>
+
 Type of entries in the dictionary.  These map names to addresses, and hold the flags that
 mark a word inline, recursive, or a parsing word.
 #+begin_src C
-typedef struct dict_entry
-{
-	inst * address;					/* pointer into memory */
-	unsigned char flags;		/* may include other flags later (inline, recursive, etc) */
-	unsigned char name_header; /* should always be zero */
-	unsigned char name_length;
-	char name[];
-}	__attribute__((packed)) dict_entry;
+  typedef struct dict_entry
+  {
+          inst * address;           /* pointer into memory */
+          unsigned char flags; /* may include other flags later (inline, recursive, etc) */
+          unsigned char name_header;      /* should always be zero */
+          unsigned char name_length;
+          char name[];
+  }       __attribute__((packed)) dict_entry;
 #+end_src
 
 *** Preprocessor Macros
 
-The following all indicate the size of the different components, in =cell= units
+The following all indicate the size of the different components, in =cell= units.
+These are defaults can be changed according to application requirements.
+
 
 #+begin_src C
   /* data memory (affects non-transient data) in cells*/
@@ -394,6 +407,8 @@ used for primitive instructions.
   #endif
 #+end_src
 
+This influences the opcodes generated in =inst_enum.h= during building.
+
 A =cell=-sized version for comparison to data values:
 
 #+begin_src C
@@ -429,7 +444,7 @@ int interpreter(short_jump_target);
 :END:
 
 This section describes the actual C implementation of [[file:src/interpreter.c]].
-*** Special Variables
+*** Special Variables Definition
 The internal state of the interpreter is exposed to the application by predefining an
 array of special variables.  These are needed for all instructions that depend on state
 that must be influenced by the application.
@@ -495,6 +510,10 @@ primitives).  Usually it holds the address of the =image=-variable, that is gene
 =generated/bytecode.c=.  This allows the image to be relocatable, so that the actuall call
 target (16 bit value) is computed by adding it to the value of =BASE=.
 
+#+BEGIN_SRC C
+  #define BASE special_vars[5]
+#+END_SRC
+
 **** =OUTPUT_STREAM=: Output Stream descriptor
 The value of this variable is used everytime something should be output.  It determines
 which =File= pointer is passed to the standard c output functions in =current_fd()= (TODO
@@ -511,6 +530,15 @@ The possible values are defined as:
   #define NULLOUT 3
 #+END_SRC
 
+*** Special Variables Initialization
+#+BEGIN_SRC C
+  static void init_specials() {
+     HANDLER = 0;
+     MP = (cell)memory; /* start of user memory */
+     BASE = (cell)&image; /* start of bytecode segment */
+     OUTPUT_STREAM = STDOUT; /* output to standard output per default */
+  }
+#+END_SRC
 *** Internal Debugging
 **** Output Handling
 One file-local variable that holds the current Output stream for internal messages:
@@ -524,7 +552,7 @@ One helper for checking if the current debug level is high enough for subsequent
 #+BEGIN_SRC C
   /* check if current value of debug is greater or equal to val */
   static bool debug_lvl(unsigned int val) {
-          return (DEBUG_LEVEL >= val);
+     return (DEBUG_LEVEL >= val);
   }
 #+END_SRC
 
@@ -543,8 +571,8 @@ The return stack, which holds the links of the dynamic chain, has entries in the
 format:
 #+BEGIN_SRC C
   typedef struct return_entry {
-          inst * return_address;
-          inst * current_call;
+     inst * return_address;
+     inst * current_call;
   } return_entry;
 #+END_SRC
 
@@ -553,9 +581,197 @@ debugging purposes and backtraces it is useful to record the starting address of
 current quotation.  This is done with the =current_call= field.
 
 *** Word Lookup: Dictionary support
-There is built-in support for work lookup in the dictionary (TODO: link to section that
-explains dictionary format), mainly for speed and debugging reasons.
+There is built-in support for work lookup in the dictionary (see TODO: link to dictionary
+explanation), mainly for speed reasons.  During compilation, a simple hash table was
+created by the ruby translator (TODO: link).  This code is the runtime access portion.  It
+uses a very simple hash function to look up a starting index that can be used for looking
+up a word with a linear search from there.
 
+#+BEGIN_SRC C
+  uint32_t lookup_ht_entry(uint8_t length, char* name) {
+     uint32_t hash = 5381;
+     for (int i = 0; i < length; i++) {
+        hash = hash * 33 + name[i];
+     }
+     return (cell)dict+dict_hash_index[hash%256];
+  }
+#+END_SRC
+
+For debugging, there is a (slow) reverse lookup, that gets the word name from its
+execution address:
+
+#+BEGIN_SRC C
+  /* get the name of the word, only for debugging */
+  /* probably fails for non-null-terminated strings */
+  static char* find_by_address( inst * word)
+  {
+     static char notfound[] = "(internal or private)";
+     for (char * ptr=(char*)dict;
+          (ptr < ((char*)dict+sizeof(dict)))&&(((dict_entry*)ptr)->name_length > 0);
+          ptr += (((dict_entry*)ptr)->name_length + 3*sizeof(unsigned char) + sizeof(void*))) {
+        dict_entry *dptr = (dict_entry*)ptr;
+        if (dptr->address == word)
+           return dptr->name;
+     }
+     return notfound;
+  }
+#+END_SRC
+
+*** Parsing Numbers
+
+Whenever a piece of input is unknown, it is tried to parse as a number before giving up.
+This uses libc's =sscanf()=, and is exposed via the =parsenum= primitive, which uses this
+function.
+
+#+BEGIN_SRC C
+  static bool parse_number(char *str, cell * number){
+     int num;
+     unsigned int read = sscanf(str,"%i",&num);
+     if (read == 1) {
+        *number = (cell)num;
+        return true;
+     } else {
+        return false;
+     }
+  }
+#+END_SRC
+
+*** Debug output
+For the =st= primitive and in case of errors, the stack contents are sometimes printed to
+=stderr=.  This is done with the following file-local functions:
+
+#+BEGIN_SRC C
+  /* display data stack entries */
+  static void printstack(cell * sp, cell * stack)
+  {
+          fprintf(Ostream, "stack:");
+          for(cell* ptr = stack;ptr < sp;ptr++)
+                  {
+                          fprintf(Ostream, " %#lx",*ptr);
+                  }
+          fprintf(Ostream, "\n");
+  }
+
+  /* display return stack entries */
+  static void print_return_stack(return_entry * sp, return_entry * stack, inst * base)
+  {
+          fprintf(Ostream, "stack:");
+          for(return_entry* ptr = sp-1;ptr >= stack;ptr--)
+                  {
+                          fprintf(Ostream, " {%#lx->%#lx}",((uintptr_t)ptr->current_call-(uintptr_t)base),
+                                           ((uintptr_t)ptr->return_address)-(uintptr_t) base);
+                  }
+          fprintf(Ostream, "\n");
+  }
+
+  /* print a backtrace of the return stack */
+  static void backtrace(return_entry * sp, return_entry * stack, inst * base, inst * pc)
+  {
+          fprintf(Ostream, "backtrace @ %#lx:\n",(uintptr_t)(pc-base));
+          for(return_entry* ptr = sp-1;ptr >= stack;ptr--)
+                  {
+                          char *current_name = find_by_address(ptr->current_call);
+                          fprintf(Ostream, "%#lx %s\n",(uintptr_t)(ptr->current_call - base),current_name);
+                  }
+  }
+#+END_SRC
+*** Used Subroutines (defined as Macros)
+There are several subroutines that are repeatedly used in =interpreter()=, which operate
+on the static data that is only defined there.  Because of that, they are implemented as
+preprocessor macros.
+**** Backtrace printing
+#+BEGIN_SRC C
+  #define BACKTRACE() do {                                 \
+        FILE * old_out = Ostream;                          \
+        Ostream = stderr;                                  \
+        printstack(psp,pstack);                            \
+        printstack(retainsp,retainstack);                  \
+        backtrace(returnsp,returnstack,(inst *)BASE,pc);   \
+        Ostream = old_out;                                 \
+     }       while (0)                                     \
+#+END_SRC
+**** Errors during primitive execution
+Whenever something unrecoverable handles, this is called.  Currently just returns the
+error code from =interpreter()=.
+
+#+BEGIN_SRC C
+  #define handle_error(code) do {return code;} while(0)
+#+END_SRC
+**** Stack Operation Assertion
+These macros are used when popping and pushing elements on stacks, and check if the stack
+is empty or full.
+#+BEGIN_SRC C
+  #define assert_pop(sp,min,name,fail_reason) if (sp <= min) { print_error(name "stack underflow");BACKTRACE();handle_error(fail_reason);}
+  #define assert_push(sp,min,size,fail_reason) if (sp > min+size){ print_error("stack overflow");BACKTRACE();handle_error(fail_reason);}
+#+END_SRC
+**** Stack operations
+These macros are the basic internal stack manupulation functions.  All stacks are assumed
+empty ascending.  The following routines are general:
+
+Peeking into the stack (as opposed to removing a value), currently only used for the
+=_dup= primitive
+
+#+BEGIN_SRC C
+  #define peek_n(sp,nth) (*(sp-nth))
+#+END_SRC
+
+Basic push and pop operations.  The underscores are for avoiding name clashes.
+#+BEGIN_SRC C
+  /* push value onto stack indicated by stack pointer sp */
+  #define push_(sp,val) *sp=val;sp++;
+  /* pop value from stack indicated by stack pointer sp */
+  #define pop_(sp) --sp;*sp;
+#+END_SRC
+
+The rest is meant for the three specific stacks (TODO: link to stack explanation).  The
+push functions push (safely) a value onto the respective stack.  The pop functions pop (safely) a
+value from the respective stack.
+***** Data Stack (Parameter Stack)
+#+BEGIN_SRC C
+  #define ppush(val) ({assert_push(psp,pstack,VM_PSTACK,INTERNAL_ERROR_PSTACK_OFLOW);push_(psp,val)})
+  #define ppop() ({assert_pop(psp,pstack,"p",INTERNAL_ERROR_PSTACK_UFLOW);pop_(psp)})
+#+END_SRC
+***** Return Stack
+#+BEGIN_SRC C
+  #define returnpush(val) ({assert_push(returnsp,returnstack,VM_RETURNSTACK,INTERNAL_ERROR_RSTACK_OFLOW);push_(returnsp,val)})
+  #define returnpop() ({assert_pop(returnsp,returnstack,"return",INTERNAL_ERROR_RSTACK_UFLOW);pop_(returnsp)})
+#+END_SRC
+***** Retain Stack
+#+BEGIN_SRC C
+  #define retainpush(val) ({assert_push(retainsp,retainstack,VM_RETAINSTACK,INTERNAL_ERROR_RTSTACK_OFLOW);push_(retainsp,val)})
+  #define retainpop() ({assert_pop(retainsp,retainstack,"retain",INTERNAL_ERROR_RTSTACK_OFLOW);pop_(retainsp)})
+#+END_SRC
+*** Main Interpreter function =interpreter()=
+Basic Flowchart
+#+BEGIN_SRC plantuml :file img/interpreter_flow.svg :noweb-ref nil
+  start
+   :initialize **pc** to **start_address**,
+   reset stack pointers,
+   set internal state to default values;
+   :push the start frame to the return stack;
+   repeat
+    :set **i** to the instruction pointed to by **pc**;
+    :increase **pc** by one;
+    :execute the primitive denoted by **i**;
+    note left
+     Execution of the primitives modifies
+     internal state.  If primitives read
+     data from the instruction stream,
+     they increase **pc** accordingly so
+     it points to the next instruction.
+    end note
+    if (error encountered during primitive execution) then (yes)
+     :return internal error code;
+     stop
+    else (no)
+    endif
+   repeat while (**i** != quit)
+   :return 0;
+  stop
+#+END_SRC
+
+#+RESULTS:
+[[file:img/interpreter_flow.svg]]
 
 ** Complete Source Files
 *** interpreter.h
