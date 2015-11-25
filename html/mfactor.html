@@ -196,7 +196,7 @@ for the JavaScript code in this tag.
 <li><a href="#orgheadline23">3.2.4. Main VM Function Prototype</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline51">3.3. C Implementation (<code>interpreter()</code>)</a>
+<li><a href="#orgheadline60">3.3. C Implementation (<code>interpreter()</code>)</a>
 <ul>
 <li><a href="#orgheadline32">3.3.1. Special Variables Definition</a>
 <ul>
@@ -229,13 +229,18 @@ for the JavaScript code in this tag.
 <li><a href="#orgheadline48">3.3.9.4. Stack operations</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline50">3.3.10. Main Interpreter function <code>interpreter()</code></a></li>
+<li><a href="#orgheadline59">3.3.10. Main Interpreter function <code>interpreter()</code></a>
+<ul>
+<li><a href="#orgheadline55">3.3.10.1. Internal State Definition</a></li>
+<li><a href="#orgheadline58">3.3.10.2. State initialization</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline54">3.4. Complete Source Files</a>
+</ul>
+</li>
+<li><a href="#orgheadline63">3.4. Complete Source Files</a>
 <ul>
-<li><a href="#orgheadline52">3.4.1. interpreter.h</a></li>
-<li><a href="#orgheadline53">3.4.2. interpreter.c</a></li>
+<li><a href="#orgheadline61">3.4.1. interpreter.h</a></li>
+<li><a href="#orgheadline62">3.4.2. interpreter.c</a></li>
 </ul>
 </li>
 </ul>
@@ -739,7 +744,7 @@ mark a word inline, recursive, or a parsing word.
 </div>
 
 <div id="outline-container-orgheadline21" class="outline-4">
-<h4 id="orgheadline21"><span class="section-number-4">3.2.2</span> Preprocessor Macros</h4>
+<h4 id="orgheadline21"><span class="section-number-4">3.2.2</span> <a id="orgtarget2"></a>Preprocessor Macros</h4>
 <div class="outline-text-4" id="text-3-2-2">
 <p>
 The following all indicate the size of the different components, in <code>cell</code> units.
@@ -855,8 +860,8 @@ executed.  If it is non-zero, an internal error happened.
 </div>
 </div>
 
-<div id="outline-container-orgheadline51" class="outline-3">
-<h3 id="orgheadline51"><span class="section-number-3">3.3</span> C Implementation (<code>interpreter()</code>)</h3>
+<div id="outline-container-orgheadline60" class="outline-3">
+<h3 id="orgheadline60"><span class="section-number-3">3.3</span> C Implementation (<code>interpreter()</code>)</h3>
 <div class="outline-text-3" id="text-3-3">
 <p>
 This section describes the actual C implementation of <a href="src/interpreter.c">src/interpreter.c</a>.
@@ -1021,7 +1026,7 @@ The possible values are defined as:
 </div>
 
 <div id="outline-container-orgheadline33" class="outline-4">
-<h4 id="orgheadline33"><span class="section-number-4">3.3.2</span> Special Variables Initialization</h4>
+<h4 id="orgheadline33"><span class="section-number-4">3.3.2</span> <a id="orgtarget3"></a>Special Variables Initialization</h4>
 <div class="outline-text-4" id="text-3-3-2">
 <div class="org-src-container">
 
@@ -1354,8 +1359,8 @@ value from the respective stack.
 </div></li></ol>
 </div>
 </div>
-<div id="outline-container-orgheadline50" class="outline-4">
-<h4 id="orgheadline50"><span class="section-number-4">3.3.10</span> Main Interpreter function <code>interpreter()</code></h4>
+<div id="outline-container-orgheadline59" class="outline-4">
+<h4 id="orgheadline59"><span class="section-number-4">3.3.10</span> Main Interpreter function <code>interpreter()</code></h4>
 <div class="outline-text-4" id="text-3-3-10">
 <p>
 Basic Flowchart
@@ -1366,15 +1371,198 @@ Basic Flowchart
 Sorry, your browser does not support SVG.</object>
 </p>
 </div>
-</div>
-</div>
+
+<p>
+The <code>interpreter()</code> functions is structured as follows:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-C"><span style="color: #228b22;">int</span> <span style="color: #0000ff;">interpreter</span>(<span style="color: #228b22;">short_jump_target</span> <span style="color: #a0522d;">start_address</span>) {
+
+<span style="color: #b22222; background-color: #ffff00;">   </span>&lt;&lt;state_definition&gt;&gt;
+
+<span style="color: #b22222; background-color: #ffff00;">   </span>&lt;&lt;state_initialization&gt;&gt;
+
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #a020f0;">while</span>(1) {
+<span style="color: #b22222; background-color: #ffff00;">      </span><span style="color: #228b22;">inst</span> <span style="color: #a0522d;">i</span>;
+<span style="color: #b22222; background-color: #ffff00;">      </span>i = (*pc++);
+  <span style="color: #008b8b;">dispatch</span>:
+<span style="color: #b22222; background-color: #ffff00;">      </span>&lt;&lt;debug_statements&gt;&gt;
+<span style="color: #b22222; background-color: #ffff00;">      </span><span style="color: #a020f0;">switch</span>(i) {
+<span style="color: #b22222; background-color: #ffff00;">         </span>&lt;&lt;big_fat_switch&gt;&gt;
+<span style="color: #b22222; background-color: #ffff00;">         </span><span style="color: #a020f0;">default</span>:
+<span style="color: #b22222; background-color: #ffff00;">            </span>printf(<span style="color: #8b2252;">"unimplemented instruction %#x\n"</span>,i);
+<span style="color: #b22222; background-color: #ffff00;">            </span>handle_error(INTERNAL_ERROR_INVALID_OPCODE);
+<span style="color: #b22222; background-color: #ffff00;">      </span>}
+  <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">end_inst</span>;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">normal instructions skip the call execution paths </span><span style="color: #b22222;">*/</span>
+  <span style="color: #008b8b;">nested_call</span>:  <span style="color: #b22222;">/* </span><span style="color: #b22222;">common execution path for non-tail calls </span><span style="color: #b22222;">*/</span>
+<span style="color: #b22222; background-color: #ffff00;">      </span>&lt;&lt;nested_call_common&gt;&gt;
+  tail_call:    <span style="color: #b22222;">/* </span><span style="color: #b22222;">common execution path for tail calls </span><span style="color: #b22222;">*/</span>
+<span style="color: #b22222; background-color: #ffff00;">      </span>&lt;&lt;tail_call_common&gt;&gt;
+  end_inst:     <span style="color: #b22222;">/* </span><span style="color: #b22222;">end of instruction processing </span><span style="color: #b22222;">*/</span>
+<span style="color: #b22222; background-color: #ffff00;">      </span>(<span style="color: #228b22;">void</span>) 0;
+<span style="color: #b22222; background-color: #ffff00;">   </span>}
+}
+</pre>
 </div>
 
-<div id="outline-container-orgheadline54" class="outline-3">
-<h3 id="orgheadline54"><span class="section-number-3">3.4</span> Complete Source Files</h3>
+<p>
+The labels after the switch statement are common exit points of several primitives.
+</p>
+</div>
+
+<div id="outline-container-orgheadline55" class="outline-5">
+<h5 id="orgheadline55"><span class="section-number-5">3.3.10.1</span> Internal State Definition</h5>
+<div class="outline-text-5" id="text-3-3-10-1">
+</div>
+
+<ol class="org-ol"><li><a id="orgheadline50"></a>Stacks<br  /><div class="outline-text-6" id="text-3-3-10-1-1">
+<ul class="org-ul">
+<li>data stack (or parameter stack) and pointer</li>
+<li>return stack and pointer</li>
+<li>retain stack and pointer</li>
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-C"><span style="color: #b22222;">/* </span><span style="color: #b22222;">parameter stack </span><span style="color: #b22222;">*/</span>
+<span style="color: #a020f0;">static</span> <span style="color: #228b22;">cell</span> <span style="color: #a0522d;">pstack</span>[VM_PSTACK]={0};
+<span style="color: #a020f0;">static</span> <span style="color: #228b22;">cell</span>* <span style="color: #a0522d;">psp</span>;
+psp = &amp;pstack[0];
+<span style="color: #b22222;">/* </span><span style="color: #b22222;">return stack </span><span style="color: #b22222;">*/</span>
+<span style="color: #a020f0;">static</span> <span style="color: #228b22;">return_entry</span> <span style="color: #a0522d;">returnstack</span>[VM_RETURNSTACK]={{0}};
+<span style="color: #a020f0;">static</span> <span style="color: #228b22;">return_entry</span>* <span style="color: #a0522d;">returnsp</span>;
+returnsp = &amp;returnstack[0];
+<span style="color: #b22222;">/* </span><span style="color: #b22222;">retain stack </span><span style="color: #b22222;">*/</span>
+<span style="color: #a020f0;">static</span> <span style="color: #228b22;">cell</span> <span style="color: #a0522d;">retainstack</span>[VM_RETAINSTACK]={0};
+<span style="color: #a020f0;">static</span> <span style="color: #228b22;">cell</span>* <span style="color: #a0522d;">retainsp</span>;
+retainsp = &amp;retainstack[0];
+</pre>
+</div>
+
+<p>
+The data and retain stacks are using scalar elements of type <code>cell</code>, while the return
+stack holds structs.
+</p>
+
+<p>
+The size macros are defined in the header file (see <a href="#orgtarget2">3.2.2</a>), and control the
+memory usage of the VM.
+</p>
+</div></li>
+<li><a id="orgheadline51"></a>Program counter<br  /><div class="outline-text-6" id="text-3-3-10-1-2">
+<p>
+This is the most basic state for any program interpreting machine.  It holds the address
+of the next primitive instruction in the instruction stream (bytecode image).
+</p>
+<div class="org-src-container">
+
+<pre class="src src-C"><span style="color: #228b22;">inst</span> *<span style="color: #a0522d;">pc</span>;
+pc = &amp;image[(start_address ? : START_WORD_OFFSET)];  <span style="color: #b22222;">/* </span><span style="color: #b22222;">point to the start of the program </span><span style="color: #b22222;">*/</span>
+</pre>
+</div>
+
+<p>
+The initial value is either taken from the <code>interpreter()</code> call as parameter, or by using
+the <code>START_WORD_OFFSET</code> macro from <code>bytecode.h</code>, that translates the <code>START_WORD</code> global
+variable (see <a href="#orgheadline5">1.2</a>) into an address.
+</p>
+</div></li>
+
+<li><a id="orgheadline52"></a>Tail Call Optimization<br  /><div class="outline-text-6" id="text-3-3-10-1-3">
+<p>
+The MFactor implementation relise on (explicit) <a href="https://en.wikipedia.org/wiki/Tail_call">tail call elimination</a>.  Because of the
+nature of the language, the compiler can detect all cases of tail calls easily and
+replaces the <code>call</code> instructions with their <code>tcall</code> equivalents:
+</p>
+<ul class="org-ul">
+<li><code>bcall</code> -&gt; <code>btcall</code></li>
+<li><code>scall</code> -&gt; <code>stcall</code></li>
+<li><code>acall</code> -&gt; <code>atcall</code></li>
+</ul>
+
+<p>
+The <code>tcall</code> instructions all amount to a jump to the called word, thus replacing the
+current stack frame instead of adding one to the dynamic chain.  Since Iteration is
+implemented with (tail)-recursion, disabling tail calls severly limit loop execution, and
+should only be turned on locally for debugging purposes.
+This variable controls wether tail calls should be handled as such, or redirected to
+nested calls:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-C"><span style="color: #a020f0;">static</span> <span style="color: #228b22;">bool</span> <span style="color: #a0522d;">tailcall</span>;
+tailcall = <span style="color: #008b8b;">true</span>;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">enable tail call jumping by default </span><span style="color: #b22222;">*/</span>
+</pre>
+</div>
+</div></li>
+<li><a id="orgheadline53"></a>Helper "Register"<br  /><div class="outline-text-6" id="text-3-3-10-1-4">
+<p>
+To help manage jumping through the code, a variable <code>x</code> is defined here and used in
+various primitive instructions.  Normally, the needed variables are defined locally in the
+intruction cases.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-C"><span style="color: #228b22;">cell</span> <span style="color: #a0522d;">x</span>; <span style="color: #b22222;">/* </span><span style="color: #b22222;">temporary value for operations </span><span style="color: #b22222;">*/</span>
+</pre>
+</div>
+</div></li>
+<li><a id="orgheadline54"></a>Debug Mode<br  /><div class="outline-text-6" id="text-3-3-10-1-5">
+<p>
+To debug internals, this <code>debug_mode</code> state can be set (also via an isntruction, TODO:
+link).  If so, it outputs internal state before processing an instruction, and waits for a
+keypress before processing it.  The <code>debug_nest</code> counter is used to keep track of return
+stack levels to make sure debug mode is exited corretly and to provide nesting
+information.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-C"><span style="color: #b22222;">/* </span><span style="color: #b22222;">single step debugging</span><span style="color: #b22222;">*/</span>
+<span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">int</span> <span style="color: #a0522d;">debug_nest</span> = 0; <span style="color: #b22222;">/* </span><span style="color: #b22222;">used in debug mode to track when</span>
+<span style="color: #b22222; background-color: #ffff00;">                              </span><span style="color: #b22222;">* to stop single stepping</span><span style="color: #b22222;">*/</span>
+<span style="color: #228b22;">bool</span> <span style="color: #a0522d;">debug_mode</span> = <span style="color: #008b8b;">false</span>;
+<span style="color: #483d8b;">#if</span> DEBUG
+debug_mode=<span style="color: #008b8b;">true</span>;
+<span style="color: #483d8b;">#endif</span>
+</pre>
+</div>
+</div></li></ol>
+</div>
+<div id="outline-container-orgheadline58" class="outline-5">
+<h5 id="orgheadline58"><span class="section-number-5">3.3.10.2</span> State initialization</h5>
+<div class="outline-text-5" id="text-3-3-10-2">
+</div>
+
+<ol class="org-ol"><li><a id="orgheadline56"></a>Output File Descriptor<br  /><div class="outline-text-6" id="text-3-3-10-2-1">
+<p>
+The value passed to all libc stdio commands used during primitive instruction execution.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-C">Ostream = stdout;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">print everything to stdout per default </span><span style="color: #b22222;">*/</span>
+</pre>
+</div>
+</div></li>
+
+<li><a id="orgheadline57"></a>Special Variable Initalization<br  /><div class="outline-text-6" id="text-3-3-10-2-2">
+<p>
+See <a href="#orgtarget3">3.3.2</a>.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-C">init_specials();
+</pre>
+</div>
+</div></li></ol>
+</div>
+</div>
+</div>
+<div id="outline-container-orgheadline63" class="outline-3">
+<h3 id="orgheadline63"><span class="section-number-3">3.4</span> Complete Source Files</h3>
 <div class="outline-text-3" id="text-3-4">
-</div><div id="outline-container-orgheadline52" class="outline-4">
-<h4 id="orgheadline52"><span class="section-number-4">3.4.1</span> interpreter.h</h4>
+</div><div id="outline-container-orgheadline61" class="outline-4">
+<h4 id="orgheadline61"><span class="section-number-4">3.4.1</span> interpreter.h</h4>
 <div class="outline-text-4" id="text-3-4-1">
 <div class="org-src-container">
 
@@ -1460,8 +1648,8 @@ Sorry, your browser does not support SVG.</object>
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline53" class="outline-4">
-<h4 id="orgheadline53"><span class="section-number-4">3.4.2</span> interpreter.c</h4>
+<div id="outline-container-orgheadline62" class="outline-4">
+<h4 id="orgheadline62"><span class="section-number-4">3.4.2</span> interpreter.c</h4>
 <div class="outline-text-4" id="text-3-4-2">
 <div class="org-src-container">
 
@@ -1655,6 +1843,64 @@ Sorry, your browser does not support SVG.</object>
 
 <span style="color: #483d8b;">#define</span> <span style="color: #0000ff;">retainpush</span>(<span style="color: #a0522d;">val</span>) ({assert_push(retainsp,retainstack,VM_RETAINSTACK,INTERNAL_ERROR_RTSTACK_OFLOW);push_(retainsp,val)})
 <span style="color: #483d8b;">#define</span> <span style="color: #0000ff;">retainpop</span>() ({assert_pop(retainsp,retainstack,<span style="color: #8b2252;">"retain"</span>,INTERNAL_ERROR_RTSTACK_OFLOW);pop_(retainsp)})
+
+<span style="color: #228b22;">int</span> <span style="color: #0000ff;">interpreter</span>(<span style="color: #228b22;">short_jump_target</span> <span style="color: #a0522d;">start_address</span>) {
+
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #b22222;">/* </span><span style="color: #b22222;">parameter stack </span><span style="color: #b22222;">*/</span>
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #a020f0;">static</span> <span style="color: #228b22;">cell</span> <span style="color: #a0522d;">pstack</span>[VM_PSTACK]={0};
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #a020f0;">static</span> <span style="color: #228b22;">cell</span>* <span style="color: #a0522d;">psp</span>;
+<span style="color: #b22222; background-color: #ffff00;">   </span>psp = &amp;pstack[0];
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #b22222;">/* </span><span style="color: #b22222;">return stack </span><span style="color: #b22222;">*/</span>
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #a020f0;">static</span> <span style="color: #228b22;">return_entry</span> <span style="color: #a0522d;">returnstack</span>[VM_RETURNSTACK]={{0}};
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #a020f0;">static</span> <span style="color: #228b22;">return_entry</span>* <span style="color: #a0522d;">returnsp</span>;
+<span style="color: #b22222; background-color: #ffff00;">   </span>returnsp = &amp;returnstack[0];
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #b22222;">/* </span><span style="color: #b22222;">retain stack </span><span style="color: #b22222;">*/</span>
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #a020f0;">static</span> <span style="color: #228b22;">cell</span> <span style="color: #a0522d;">retainstack</span>[VM_RETAINSTACK]={0};
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #a020f0;">static</span> <span style="color: #228b22;">cell</span>* <span style="color: #a0522d;">retainsp</span>;
+<span style="color: #b22222; background-color: #ffff00;">   </span>retainsp = &amp;retainstack[0];
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #b22222;">/*</span><span style="color: #b22222;">------------------</span><span style="color: #b22222;">*/</span>
+
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #228b22;">inst</span> *<span style="color: #a0522d;">pc</span>;
+<span style="color: #b22222; background-color: #ffff00;">   </span>pc = &amp;image[(start_address ? : START_WORD_OFFSET)];  <span style="color: #b22222;">/* </span><span style="color: #b22222;">point to the start of the program </span><span style="color: #b22222;">*/</span>
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #b22222;">/*</span><span style="color: #b22222;">------------------</span><span style="color: #b22222;">*/</span>
+
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #a020f0;">static</span> <span style="color: #228b22;">bool</span> <span style="color: #a0522d;">tailcall</span>;
+<span style="color: #b22222; background-color: #ffff00;">   </span>tailcall = <span style="color: #008b8b;">true</span>;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">enable tail call jumping by default </span><span style="color: #b22222;">*/</span>
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #b22222;">/*</span><span style="color: #b22222;">------------------</span><span style="color: #b22222;">*/</span>
+
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #228b22;">cell</span> <span style="color: #a0522d;">x</span>; <span style="color: #b22222;">/* </span><span style="color: #b22222;">temporary value for operations </span><span style="color: #b22222;">*/</span>
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #b22222;">/*</span><span style="color: #b22222;">------------------</span><span style="color: #b22222;">*/</span>
+
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #b22222;">/* </span><span style="color: #b22222;">single step debugging</span><span style="color: #b22222;">*/</span>
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">int</span> <span style="color: #a0522d;">debug_nest</span> = 0; <span style="color: #b22222;">/* </span><span style="color: #b22222;">used in debug mode to track when</span>
+<span style="color: #b22222; background-color: #ffff00;">                                 </span><span style="color: #b22222;">* to stop single stepping</span><span style="color: #b22222;">*/</span>
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #228b22;">bool</span> <span style="color: #a0522d;">debug_mode</span> = <span style="color: #008b8b;">false</span>;
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #483d8b;">#if</span> DEBUG
+<span style="color: #b22222; background-color: #ffff00;">   </span>debug_mode=<span style="color: #008b8b;">true</span>;
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #483d8b;">#endif</span>
+
+
+
+<span style="color: #b22222; background-color: #ffff00;">   </span><span style="color: #a020f0;">while</span>(1) {
+<span style="color: #b22222; background-color: #ffff00;">      </span><span style="color: #228b22;">inst</span> <span style="color: #a0522d;">i</span>;
+<span style="color: #b22222; background-color: #ffff00;">      </span>i = (*pc++);
+  <span style="color: #008b8b;">dispatch</span>:
+
+<span style="color: #b22222; background-color: #ffff00;">      </span><span style="color: #a020f0;">switch</span>(i) {
+
+<span style="color: #b22222; background-color: #ffff00;">         </span><span style="color: #a020f0;">default</span>:
+<span style="color: #b22222; background-color: #ffff00;">            </span>printf(<span style="color: #8b2252;">"unimplemented instruction %#x\n"</span>,i);
+<span style="color: #b22222; background-color: #ffff00;">            </span>handle_error(INTERNAL_ERROR_INVALID_OPCODE);
+<span style="color: #b22222; background-color: #ffff00;">      </span>}
+  <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">end_inst</span>;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">normal instructions skip the call execution paths </span><span style="color: #b22222;">*/</span>
+  <span style="color: #008b8b;">nested_call</span>:  <span style="color: #b22222;">/* </span><span style="color: #b22222;">common execution path for non-tail calls </span><span style="color: #b22222;">*/</span>
+
+  <span style="color: #008b8b;">tail_call</span>:    <span style="color: #b22222;">/* </span><span style="color: #b22222;">common execution path for tail calls </span><span style="color: #b22222;">*/</span>
+
+  <span style="color: #008b8b;">end_inst</span>:     <span style="color: #b22222;">/* </span><span style="color: #b22222;">end of instruction processing </span><span style="color: #b22222;">*/</span>
+<span style="color: #b22222; background-color: #ffff00;">      </span>(<span style="color: #228b22;">void</span>) 0;
+<span style="color: #b22222; background-color: #ffff00;">   </span>}
+}
 </pre>
 </div>
 </div>

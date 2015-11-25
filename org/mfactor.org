@@ -356,7 +356,7 @@ mark a word inline, recursive, or a parsing word.
   }       __attribute__((packed)) dict_entry;
 #+end_src
 
-*** Preprocessor Macros
+*** <<vm-preprocessor-macros>>Preprocessor Macros
 
 The following all indicate the size of the different components, in =cell= units.
 These are defaults can be changed according to application requirements.
@@ -530,7 +530,7 @@ The possible values are defined as:
   #define NULLOUT 3
 #+END_SRC
 
-*** Special Variables Initialization
+*** <<init-specials-definition>>Special Variables Initialization
 #+BEGIN_SRC C
   static void init_specials() {
      HANDLER = 0;
@@ -773,6 +773,136 @@ Basic Flowchart
 #+RESULTS:
 [[file:img/interpreter_flow.svg]]
 
+The =interpreter()= functions is structured as follows:
+
+#+BEGIN_SRC C :noweb-ref interpreter :noweb tangle
+  int interpreter(short_jump_target start_address) {
+
+     <<state_definition>>
+
+     <<state_initialization>>
+
+     while(1) {
+        inst i;
+        i = (*pc++);
+    dispatch:
+        <<debug_statements>>
+        switch(i) {
+           <<big_fat_switch>>
+           default:
+              printf("unimplemented instruction %#x\n",i);
+              handle_error(INTERNAL_ERROR_INVALID_OPCODE);
+        }
+    goto end_inst;  /* normal instructions skip the call execution paths */
+    nested_call:  /* common execution path for non-tail calls */
+        <<nested_call_common>>
+    tail_call:    /* common execution path for tail calls */
+        <<tail_call_common>>
+    end_inst:     /* end of instruction processing */
+        (void) 0;
+     }
+  }
+#+END_SRC
+
+The labels after the switch statement are common exit points of several primitives.
+
+**** Internal State Definition
+:PROPERTIES:
+:noweb-ref: state_definition
+:END:
+
+***** Stacks
+- data stack (or parameter stack) and pointer
+- return stack and pointer
+- retain stack and pointer
+#+BEGIN_SRC C
+  /* parameter stack */
+  static cell pstack[VM_PSTACK]={0};
+  static cell* psp;
+  psp = &pstack[0];
+  /* return stack */
+  static return_entry returnstack[VM_RETURNSTACK]={{0}};
+  static return_entry* returnsp;
+  returnsp = &returnstack[0];
+  /* retain stack */
+  static cell retainstack[VM_RETAINSTACK]={0};
+  static cell* retainsp;
+  retainsp = &retainstack[0];
+#+END_SRC
+
+The data and retain stacks are using scalar elements of type =cell=, while the return
+stack holds structs.
+
+The size macros are defined in the header file (see [[vm-preprocessor-macros]]), and control the
+memory usage of the VM.
+***** Program counter
+This is the most basic state for any program interpreting machine.  It holds the address
+of the next primitive instruction in the instruction stream (bytecode image).
+#+BEGIN_SRC C
+  inst *pc;
+  pc = &image[(start_address ? : START_WORD_OFFSET)];  /* point to the start of the program */
+#+END_SRC
+
+The initial value is either taken from the =interpreter()= call as parameter, or by using
+the =START_WORD_OFFSET= macro from =bytecode.h=, that translates the =START_WORD= global
+variable (see [[Configuring the Rake Task]]) into an address.
+
+***** Tail Call Optimization
+The MFactor implementation relise on (explicit) [[https://en.wikipedia.org/wiki/Tail_call][tail call elimination]].  Because of the
+nature of the language, the compiler can detect all cases of tail calls easily and
+replaces the =call= instructions with their =tcall= equivalents:
+- =bcall= -> =btcall=
+- =scall= -> =stcall=
+- =acall= -> =atcall=
+
+The =tcall= instructions all amount to a jump to the called word, thus replacing the
+current stack frame instead of adding one to the dynamic chain.  Since Iteration is
+implemented with (tail)-recursion, disabling tail calls severly limit loop execution, and
+should only be turned on locally for debugging purposes.
+This variable controls wether tail calls should be handled as such, or redirected to
+nested calls:
+#+BEGIN_SRC C
+  static bool tailcall;
+  tailcall = true;  /* enable tail call jumping by default */
+#+END_SRC
+***** Helper "Register"
+To help manage jumping through the code, a variable =x= is defined here and used in
+various primitive instructions.  Normally, the needed variables are defined locally in the
+intruction cases.
+#+BEGIN_SRC C
+  cell x; /* temporary value for operations */
+#+END_SRC
+***** Debug Mode
+To debug internals, this =debug_mode= state can be set (also via an isntruction, TODO:
+link).  If so, it outputs internal state before processing an instruction, and waits for a
+keypress before processing it.  The =debug_nest= counter is used to keep track of return
+stack levels to make sure debug mode is exited corretly and to provide nesting
+information.
+#+BEGIN_SRC C
+  /* single step debugging*/
+  unsigned int debug_nest = 0; /* used in debug mode to track when
+                                ,* to stop single stepping*/
+  bool debug_mode = false;
+  #if DEBUG
+  debug_mode=true;
+  #endif
+#+END_SRC
+**** State initialization
+:PROPERTIES:
+:noweb-ref: state_initializiation
+:END:
+
+***** Output File Descriptor
+The value passed to all libc stdio commands used during primitive instruction execution.
+#+BEGIN_SRC C
+  Ostream = stdout;  /* print everything to stdout per default */
+#+END_SRC
+
+***** Special Variable Initalization
+See [[init-specials-definition]].
+#+BEGIN_SRC C
+  init_specials();
+#+END_SRC
 ** Complete Source Files
 *** interpreter.h
 #+name: interpreter_h
@@ -810,5 +940,7 @@ Basic Flowchart
   #include "seq_headers.h"
 
   <<vm_c>>
+
+  <<interpreter>>
 
 #+END_SRC
