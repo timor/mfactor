@@ -217,7 +217,7 @@ static FILE * current_fd(void)
 		return NULL;
 }
 
-int interpreter(short_jump_target start_base_address) {
+int interpreter(short_jump_target start_address) {
 	/* parameter stack */
 	static cell pstack[VM_PSTACK]={0};
 	static cell* psp;
@@ -232,7 +232,7 @@ int interpreter(short_jump_target start_base_address) {
 
 	/* initialize state */
 	Ostream = stdout;
-	pc = &image[(start_base_address ? : START_WORD_OFFSET)];
+	pc = &image[(start_address ? : START_WORD_OFFSET)];
 	init_specials();
 	psp = &pstack[0];
 	returnsp = &returnstack[0];
