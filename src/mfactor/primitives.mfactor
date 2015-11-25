@@ -40,7 +40,7 @@ PRIM: get-sp ( n -- addr ) "get_sp" ;
 PRIM: set-sp ( addr n -- ) "set_sp" ;
 PRIM: ? ( ? x x -- x ) "truefalse" ;
 PRIM: memstart ( -- addr ) "memstart" ;
-PRIM: memrange ( -- a a a a ) "memrange" ;
+PRIM: memrange ( -- a a ) "memrange" ;
 PRIM: oplit ( -- ) "oplit" ;
 PRIM: qstart ( -- ) "qstart" ;
 PRIM: qend ( -- ) "qend" ;

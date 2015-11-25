@@ -200,28 +200,6 @@ static void print_error(char * str)
 
 	#define peek_n(sp,nth) (*(sp-nth))
 
-/* writes are only allowed into dedicated memory area for now */
-	#define assert_memwrite(x) if ((x < memory) || (x >= (memory+VM_MEM))) {printf("prevented memory access at %#lx\n",x); BACKTRACE();handle_error(INTERNAL_ERROR_MEM_FAULT);}
-/* reads are only allowed inside data space */
-	#if __linux
-		#define DATA_START __data_start
-		#define DATA_END end
-	#elif (PROCESSOR_EXPERT)
-		#define DATA_START _sdata
-		#define DATA_END end
-	#elif (ATOLLIC_TRUESTUDIO)
-		#define DATA_START _sdata
-		#define DATA_END _edata
-	#elif (CORTEX_M)
-		#define DATA_START __data_start__
-		#define DATA_END end
-	#else
-		#error "no data segment information"
-	#endif
-
-extern cell DATA_START;
-extern cell DATA_END;
-
 static void init_specials() {
 	HANDLER = 0;
 	MP = (cell)memory; /* start of user memory */
@@ -547,8 +525,6 @@ int interpreter(short_jump_target start_base_address) {
 			break;
 			/* ( -- data-start data-end mem-start mem-end ) */
 		case memrange:
-			ppush((cell) &DATA_START);
-			ppush((cell) &DATA_END);
 			ppush((cell) memory);
 			ppush((cell) memory+VM_MEM*sizeof(cell));
 			break;

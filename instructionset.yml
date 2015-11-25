@@ -112,7 +112,7 @@ stack_level: "level"
 # ( str -- num/str success? )
 parsenum:
 nop:
-# ( -- data-start data-end mem-start mem-end )
+# ( -- mem-start mem-end )
 memrange:
 # memory operations
 # (value address -- )
