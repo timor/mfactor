@@ -312,6 +312,7 @@ module MFactor
     end
     def write_bytecode_image(io="")
       maybe_generate
+      io << "/* <current address in image>: <name of word definition> */\n"
       @compiled_definitions.each do |cdef|
         next if cdef.definition.primitive?
         io << "/* 0x#{cdef.location.to_s(16)}: #{cdef.definition.name} */ "
