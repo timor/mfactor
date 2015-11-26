@@ -150,6 +150,8 @@ languages.
 
 Terminology:
 - Word :: the basic user-defined abstraction, like functions in most languages.
+- Parsing Word :: defined by =SYNTAX:=, these take control of the parser if used
+     interactively, and are supported indepently of that by the byte-code compiler.
 - Vocabulary :: comparable to C's compilation unit with interface definition in a header
      file.  Contains a number of word definitions.
 - Data Stack :: or Parameter Stack, holds values that are manipulated by words.
@@ -159,7 +161,8 @@ Terminology:
      are needed for later.  Used internally by all [[http://docs.factorcode.org/content/article-dip-keep-combinators.html][preserving combinators]].
 - Quotation :: block of code enclosed in square brackets (=[]=), that is pushed onto the
      stack as-is, without evaluation.
-- Combinator :: word that takes quotations as input.  Probably the most-used is:
+- Combinator :: word that takes quotations as input.  The conditional word =if= takes
+     a condition and 2 quotations as input:
      #+BEGIN_SRC factor
        condition-value [
            true-quotation
@@ -168,7 +171,8 @@ Terminology:
        ] if
      #+END_SRC
 - Primitives :: are the low-level instructions that are executed by the VM.  All words
-     are defined in terms of Primitives and other words.
+     are defined in terms of other words, some of them primitives.  The binary
+     representation of a word, however, consists entirely of primitives.
 - Image :: is a (compiled) array of primitives, that constitutes the binary representation
      of the mfactor source program
 - Dictionary :: generated table that holds information on word definitions, most
@@ -185,7 +189,7 @@ Major differences:
 - same-named words in different vocabularies not supported (yet)
 - interactive support only for byte-array and integer-array sequences: =B{ }=, =I{ }=, at
   compile time, arbitrary sequences can be used.
-- host compiler only supports a subset of syntax words: =:=, =SYNTAX:=, ={ }=, =B{ }=, =I{
+- host compiler only supports a subset of parsing words: =:=, =SYNTAX:=, ={ }=, =B{ }=, =I{
   }=, `SYMBOLS:`, =USING:=, =IN=
 - =case= is implemented as a syntax word, so no interactive support
 - words beginning with underscore(=_=) are not stored in the dictionary.  This is intended
@@ -452,7 +456,8 @@ executed.  If it is non-zero, an internal error happened.
 int interpreter(short_jump_target);
 #+end_src
 
-** Special Variables Definition
+** Special Variables
+*** Special Variables Definition
 The internal state of the interpreter is exposed to the application by predefining an
 array of special variables.  These are needed for all instructions that depend on state
 that must be influenced by the application.
@@ -481,14 +486,14 @@ The list of currently implemented specials:
 Not all of them are actually in use, the ones that are, are defined as macros so that the
 =special_vars= array needs not be acccessed directly in the following source code:
 
-*** =MP=: The Memory Write Pointer
+**** =MP=: The Memory Write Pointer
 This holds a pointer to the memory location that is accessed by the compilation primitives
 (TOOD: link)
 #+BEGIN_SRC C
   #define MP special_vars[0]
 #+END_SRC
 
-*** =HANDLER=: Current Exception handling frame
+**** =HANDLER=: Current Exception handling frame
 This is used by the application to store information about the current exception handler.
 Note that the application does not currently manipulate or access this state, so it is
 basically a specialized global variable. TODO: reference the exception handling lib
@@ -496,23 +501,23 @@ basically a specialized global variable. TODO: reference the exception handling 
   #define HANDLER special_vars[1]
 #+END_SRC
 
-*** =DEBUG_LEVEL=: VM Debug Verbosity
+**** =DEBUG_LEVEL=: VM Debug Verbosity
 Used to activate debug output for VM internals.  Only used for VM development and debugging.
 #+BEGIN_SRC C
   #define DEBUG_LEVEL special_vars[2]
 #+END_SRC
 
-*** =RESTART=: Restart address (deprecated)
+**** =RESTART=: Restart address (deprecated)
 This used to hold an address that was jumped to in case of internal errors.  This has been
 replaced by returning from =interpreter()= with the internal error code, and the host
 application deciding what to do then
 
-*** =STEP_HANDLER=: Single Stepping Handler (not in use)
+**** =STEP_HANDLER=: Single Stepping Handler (not in use)
 This shall hold an address which is called on every step of the currently executed bytecode
 image.  Meant for implementing single step debugging, where the actual handler would be
 written as mfactor source.
 
-*** =BASE=: Current Segment base address
+**** =BASE=: Current Segment base address
 This hold the address that is added to *all* internal calls (TODO: link to relevant call
 primitives).  Usually it holds the address of the =image=-variable, that is generated in
 =generated/bytecode.c=.  This allows the image to be relocatable, so that the actuall call
@@ -522,10 +527,11 @@ target (16 bit value) is computed by adding it to the value of =BASE=.
   #define BASE special_vars[5]
 #+END_SRC
 
-*** =OUTPUT_STREAM=: Output Stream descriptor
+**** =OUTPUT_STREAM=: Output Stream descriptor
 The value of this variable is used everytime something should be output.  It determines
-which =File= pointer is passed to the standard c output functions in =current_fd()= (TODO
-link)
+which =File= pointer is passed to the standard c output functions in =current_fd()= (see
+[[output-handling]])
+
 #+BEGIN_SRC C
   #define OUTPUT_STREAM special_vars[6]
 #+END_SRC
@@ -538,7 +544,9 @@ The possible values are defined as:
   #define NULLOUT 3
 #+END_SRC
 
-** <<init-specials-definition>>Special Variables Initialization
+*** <<init-specials-definition>>Special Variables Initialization
+This helper is called at the beginning of =interpreter()= to initialize some special
+variables to values then known.
 #+BEGIN_SRC C
   static void init_specials() {
      HANDLER = 0;
@@ -547,14 +555,17 @@ The possible values are defined as:
      OUTPUT_STREAM = STDOUT; /* output to standard output per default */
   }
 #+END_SRC
+** Work Memory
+For allocation of interactively-generated input sequences, such as strings, byte arrays and
+quotations, internal memory is reserved.  This is the default target area for the
+compilation primitives (TODO: link).
+
+#+BEGIN_SRC C
+  /* main memory to work with */
+  static cell memory[VM_MEM];
+#+END_SRC
 ** Helper Funtions
 *** Internal Debugging
-**** Output Handling
-One file-local variable that holds the current Output stream for internal messages:
-#+BEGIN_SRC C
-  static FILE * Ostream; /* used by reporting functions, so they can temporarily
-                            print to different file descriptor */
-#+END_SRC
 **** Debug Level
 One helper for checking if the current debug level is high enough for subsequent actions:
 
@@ -565,14 +576,24 @@ One helper for checking if the current debug level is high enough for subsequent
   }
 #+END_SRC
 
-*** Work Memory
-For allocation of interactively-generated input sequences, such as strings, byte arrays and
-quotations, internal memory is reserved.  This is the default target area for the
-compilation primitives (TODO: link).
-
+*** Output Handling<<output-handling>>
+One file-local variable that holds the current Output stream for io operations:
 #+BEGIN_SRC C
-  /* main memory to work with */
-  static cell memory[VM_MEM];
+  static FILE * Ostream; /* used by reporting functions, so they can temporarily
+                            print to different file descriptor */
+
+
+  /* get the current stdio FILE from the special variable, or NULL if unknown or muted by
+   * choosing NULLOUT */
+  static FILE * current_fd(void)
+  {
+          if (OUTPUT_STREAM == 2)
+                  return stderr;
+          else if (OUTPUT_STREAM == 1)
+                  return stdout;
+          else
+                  return NULL;
+  }
 #+END_SRC
 
 *** Return Stack Entry Format
@@ -724,7 +745,7 @@ Peeking into the stack (as opposed to removing a value), currently only used for
   #define peek_n(sp,nth) (*(sp-nth))
 #+END_SRC
 
-Basic push and pop operations.  The underscores are for avoiding name clashes.
+Basic push and pop operations.
 #+BEGIN_SRC C
   /* push value onto stack indicated by stack pointer sp */
   #define push_(sp,val) *sp=val;sp++;
@@ -813,7 +834,7 @@ The =interpreter()= functions is structured as follows:
   }
 #+END_SRC
 
-The labels after the switch statement are common exit points of several primitives.
+The labels after the switch statement are common excution paths of several primitives.
 
 *** Internal State Definition
 :PROPERTIES:
@@ -856,7 +877,7 @@ The initial value is either taken from the =interpreter()= call as parameter, or
 the =START_WORD_OFFSET= macro from =bytecode.h=, that translates the =START_WORD= global
 variable (see [[Configuring the Rake Task]]) into an address.
 
-**** Tail Call Optimization
+**** Tail Call Optimization<<tail-call-optimization>>
 The MFactor implementation relies on (explicit) [[https://en.wikipedia.org/wiki/Tail_call][tail call elimination]].  Because of the
 nature of the language, the compiler can detect all cases of tail calls easily and
 replaces the =call= instructions with their =tcall= equivalents:
@@ -918,19 +939,33 @@ See [[init-specials-definition]].
 :PROPERTIES:
 :noweb-ref: big_fat_switch
 :END:
-All the primitives, that defined words consist of, are described here.
+All the primitives, that defined words consist of, are described here.  Some of them are
+prepended with underscores to avoid name clashes with existing c functionality.
 
 **** Basic stack manipulation
-- =drop= :: remove value on top of parameter stack
+- =drop= :: remove value on top of data stack
 - =dup= :: (internally named _dup to avoid name conflits) duplicate the item on top of
-     stack
+     data stack
+- =swap= :: swap two top values on data stack
+- =to_r= :: move top of data stack to retain stack
+- =r_from= :: move top of retain stack to data stack
+- =clear= :: clear contents of data stack
 
 #+BEGIN_SRC C
-     case drop: ppop();
-     case _dup: ppush(peek_n(psp,1));
+  case drop: ppop();
+  case _dup: ppush(peek_n(psp,1));
+  case swap: {
+     x=ppop();
+     cell y = ppop();
+     ppush(x);
+     ppush(y);
+  } break;
+  case to_r: retainpush(ppop()); break;
+  case r_from: ppush(retainpop()); break;
+  case clear: psp = &pstack[0]; break;
 #+END_SRC
 
-**** Arithmetic instructions
+**** Arithmetic Instructions
 All arithmetic instructions either manipulate the value on top of the stack, or replace
 the two top values with the results.  For defining unary and binary operations with C
 operators, two helper macros are used:
@@ -963,6 +998,7 @@ The instructions themselves:
   case bitnot: UNOP(~); break;
   case gt: BINOP(>); break;
   case lt: BINOP(<); break;
+  case eql: BINOP(==); break;
 #+END_SRC
 
 **** Constants
@@ -973,7 +1009,7 @@ the stack, which takes two bytes instead of one.
      case one: ppush(1); break;
      case two: ppush(2); break;
 #+END_SRC
-**** Informational Instructions
+**** Access to Internal Constants
 These provide information about some internals to the application:
 - work memory bounds
 - dictionary bounds
@@ -988,7 +1024,285 @@ dictionary.
      case cellsize: ppush((cell)sizeof(cell)); break;
      case instbase: ppush((cell)INSTBASE); break;
 #+END_SRC
+**** Access to Internal State
+These primitives expose internal state to the application.
 
+Access to the stack pointers is needed for saving and storing state, and is mainly
+provided to be able to implement exception handling, which needs to store the values of
+these pointers(on the retain stack) for later recovery.
+
+The number of the desired stack pointer is taken from top of stack.
+
+#+BEGIN_SRC C
+  case get_sp:
+     switch (ppop()) {
+        case 0 : ppush((cell)psp); break;
+        case 1 : ppush((cell)retainsp); break;
+        case 2 : ppush((cell)returnsp); break;
+        default: ppush((cell)0); break;
+     } break;
+  case set_sp:
+     {
+        unsigned char n = (unsigned char)ppop();
+        cell* newsp = (cell*)ppop();
+        switch (n) {
+           case 0 : psp = newsp; break;
+           case 1 : retainsp = newsp; break;
+           case 2 : returnsp = (return_entry *)newsp; break;
+        }
+     } break;
+#+END_SRC
+
+Access to the special variables is provided to control or query several aspects of
+interpreter state, see [[Special Variables]] for details.  Number of special variable is taken
+from top of stack.
+
+#+BEGIN_SRC C
+  case get_special:
+     {
+        unsigned char i = (unsigned char)ppop();
+        if (i < NumSpecials)
+           ppush(special_vars[i]);
+        else {
+           printf("illegal specials index: %d\n", i);
+           handle_error(INTERNAL_ERROR_UNKNOWN_SPECIAL);
+        }
+     } break;
+  case set_special:
+     {
+        unsigned char i = (unsigned char)ppop();
+        if (i < NumSpecials)
+           special_vars[i] = ppop();
+        else {
+           printf("illegal specials index: %d\n", i);
+           handle_error(INTERNAL_ERROR_UNKNOWN_SPECIAL);
+        }
+     } break;
+#+END_SRC
+
+**** Literal Instructions<<literal_instructions>>
+Literal instructions all push a value that is defined immediately after the instruction in
+the instruction stream, and push it onto the data stack. If the current program counter
+points to this:
+| litb | 0x04 | inst_1 | inst_2 | ... |
+it will point to this after execution:
+| inst_1 | inst_2 | ... |
+Because the literal byte is a "argument" to the litb instruction.
+The different literal instructions ahve different width arguments.
+- =litb= pushes a byte-sized number
+- =liti= pushes a cell-sized number
+
+#+BEGIN_SRC C
+  case litb:              /* byte literal */
+    x=(cell)(*(pc++));
+    ppush(x);
+    break;
+  case liti:               /* cell-wide literal */
+    x=*((cell *)pc);
+    ppush(x);
+    pc+=sizeof(cell);
+    break;
+#+END_SRC
+
+=litc= is meant for complex (non-scalar) literals like sequences.  It expects its
+argument to be in the format described in [[file:src/seq_headers.h]].  The only really
+important thing about that format here is that the second byte specifies the length.
+After execution of =litc=, the address of that length-defining byte is left on the stack,
+and the pc is adjustet to correctly skip all the inline data.
+
+#+BEGIN_SRC C
+  case litc: {              /* complex inline literal */
+    /* pc is already at the next item -> header byte */
+    seq_header h = (seq_header)(*pc);
+    ppush((cell)pc+1);    /* leave address of count byte on stack */
+    pc += 2 + fe_seq_size(h,pc+1);
+    } break;
+#+END_SRC
+
+=oplit= is like =litb=, and is intended for pushing an instruction on the stack literally,
+instead of executing it.  It is needed by the interactive bytecode-compiler to put
+instructions onto the stack.  It does however an additional transformation:  since
+primitives on the stack are no different from addresses in regard to being =call='ed,
+the way to distinguish between a primitive to execute and an address to jump to is, that
+primitives are represented as addresses that would be invalid otherwise.  That is also the
+reason for different values of =INSTBASE= (see [[vm-preprocessor-macros]]).
+
+In essence:
+| oplit | 0xa4 |
+pushes =0xa4000000= onto the stack.  Since this would be an invalid memory address on the
+chosen architecture (checked during =scall= and =stcall= in [[call-return-instructions]]), it
+is later known to be a primitive, not the location of a quotation when called.
+**** IO Primitives
+Several primitives make calls to libc's stdio functionality.  All output is directed to
+=Ostream= (see [[output-handling]).
+- =emit= :: output top of stack as =char=
+- =receive= :: read(blocking) one character from stdin
+- =pwrite= :: "pretty-write", outputs top of stack with printf as decimal
+- =pwritex= :: "pretty-write-hex", outputs top of stack with printf as hex and =0x= prefix
+- =writex= :: "write-hex", outputs top of stack with printf as hex
+
+The output functions all check =current_fd()= (see [[output-handling]]).  If it is NULL, the
+element not to be output at all and simply dropped.
+
+#+BEGIN_SRC C
+  case emit:
+     if (current_fd() != NULL) {
+        fputc(ppop(),current_fd());
+        fflush(stdout);                 /* TODO remove when flushing is delegated to
+                                         ,* higher level calls */
+     } else
+        (void) ppop();
+     break;
+  case receive:
+     ppush(read_char()); break;
+  case _pwrite:
+     if (current_fd() != NULL)
+        fprintf(current_fd(), "%ld", ppop());
+     else
+        (void) ppop();
+     break;
+  case pwritex:
+     if (current_fd() != NULL)
+        fprintf(current_fd(), "%#lx", ppop());
+     else
+        (void) ppop();
+     break;
+  case writex:
+     if (current_fd() != NULL)
+        fprintf(current_fd(), "%lx", ppop());
+     else
+        (void) ppop();
+     break;
+#+END_SRC
+**** Call/Return Instructions<<call-return-instructions>>
+These instructions implement control flow, and make use of the return stack.  The
+difference between the call instructions is how they get their target address, how wide
+that address is and wether or not they execute a jump ([[tail-call-optimization]]).
+
+| primitive                | where to get address | type of address         | tail-call |
+|--------------------------+----------------------+-------------------------+-----------|
+| bcall                    | instruction stream   | short (16 bit) relative | no        |
+| btcall                   | instruction stream   | short (16 bit) relative | yes       |
+| acall                    | instruction stream   | full size absolute      | no        |
+| scall                    | top of stack         | full size absolute      | no        |
+| stcall                   | top of stack         | full size absolute      | yes       |
+
+#+BEGIN_SRC C
+  switch() {
+     case bcall: {  /* base-relative call */
+    _bcall:
+        x = (cell)(BASE + *((short_jump_target *)pc));  /* set the target */
+        pc += sizeof(short_jump_target);
+        goto nested_call;
+     } break;
+     case btcall:   /* base-relative tail-call, effectively a goto */
+        if (!tailcall) goto _bcall;
+        x = (cell)(BASE + *((short_jump_target *)pc));  /* set the target */
+        goto tail_call;
+        break;
+     case acall: {  /* absolute call */
+        x = (cell) *((jump_target *)pc);  /* set the target */
+        pc += sizeof(jump_target);
+        goto nested_call;
+     } break;
+     case scall:
+     _scall:
+        /* check if call target is primitive, if yes, substitute execution (tail call), since call only
+           applies to quotations */
+        x = ppop();  /* set the target */
+        if (x >= INSTBASE_CELL) {
+           i = (x >> (8 * (sizeof(inst *) - sizeof(inst))));
+           goto dispatch;  /* calling a primitive "substitutes" the call with the primitive */
+        } else {
+           goto nested_call;
+        } break;
+     case stcall:
+        if (!tailcall) goto _scall;
+        x = ppop();  /* set the target */
+        if (x >= INSTBASE_CELL) {
+           i=( x >> (8 * (sizeof(inst*) - sizeof(inst))));
+           goto dispatch;      /* already a tail call */
+        } else {
+           goto tail_call;
+        } break;
+#+END_SRC
+
+All the above jump outside of the switch statement, either to the =tailcall= or
+=nestedcall= label.  These common execution paths are described next.
+
+For normal nested calls, a stack frame is created that contains the return address and a
+reference to the word being called.  This second item is not needed for execution, but
+helps debugging since it always shows where the currently executed word was started.  If
+debug mode is on, increase the nesting counter =debug_nest=.
+
+Execution path =nested_call=:
+#+BEGIN_SRC C :noweb-ref nested_call_common
+  {
+     inst *next_word = (inst *) x;  /* was set by the call instructions that jumped here */
+     return_entry e = {.return_address = pc, .current_call=next_word};
+     returnpush(e);
+     if (debug_mode) {
+        char * name = find_by_address(next_word);
+        debug_nest++;
+        printf("calling: %s -> %d\n",name,debug_nest);
+     }
+     pc=next_word;
+  }
+  goto end_inst;
+#+END_SRC
+
+For tail calls, the current word execution is just substituted (equivalent to a simple =jmp=)
+
+Execution path =tail_call=:
+#+BEGIN_SRC C :noweb-ref tail_call_common
+  {
+     inst *next_word = (inst *) x;  /* was set by the call instructions that jumped here */
+     if (debug_mode) {
+        char * name = find_by_address(next_word);
+        printf("tail calling: %s -> %d\n",name,debug_nest);
+     }
+     pc = next_word;
+  }
+  goto end_inst;
+#+END_SRC
+
+=qend=, "quotation end", is the return instruction.  It pops a frame of the return stack
+and sets the program counter to resume execution after the original call site.  Again, in
+case of debug mode being activated, record the nesting level change.
+
+#+BEGIN_SRC C
+  case qend: {
+     return_entry e = returnpop();
+     if (debug_mode) {
+        if (debug_nest > 0) {
+           printf("<- %d\n",debug_nest);
+           debug_nest--; }
+        else {
+           debug_mode=false; }
+     }
+     pc=e.return_address;
+  } break;
+#+END_SRC
+**** Conditional
+There is only one instruction for handling conditionals, which implements factor word =?=
+directly.
+#+BEGIN_SRC factor :noweb-ref nil
+  : ? ( ? true false -- true/false )
+#+END_SRC
+
+If the flag (on third position) is false, leave only the =true= value, otherwise leave the
+=false= value.
+
+#+BEGIN_SRC C
+  case truefalse:
+     {
+        cell false_cons = ppop();
+        cell true_cons = ppop();
+        cell cond = ppop();
+        ppush(cond ? true_cons : false_cons);
+     } break;
+#+END_SRC
+**** TODO search, lookup_name, stack_show, mem instructions, quit, error, timer
 * Appendix: Complete Sources
 ** interpreter.h
 #+name: interpreter_h

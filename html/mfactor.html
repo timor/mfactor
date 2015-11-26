@@ -192,80 +192,90 @@ for the JavaScript code in this tag.
 <li><a href="#orgheadline23">3.2.4. Main VM Function Prototype</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline32">3.3. Special Variables Definition</a>
+<li><a href="#orgheadline34">3.3. Special Variables</a>
 <ul>
-<li><a href="#orgheadline25">3.3.1. <code>MP</code>: The Memory Write Pointer</a></li>
-<li><a href="#orgheadline26">3.3.2. <code>HANDLER</code>: Current Exception handling frame</a></li>
-<li><a href="#orgheadline27">3.3.3. <code>DEBUG_LEVEL</code>: VM Debug Verbosity</a></li>
-<li><a href="#orgheadline28">3.3.4. <code>RESTART</code>: Restart address (deprecated)</a></li>
-<li><a href="#orgheadline29">3.3.5. <code>STEP_HANDLER</code>: Single Stepping Handler (not in use)</a></li>
-<li><a href="#orgheadline30">3.3.6. <code>BASE</code>: Current Segment base address</a></li>
-<li><a href="#orgheadline31">3.3.7. <code>OUTPUT_STREAM</code>: Output Stream descriptor</a></li>
+<li><a href="#orgheadline32">3.3.1. Special Variables Definition</a>
+<ul>
+<li><a href="#orgheadline25">3.3.1.1. <code>MP</code>: The Memory Write Pointer</a></li>
+<li><a href="#orgheadline26">3.3.1.2. <code>HANDLER</code>: Current Exception handling frame</a></li>
+<li><a href="#orgheadline27">3.3.1.3. <code>DEBUG_LEVEL</code>: VM Debug Verbosity</a></li>
+<li><a href="#orgheadline28">3.3.1.4. <code>RESTART</code>: Restart address (deprecated)</a></li>
+<li><a href="#orgheadline29">3.3.1.5. <code>STEP_HANDLER</code>: Single Stepping Handler (not in use)</a></li>
+<li><a href="#orgheadline30">3.3.1.6. <code>BASE</code>: Current Segment base address</a></li>
+<li><a href="#orgheadline31">3.3.1.7. <code>OUTPUT_STREAM</code>: Output Stream descriptor</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline33">3.4. Special Variables Initialization</a></li>
-<li><a href="#orgheadline42">3.5. Helper Funtions</a>
-<ul>
-<li><a href="#orgheadline36">3.5.1. Internal Debugging</a>
-<ul>
-<li><a href="#orgheadline34">3.5.1.1. Output Handling</a></li>
-<li><a href="#orgheadline35">3.5.1.2. Debug Level</a></li>
+<li><a href="#orgheadline33">3.3.2. Special Variables Initialization</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline37">3.5.2. Work Memory</a></li>
-<li><a href="#orgheadline38">3.5.3. Return Stack Entry Format</a></li>
-<li><a href="#orgheadline39">3.5.4. Word Lookup: Dictionary support</a></li>
-<li><a href="#orgheadline40">3.5.5. Parsing Numbers</a></li>
-<li><a href="#orgheadline41">3.5.6. Debug output</a></li>
+<li><a href="#orgheadline35">3.4. Work Memory</a></li>
+<li><a href="#orgheadline43">3.5. Helper Funtions</a>
+<ul>
+<li><a href="#orgheadline37">3.5.1. Internal Debugging</a>
+<ul>
+<li><a href="#orgheadline36">3.5.1.1. Debug Level</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline50">3.6. Used Subroutines (defined as Macros)</a>
-<ul>
-<li><a href="#orgheadline43">3.6.1. Backtrace printing</a></li>
-<li><a href="#orgheadline44">3.6.2. Errors during primitive execution</a></li>
-<li><a href="#orgheadline45">3.6.3. Stack Operation Assertion</a></li>
-<li><a href="#orgheadline49">3.6.4. Stack operations</a>
-<ul>
-<li><a href="#orgheadline46">3.6.4.1. Data Stack (Parameter Stack)</a></li>
-<li><a href="#orgheadline47">3.6.4.2. Return Stack</a></li>
-<li><a href="#orgheadline48">3.6.4.3. Retain Stack</a></li>
+<li><a href="#orgheadline38">3.5.2. Output Handling</a></li>
+<li><a href="#orgheadline39">3.5.3. Return Stack Entry Format</a></li>
+<li><a href="#orgheadline40">3.5.4. Word Lookup: Dictionary support</a></li>
+<li><a href="#orgheadline41">3.5.5. Parsing Numbers</a></li>
+<li><a href="#orgheadline42">3.5.6. Debug output</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li><a href="#orgheadline65">3.7. Main Interpreter function <code>interpreter()</code></a>
+<li><a href="#orgheadline51">3.6. Used Subroutines (defined as Macros)</a>
 <ul>
-<li><a href="#orgheadline56">3.7.1. Internal State Definition</a>
+<li><a href="#orgheadline44">3.6.1. Backtrace printing</a></li>
+<li><a href="#orgheadline45">3.6.2. Errors during primitive execution</a></li>
+<li><a href="#orgheadline46">3.6.3. Stack Operation Assertion</a></li>
+<li><a href="#orgheadline50">3.6.4. Stack operations</a>
 <ul>
-<li><a href="#orgheadline51">3.7.1.1. Stacks</a></li>
-<li><a href="#orgheadline52">3.7.1.2. Program counter</a></li>
-<li><a href="#orgheadline53">3.7.1.3. Tail Call Optimization</a></li>
-<li><a href="#orgheadline54">3.7.1.4. Helper "Register"</a></li>
-<li><a href="#orgheadline55">3.7.1.5. Debug Mode</a></li>
-</ul>
-</li>
-<li><a href="#orgheadline59">3.7.2. State initialization</a>
-<ul>
-<li><a href="#orgheadline57">3.7.2.1. Output File Descriptor</a></li>
-<li><a href="#orgheadline58">3.7.2.2. Special Variable Initalization</a></li>
-</ul>
-</li>
-<li><a href="#orgheadline64">3.7.3. Primitive Instructions</a>
-<ul>
-<li><a href="#orgheadline60">3.7.3.1. Basic stack manipulation</a></li>
-<li><a href="#orgheadline61">3.7.3.2. Arithmetic instructions</a></li>
-<li><a href="#orgheadline62">3.7.3.3. Constants</a></li>
-<li><a href="#orgheadline63">3.7.3.4. Informational Instructions</a></li>
+<li><a href="#orgheadline47">3.6.4.1. Data Stack (Parameter Stack)</a></li>
+<li><a href="#orgheadline48">3.6.4.2. Return Stack</a></li>
+<li><a href="#orgheadline49">3.6.4.3. Retain Stack</a></li>
 </ul>
 </li>
 </ul>
 </li>
+<li><a href="#orgheadline72">3.7. Main Interpreter function <code>interpreter()</code></a>
+<ul>
+<li><a href="#orgheadline57">3.7.1. Internal State Definition</a>
+<ul>
+<li><a href="#orgheadline52">3.7.1.1. Stacks</a></li>
+<li><a href="#orgheadline53">3.7.1.2. Program counter</a></li>
+<li><a href="#orgheadline54">3.7.1.3. Tail Call Optimization</a></li>
+<li><a href="#orgheadline55">3.7.1.4. Helper "Register"</a></li>
+<li><a href="#orgheadline56">3.7.1.5. Debug Mode</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline68">4. Appendix: Complete Sources</a>
+<li><a href="#orgheadline60">3.7.2. State initialization</a>
 <ul>
-<li><a href="#orgheadline66">4.1. interpreter.h</a></li>
-<li><a href="#orgheadline67">4.2. interpreter.c</a></li>
+<li><a href="#orgheadline58">3.7.2.1. Output File Descriptor</a></li>
+<li><a href="#orgheadline59">3.7.2.2. Special Variable Initalization</a></li>
+</ul>
+</li>
+<li><a href="#orgheadline71">3.7.3. Primitive Instructions</a>
+<ul>
+<li><a href="#orgheadline61">3.7.3.1. Basic stack manipulation</a></li>
+<li><a href="#orgheadline62">3.7.3.2. Arithmetic Instructions</a></li>
+<li><a href="#orgheadline63">3.7.3.3. Constants</a></li>
+<li><a href="#orgheadline64">3.7.3.4. Access to Internal Constants</a></li>
+<li><a href="#orgheadline65">3.7.3.5. Access to Internal State</a></li>
+<li><a href="#orgheadline66">3.7.3.6. Literal Instructions</a></li>
+<li><a href="#orgheadline67">3.7.3.7. IO Primitives</a></li>
+<li><a href="#orgheadline68">3.7.3.8. Call/Return Instructions</a></li>
+<li><a href="#orgheadline69">3.7.3.9. Conditional</a></li>
+<li><a href="#orgheadline70">3.7.3.10. <span class="todo nilTODO">TODO</span> search, lookup<sub>name</sub>, stack<sub>show</sub>, mem instructions, quit, error, timer</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#orgheadline75">4. Appendix: Complete Sources</a>
+<ul>
+<li><a href="#orgheadline73">4.1. interpreter.h</a></li>
+<li><a href="#orgheadline74">4.2. interpreter.c</a></li>
 </ul>
 </li>
 </ul>
@@ -438,6 +448,8 @@ Terminology:
 </p>
 <dl class="org-dl">
 <dt>Word</dt><dd>the basic user-defined abstraction, like functions in most languages.</dd>
+<dt>Parsing Word</dt><dd>defined by <code>SYNTAX:</code>, these take control of the parser if used
+interactively, and are supported indepently of that by the byte-code compiler.</dd>
 <dt>Vocabulary</dt><dd>comparable to C's compilation unit with interface definition in a header
 file.  Contains a number of word definitions.</dd>
 <dt>Data Stack</dt><dd>or Parameter Stack, holds values that are manipulated by words.</dd>
@@ -448,7 +460,8 @@ are needed for later.  Used internally by all <a href="http://docs.factorcode.or
 <dt>Quotation</dt><dd>block of code enclosed in square brackets (<code>[]</code>), that is pushed onto the
 stack as-is, without evaluation.</dd>
 <dt>Combinator</dt><dd><p>
-word that takes quotations as input.  Probably the most-used is:
+word that takes quotations as input.  The conditional word <code>if</code> takes
+a condition and 2 quotations as input:
 </p>
 <div class="org-src-container">
 
@@ -460,7 +473,8 @@ word that takes quotations as input.  Probably the most-used is:
 </pre>
 </div></dd>
 <dt>Primitives</dt><dd>are the low-level instructions that are executed by the VM.  All words
-are defined in terms of Primitives and other words.</dd>
+are defined in terms of other words, some of them primitives.  The binary
+representation of a word, however, consists entirely of primitives.</dd>
 <dt>Image</dt><dd>is a (compiled) array of primitives, that constitutes the binary representation
 of the mfactor source program</dd>
 <dt>Dictionary</dt><dd>generated table that holds information on word definitions, most
@@ -485,7 +499,7 @@ performance impact for embedded systems)</li>
 <li>same-named words in different vocabularies not supported (yet)</li>
 <li>interactive support only for byte-array and integer-array sequences: <code>B{ }</code>, <code>I{ }</code>, at
 compile time, arbitrary sequences can be used.</li>
-<li>host compiler only supports a subset of syntax words: <code>:</code>, <code>SYNTAX:</code>, <code>{ }</code>, <code>B{ }</code>, <code>I{
+<li>host compiler only supports a subset of parsing words: <code>:</code>, <code>SYNTAX:</code>, <code>{ }</code>, <code>B{ }</code>, <code>I{
   }</code>, `SYMBOLS:`, <code>USING:</code>, <code>IN</code></li>
 <li><code>case</code> is implemented as a syntax word, so no interactive support</li>
 <li>words beginning with underscore(<code>_</code>) are not stored in the dictionary.  This is intended
@@ -899,9 +913,12 @@ executed.  If it is non-zero, an internal error happened.
 </div>
 </div>
 
-<div id="outline-container-orgheadline32" class="outline-3">
-<h3 id="orgheadline32"><span class="section-number-3">3.3</span> Special Variables Definition</h3>
+<div id="outline-container-orgheadline34" class="outline-3">
+<h3 id="orgheadline34"><span class="section-number-3">3.3</span> Special Variables</h3>
 <div class="outline-text-3" id="text-3-3">
+</div><div id="outline-container-orgheadline32" class="outline-4">
+<h4 id="orgheadline32"><span class="section-number-4">3.3.1</span> Special Variables Definition</h4>
+<div class="outline-text-4" id="text-3-3-1">
 <p>
 The internal state of the interpreter is exposed to the application by predefining an
 array of special variables.  These are needed for all instructions that depend on state
@@ -943,9 +960,9 @@ Not all of them are actually in use, the ones that are, are defined as macros so
 </p>
 </div>
 
-<div id="outline-container-orgheadline25" class="outline-4">
-<h4 id="orgheadline25"><span class="section-number-4">3.3.1</span> <code>MP</code>: The Memory Write Pointer</h4>
-<div class="outline-text-4" id="text-3-3-1">
+<div id="outline-container-orgheadline25" class="outline-5">
+<h5 id="orgheadline25"><span class="section-number-5">3.3.1.1</span> <code>MP</code>: The Memory Write Pointer</h5>
+<div class="outline-text-5" id="text-3-3-1-1">
 <p>
 This holds a pointer to the memory location that is accessed by the compilation primitives
 (TOOD: link)
@@ -958,9 +975,9 @@ This holds a pointer to the memory location that is accessed by the compilation 
 </div>
 </div>
 
-<div id="outline-container-orgheadline26" class="outline-4">
-<h4 id="orgheadline26"><span class="section-number-4">3.3.2</span> <code>HANDLER</code>: Current Exception handling frame</h4>
-<div class="outline-text-4" id="text-3-3-2">
+<div id="outline-container-orgheadline26" class="outline-5">
+<h5 id="orgheadline26"><span class="section-number-5">3.3.1.2</span> <code>HANDLER</code>: Current Exception handling frame</h5>
+<div class="outline-text-5" id="text-3-3-1-2">
 <p>
 This is used by the application to store information about the current exception handler.
 Note that the application does not currently manipulate or access this state, so it is
@@ -974,9 +991,9 @@ basically a specialized global variable. TODO: reference the exception handling 
 </div>
 </div>
 
-<div id="outline-container-orgheadline27" class="outline-4">
-<h4 id="orgheadline27"><span class="section-number-4">3.3.3</span> <code>DEBUG_LEVEL</code>: VM Debug Verbosity</h4>
-<div class="outline-text-4" id="text-3-3-3">
+<div id="outline-container-orgheadline27" class="outline-5">
+<h5 id="orgheadline27"><span class="section-number-5">3.3.1.3</span> <code>DEBUG_LEVEL</code>: VM Debug Verbosity</h5>
+<div class="outline-text-5" id="text-3-3-1-3">
 <p>
 Used to activate debug output for VM internals.  Only used for VM development and debugging.
 </p>
@@ -988,9 +1005,9 @@ Used to activate debug output for VM internals.  Only used for VM development an
 </div>
 </div>
 
-<div id="outline-container-orgheadline28" class="outline-4">
-<h4 id="orgheadline28"><span class="section-number-4">3.3.4</span> <code>RESTART</code>: Restart address (deprecated)</h4>
-<div class="outline-text-4" id="text-3-3-4">
+<div id="outline-container-orgheadline28" class="outline-5">
+<h5 id="orgheadline28"><span class="section-number-5">3.3.1.4</span> <code>RESTART</code>: Restart address (deprecated)</h5>
+<div class="outline-text-5" id="text-3-3-1-4">
 <p>
 This used to hold an address that was jumped to in case of internal errors.  This has been
 replaced by returning from <code>interpreter()</code> with the internal error code, and the host
@@ -999,9 +1016,9 @@ application deciding what to do then
 </div>
 </div>
 
-<div id="outline-container-orgheadline29" class="outline-4">
-<h4 id="orgheadline29"><span class="section-number-4">3.3.5</span> <code>STEP_HANDLER</code>: Single Stepping Handler (not in use)</h4>
-<div class="outline-text-4" id="text-3-3-5">
+<div id="outline-container-orgheadline29" class="outline-5">
+<h5 id="orgheadline29"><span class="section-number-5">3.3.1.5</span> <code>STEP_HANDLER</code>: Single Stepping Handler (not in use)</h5>
+<div class="outline-text-5" id="text-3-3-1-5">
 <p>
 This shall hold an address which is called on every step of the currently executed bytecode
 image.  Meant for implementing single step debugging, where the actual handler would be
@@ -1010,9 +1027,9 @@ written as mfactor source.
 </div>
 </div>
 
-<div id="outline-container-orgheadline30" class="outline-4">
-<h4 id="orgheadline30"><span class="section-number-4">3.3.6</span> <code>BASE</code>: Current Segment base address</h4>
-<div class="outline-text-4" id="text-3-3-6">
+<div id="outline-container-orgheadline30" class="outline-5">
+<h5 id="orgheadline30"><span class="section-number-5">3.3.1.6</span> <code>BASE</code>: Current Segment base address</h5>
+<div class="outline-text-5" id="text-3-3-1-6">
 <p>
 This hold the address that is added to <b>all</b> internal calls (TODO: link to relevant call
 primitives).  Usually it holds the address of the <code>image</code>-variable, that is generated in
@@ -1028,14 +1045,15 @@ target (16 bit value) is computed by adding it to the value of <code>BASE</code>
 </div>
 </div>
 
-<div id="outline-container-orgheadline31" class="outline-4">
-<h4 id="orgheadline31"><span class="section-number-4">3.3.7</span> <code>OUTPUT_STREAM</code>: Output Stream descriptor</h4>
-<div class="outline-text-4" id="text-3-3-7">
+<div id="outline-container-orgheadline31" class="outline-5">
+<h5 id="orgheadline31"><span class="section-number-5">3.3.1.7</span> <code>OUTPUT_STREAM</code>: Output Stream descriptor</h5>
+<div class="outline-text-5" id="text-3-3-1-7">
 <p>
 The value of this variable is used everytime something should be output.  It determines
-which <code>File</code> pointer is passed to the standard c output functions in <code>current_fd()</code> (TODO
-link)
+which <code>File</code> pointer is passed to the standard c output functions in <code>current_fd()</code> (see
+<a href="#orgtarget3">3.5.2</a>)
 </p>
+
 <div class="org-src-container">
 
 <pre class="src src-C"><span style="color: #483d8b;">#define</span> <span style="color: #a0522d;">OUTPUT_STREAM</span> special_vars[6]
@@ -1057,9 +1075,13 @@ The possible values are defined as:
 </div>
 </div>
 
-<div id="outline-container-orgheadline33" class="outline-3">
-<h3 id="orgheadline33"><span class="section-number-3">3.4</span> <a id="orgtarget3"></a>Special Variables Initialization</h3>
-<div class="outline-text-3" id="text-3-4">
+<div id="outline-container-orgheadline33" class="outline-4">
+<h4 id="orgheadline33"><span class="section-number-4">3.3.2</span> <a id="orgtarget4"></a>Special Variables Initialization</h4>
+<div class="outline-text-4" id="text-3-3-2">
+<p>
+This helper is called at the beginning of <code>interpreter()</code> to initialize some special
+variables to values then known.
+</p>
 <div class="org-src-container">
 
 <pre class="src src-C"><span style="color: #a020f0;">static</span> <span style="color: #228b22;">void</span> <span style="color: #0000ff;">init_specials</span>() {
@@ -1072,29 +1094,33 @@ The possible values are defined as:
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline42" class="outline-3">
-<h3 id="orgheadline42"><span class="section-number-3">3.5</span> Helper Funtions</h3>
-<div class="outline-text-3" id="text-3-5">
-</div><div id="outline-container-orgheadline36" class="outline-4">
-<h4 id="orgheadline36"><span class="section-number-4">3.5.1</span> Internal Debugging</h4>
-<div class="outline-text-4" id="text-3-5-1">
-</div><div id="outline-container-orgheadline34" class="outline-5">
-<h5 id="orgheadline34"><span class="section-number-5">3.5.1.1</span> Output Handling</h5>
-<div class="outline-text-5" id="text-3-5-1-1">
+</div>
+<div id="outline-container-orgheadline35" class="outline-3">
+<h3 id="orgheadline35"><span class="section-number-3">3.4</span> Work Memory</h3>
+<div class="outline-text-3" id="text-3-4">
 <p>
-One file-local variable that holds the current Output stream for internal messages:
+For allocation of interactively-generated input sequences, such as strings, byte arrays and
+quotations, internal memory is reserved.  This is the default target area for the
+compilation primitives (TODO: link).
 </p>
+
 <div class="org-src-container">
 
-<pre class="src src-C"><span style="color: #a020f0;">static</span> <span style="color: #228b22;">FILE</span> * <span style="color: #a0522d;">Ostream</span>; <span style="color: #b22222;">/* </span><span style="color: #b22222;">used by reporting functions, so they can temporarily</span>
-<span style="color: #b22222;">                          print to different file descriptor </span><span style="color: #b22222;">*/</span>
+<pre class="src src-C"><span style="color: #b22222;">/* </span><span style="color: #b22222;">main memory to work with </span><span style="color: #b22222;">*/</span>
+<span style="color: #a020f0;">static</span> <span style="color: #228b22;">cell</span> <span style="color: #a0522d;">memory</span>[VM_MEM];
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline35" class="outline-5">
-<h5 id="orgheadline35"><span class="section-number-5">3.5.1.2</span> Debug Level</h5>
-<div class="outline-text-5" id="text-3-5-1-2">
+<div id="outline-container-orgheadline43" class="outline-3">
+<h3 id="orgheadline43"><span class="section-number-3">3.5</span> Helper Funtions</h3>
+<div class="outline-text-3" id="text-3-5">
+</div><div id="outline-container-orgheadline37" class="outline-4">
+<h4 id="orgheadline37"><span class="section-number-4">3.5.1</span> Internal Debugging</h4>
+<div class="outline-text-4" id="text-3-5-1">
+</div><div id="outline-container-orgheadline36" class="outline-5">
+<h5 id="orgheadline36"><span class="section-number-5">3.5.1.1</span> Debug Level</h5>
+<div class="outline-text-5" id="text-3-5-1-1">
 <p>
 One helper for checking if the current debug level is high enough for subsequent actions:
 </p>
@@ -1111,26 +1137,36 @@ One helper for checking if the current debug level is high enough for subsequent
 </div>
 </div>
 
-<div id="outline-container-orgheadline37" class="outline-4">
-<h4 id="orgheadline37"><span class="section-number-4">3.5.2</span> Work Memory</h4>
+<div id="outline-container-orgheadline38" class="outline-4">
+<h4 id="orgheadline38"><span class="section-number-4">3.5.2</span> Output Handling<a id="orgtarget3"></a></h4>
 <div class="outline-text-4" id="text-3-5-2">
 <p>
-For allocation of interactively-generated input sequences, such as strings, byte arrays and
-quotations, internal memory is reserved.  This is the default target area for the
-compilation primitives (TODO: link).
+One file-local variable that holds the current Output stream for io operations:
 </p>
-
 <div class="org-src-container">
 
-<pre class="src src-C"><span style="color: #b22222;">/* </span><span style="color: #b22222;">main memory to work with </span><span style="color: #b22222;">*/</span>
-<span style="color: #a020f0;">static</span> <span style="color: #228b22;">cell</span> <span style="color: #a0522d;">memory</span>[VM_MEM];
+<pre class="src src-C"><span style="color: #a020f0;">static</span> <span style="color: #228b22;">FILE</span> * <span style="color: #a0522d;">Ostream</span>; <span style="color: #b22222;">/* </span><span style="color: #b22222;">used by reporting functions, so they can temporarily</span>
+<span style="color: #b22222;">                          print to different file descriptor </span><span style="color: #b22222;">*/</span>
+
+
+<span style="color: #b22222;">/* </span><span style="color: #b22222;">get the current stdio FILE from the special variable, or NULL if unknown or muted by</span>
+<span style="color: #b22222;"> * choosing NULLOUT </span><span style="color: #b22222;">*/</span>
+<span style="color: #a020f0;">static</span> <span style="color: #228b22;">FILE</span> * <span style="color: #0000ff;">current_fd</span>(<span style="color: #228b22;">void</span>)
+{
+        <span style="color: #a020f0;">if</span> (OUTPUT_STREAM == 2)
+                <span style="color: #a020f0;">return</span> stderr;
+        <span style="color: #a020f0;">else</span> <span style="color: #a020f0;">if</span> (OUTPUT_STREAM == 1)
+                <span style="color: #a020f0;">return</span> stdout;
+        <span style="color: #a020f0;">else</span>
+                <span style="color: #a020f0;">return</span> <span style="color: #008b8b;">NULL</span>;
+}
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgheadline38" class="outline-4">
-<h4 id="orgheadline38"><span class="section-number-4">3.5.3</span> Return Stack Entry Format</h4>
+<div id="outline-container-orgheadline39" class="outline-4">
+<h4 id="orgheadline39"><span class="section-number-4">3.5.3</span> Return Stack Entry Format</h4>
 <div class="outline-text-4" id="text-3-5-3">
 <p>
 The return stack, which holds the links of the dynamic chain, has entries in the following
@@ -1153,8 +1189,8 @@ current quotation.  This is done with the <code>current_call</code> field.
 </div>
 </div>
 
-<div id="outline-container-orgheadline39" class="outline-4">
-<h4 id="orgheadline39"><span class="section-number-4">3.5.4</span> Word Lookup: Dictionary support</h4>
+<div id="outline-container-orgheadline40" class="outline-4">
+<h4 id="orgheadline40"><span class="section-number-4">3.5.4</span> Word Lookup: Dictionary support</h4>
 <div class="outline-text-4" id="text-3-5-4">
 <p>
 There is built-in support for work lookup in the dictionary (see TODO: link to dictionary
@@ -1202,8 +1238,8 @@ execution address:
 </div>
 </div>
 
-<div id="outline-container-orgheadline40" class="outline-4">
-<h4 id="orgheadline40"><span class="section-number-4">3.5.5</span> Parsing Numbers</h4>
+<div id="outline-container-orgheadline41" class="outline-4">
+<h4 id="orgheadline41"><span class="section-number-4">3.5.5</span> Parsing Numbers</h4>
 <div class="outline-text-4" id="text-3-5-5">
 <p>
 Whenever a piece of input is unknown, it is tried to parse as a number before giving up.
@@ -1228,8 +1264,8 @@ function.
 </div>
 </div>
 
-<div id="outline-container-orgheadline41" class="outline-4">
-<h4 id="orgheadline41"><span class="section-number-4">3.5.6</span> Debug output</h4>
+<div id="outline-container-orgheadline42" class="outline-4">
+<h4 id="orgheadline42"><span class="section-number-4">3.5.6</span> Debug output</h4>
 <div class="outline-text-4" id="text-3-5-6">
 <p>
 For the <code>st</code> primitive and in case of errors, the stack contents are sometimes printed to
@@ -1276,8 +1312,8 @@ For the <code>st</code> primitive and in case of errors, the stack contents are 
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline50" class="outline-3">
-<h3 id="orgheadline50"><span class="section-number-3">3.6</span> Used Subroutines (defined as Macros)</h3>
+<div id="outline-container-orgheadline51" class="outline-3">
+<h3 id="orgheadline51"><span class="section-number-3">3.6</span> Used Subroutines (defined as Macros)</h3>
 <div class="outline-text-3" id="text-3-6">
 <p>
 There are several subroutines that are repeatedly used in <code>interpreter()</code>, which operate
@@ -1285,8 +1321,8 @@ on the static data that is only defined there.  Because of that, they are implem
 preprocessor macros.
 </p>
 </div>
-<div id="outline-container-orgheadline43" class="outline-4">
-<h4 id="orgheadline43"><span class="section-number-4">3.6.1</span> Backtrace printing</h4>
+<div id="outline-container-orgheadline44" class="outline-4">
+<h4 id="orgheadline44"><span class="section-number-4">3.6.1</span> Backtrace printing</h4>
 <div class="outline-text-4" id="text-3-6-1">
 <div class="org-src-container">
 
@@ -1302,8 +1338,8 @@ preprocessor macros.
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline44" class="outline-4">
-<h4 id="orgheadline44"><span class="section-number-4">3.6.2</span> Errors during primitive execution</h4>
+<div id="outline-container-orgheadline45" class="outline-4">
+<h4 id="orgheadline45"><span class="section-number-4">3.6.2</span> Errors during primitive execution</h4>
 <div class="outline-text-4" id="text-3-6-2">
 <p>
 Whenever something unrecoverable handles, this is called.  Currently just returns the
@@ -1317,8 +1353,8 @@ error code from <code>interpreter()</code>.
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline45" class="outline-4">
-<h4 id="orgheadline45"><span class="section-number-4">3.6.3</span> Stack Operation Assertion</h4>
+<div id="outline-container-orgheadline46" class="outline-4">
+<h4 id="orgheadline46"><span class="section-number-4">3.6.3</span> Stack Operation Assertion</h4>
 <div class="outline-text-4" id="text-3-6-3">
 <p>
 These macros are used when popping and pushing elements on stacks, and check if the stack
@@ -1332,8 +1368,8 @@ is empty or full.
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline49" class="outline-4">
-<h4 id="orgheadline49"><span class="section-number-4">3.6.4</span> Stack operations</h4>
+<div id="outline-container-orgheadline50" class="outline-4">
+<h4 id="orgheadline50"><span class="section-number-4">3.6.4</span> Stack operations</h4>
 <div class="outline-text-4" id="text-3-6-4">
 <p>
 These macros are the basic internal stack manupulation functions.  All stacks are assumed
@@ -1352,7 +1388,7 @@ Peeking into the stack (as opposed to removing a value), currently only used for
 </div>
 
 <p>
-Basic push and pop operations.  The underscores are for avoiding name clashes.
+Basic push and pop operations.
 </p>
 <div class="org-src-container">
 
@@ -1369,8 +1405,8 @@ push functions push (safely) a value onto the respective stack.  The pop functio
 value from the respective stack.
 </p>
 </div>
-<div id="outline-container-orgheadline46" class="outline-5">
-<h5 id="orgheadline46"><span class="section-number-5">3.6.4.1</span> Data Stack (Parameter Stack)</h5>
+<div id="outline-container-orgheadline47" class="outline-5">
+<h5 id="orgheadline47"><span class="section-number-5">3.6.4.1</span> Data Stack (Parameter Stack)</h5>
 <div class="outline-text-5" id="text-3-6-4-1">
 <div class="org-src-container">
 
@@ -1380,8 +1416,8 @@ value from the respective stack.
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline47" class="outline-5">
-<h5 id="orgheadline47"><span class="section-number-5">3.6.4.2</span> Return Stack</h5>
+<div id="outline-container-orgheadline48" class="outline-5">
+<h5 id="orgheadline48"><span class="section-number-5">3.6.4.2</span> Return Stack</h5>
 <div class="outline-text-5" id="text-3-6-4-2">
 <div class="org-src-container">
 
@@ -1391,8 +1427,8 @@ value from the respective stack.
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline48" class="outline-5">
-<h5 id="orgheadline48"><span class="section-number-5">3.6.4.3</span> Retain Stack</h5>
+<div id="outline-container-orgheadline49" class="outline-5">
+<h5 id="orgheadline49"><span class="section-number-5">3.6.4.3</span> Retain Stack</h5>
 <div class="outline-text-5" id="text-3-6-4-3">
 <div class="org-src-container">
 
@@ -1404,8 +1440,8 @@ value from the respective stack.
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline65" class="outline-3">
-<h3 id="orgheadline65"><span class="section-number-3">3.7</span> Main Interpreter function <code>interpreter()</code></h3>
+<div id="outline-container-orgheadline72" class="outline-3">
+<h3 id="orgheadline72"><span class="section-number-3">3.7</span> Main Interpreter function <code>interpreter()</code></h3>
 <div class="outline-text-3" id="text-3-7">
 <p>
 Basic Flowchart
@@ -1453,17 +1489,17 @@ The <code>interpreter()</code> functions is structured as follows:
 </div>
 
 <p>
-The labels after the switch statement are common exit points of several primitives.
+The labels after the switch statement are common excution paths of several primitives.
 </p>
 </div>
 
-<div id="outline-container-orgheadline56" class="outline-4">
-<h4 id="orgheadline56"><span class="section-number-4">3.7.1</span> Internal State Definition</h4>
+<div id="outline-container-orgheadline57" class="outline-4">
+<h4 id="orgheadline57"><span class="section-number-4">3.7.1</span> Internal State Definition</h4>
 <div class="outline-text-4" id="text-3-7-1">
 </div>
 
-<div id="outline-container-orgheadline51" class="outline-5">
-<h5 id="orgheadline51"><span class="section-number-5">3.7.1.1</span> Stacks</h5>
+<div id="outline-container-orgheadline52" class="outline-5">
+<h5 id="orgheadline52"><span class="section-number-5">3.7.1.1</span> Stacks</h5>
 <div class="outline-text-5" id="text-3-7-1-1">
 <ul class="org-ul">
 <li>data stack (or parameter stack) and pointer</li>
@@ -1498,8 +1534,8 @@ memory usage of the VM.
 </p>
 </div>
 </div>
-<div id="outline-container-orgheadline52" class="outline-5">
-<h5 id="orgheadline52"><span class="section-number-5">3.7.1.2</span> Program counter</h5>
+<div id="outline-container-orgheadline53" class="outline-5">
+<h5 id="orgheadline53"><span class="section-number-5">3.7.1.2</span> Program counter</h5>
 <div class="outline-text-5" id="text-3-7-1-2">
 <p>
 This is the most basic state for any program interpreting machine.  It holds the address
@@ -1520,11 +1556,11 @@ variable (see <a href="#orgheadline5">1.2</a>) into an address.
 </div>
 </div>
 
-<div id="outline-container-orgheadline53" class="outline-5">
-<h5 id="orgheadline53"><span class="section-number-5">3.7.1.3</span> Tail Call Optimization</h5>
+<div id="outline-container-orgheadline54" class="outline-5">
+<h5 id="orgheadline54"><span class="section-number-5">3.7.1.3</span> Tail Call Optimization<a id="orgtarget5"></a></h5>
 <div class="outline-text-5" id="text-3-7-1-3">
 <p>
-The MFactor implementation relise on (explicit) <a href="https://en.wikipedia.org/wiki/Tail_call">tail call elimination</a>.  Because of the
+The MFactor implementation relies on (explicit) <a href="https://en.wikipedia.org/wiki/Tail_call">tail call elimination</a>.  Because of the
 nature of the language, the compiler can detect all cases of tail calls easily and
 replaces the <code>call</code> instructions with their <code>tcall</code> equivalents:
 </p>
@@ -1550,8 +1586,8 @@ tailcall = <span style="color: #008b8b;">true</span>;  <span style="color: #b222
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline54" class="outline-5">
-<h5 id="orgheadline54"><span class="section-number-5">3.7.1.4</span> Helper "Register"</h5>
+<div id="outline-container-orgheadline55" class="outline-5">
+<h5 id="orgheadline55"><span class="section-number-5">3.7.1.4</span> Helper "Register"</h5>
 <div class="outline-text-5" id="text-3-7-1-4">
 <p>
 To help manage jumping through the code, a variable <code>x</code> is defined here and used in
@@ -1565,8 +1601,8 @@ intruction cases.
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline55" class="outline-5">
-<h5 id="orgheadline55"><span class="section-number-5">3.7.1.5</span> Debug Mode</h5>
+<div id="outline-container-orgheadline56" class="outline-5">
+<h5 id="orgheadline56"><span class="section-number-5">3.7.1.5</span> Debug Mode</h5>
 <div class="outline-text-5" id="text-3-7-1-5">
 <p>
 To debug internals, this <code>debug_mode</code> state can be set (also via an isntruction, TODO:
@@ -1589,16 +1625,16 @@ debug_mode=<span style="color: #008b8b;">true</span>;
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline59" class="outline-4">
-<h4 id="orgheadline59"><span class="section-number-4">3.7.2</span> State initialization</h4>
+<div id="outline-container-orgheadline60" class="outline-4">
+<h4 id="orgheadline60"><span class="section-number-4">3.7.2</span> State initialization</h4>
 <div class="outline-text-4" id="text-3-7-2">
 <p>
 The initial of the vm: Program counter points to the starting word, data and retain stack
 empty, return stack contains a default frame.
 </p>
 </div>
-<div id="outline-container-orgheadline57" class="outline-5">
-<h5 id="orgheadline57"><span class="section-number-5">3.7.2.1</span> Output File Descriptor</h5>
+<div id="outline-container-orgheadline58" class="outline-5">
+<h5 id="orgheadline58"><span class="section-number-5">3.7.2.1</span> Output File Descriptor</h5>
 <div class="outline-text-5" id="text-3-7-2-1">
 <p>
 The value passed to all libc stdio commands used during primitive instruction execution.
@@ -1611,11 +1647,11 @@ The value passed to all libc stdio commands used during primitive instruction ex
 </div>
 </div>
 
-<div id="outline-container-orgheadline58" class="outline-5">
-<h5 id="orgheadline58"><span class="section-number-5">3.7.2.2</span> Special Variable Initalization</h5>
+<div id="outline-container-orgheadline59" class="outline-5">
+<h5 id="orgheadline59"><span class="section-number-5">3.7.2.2</span> Special Variable Initalization</h5>
 <div class="outline-text-5" id="text-3-7-2-2">
 <p>
-See <a href="#orgtarget3">3.4</a>.
+See <a href="#orgtarget4">3.3.2</a>.
 </p>
 <div class="org-src-container">
 
@@ -1626,34 +1662,48 @@ See <a href="#orgtarget3">3.4</a>.
 </div>
 </div>
 
-<div id="outline-container-orgheadline64" class="outline-4">
-<h4 id="orgheadline64"><span class="section-number-4">3.7.3</span> Primitive Instructions</h4>
+<div id="outline-container-orgheadline71" class="outline-4">
+<h4 id="orgheadline71"><span class="section-number-4">3.7.3</span> Primitive Instructions</h4>
 <div class="outline-text-4" id="text-3-7-3">
 <p>
-All the primitives, that defined words consist of, are described here.
+All the primitives, that defined words consist of, are described here.  Some of them are
+prepended with underscores to avoid name clashes with existing c functionality.
 </p>
 </div>
 
-<div id="outline-container-orgheadline60" class="outline-5">
-<h5 id="orgheadline60"><span class="section-number-5">3.7.3.1</span> Basic stack manipulation</h5>
+<div id="outline-container-orgheadline61" class="outline-5">
+<h5 id="orgheadline61"><span class="section-number-5">3.7.3.1</span> Basic stack manipulation</h5>
 <div class="outline-text-5" id="text-3-7-3-1">
 <dl class="org-dl">
-<dt><code>drop</code></dt><dd>remove value on top of parameter stack</dd>
+<dt><code>drop</code></dt><dd>remove value on top of data stack</dd>
 <dt><code>dup</code></dt><dd>(internally named _dup to avoid name conflits) duplicate the item on top of
-stack</dd>
+data stack</dd>
+<dt><code>swap</code></dt><dd>swap two top values on data stack</dd>
+<dt><code>to_r</code></dt><dd>move top of data stack to retain stack</dd>
+<dt><code>r_from</code></dt><dd>move top of retain stack to data stack</dd>
+<dt><code>clear</code></dt><dd>clear contents of data stack</dd>
 </dl>
 
 <div class="org-src-container">
 
 <pre class="src src-C"><span style="color: #a020f0;">case</span> drop: ppop();
 <span style="color: #a020f0;">case</span> _dup: ppush(peek_n(psp,1));
+<span style="color: #a020f0;">case</span> swap: {
+   x=ppop();
+   <span style="color: #228b22;">cell</span> <span style="color: #a0522d;">y</span> = ppop();
+   ppush(x);
+   ppush(y);
+} <span style="color: #a020f0;">break</span>;
+<span style="color: #a020f0;">case</span> to_r: retainpush(ppop()); <span style="color: #a020f0;">break</span>;
+<span style="color: #a020f0;">case</span> r_from: ppush(retainpop()); <span style="color: #a020f0;">break</span>;
+<span style="color: #a020f0;">case</span> clear: psp = &amp;pstack[0]; <span style="color: #a020f0;">break</span>;
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgheadline61" class="outline-5">
-<h5 id="orgheadline61"><span class="section-number-5">3.7.3.2</span> Arithmetic instructions</h5>
+<div id="outline-container-orgheadline62" class="outline-5">
+<h5 id="orgheadline62"><span class="section-number-5">3.7.3.2</span> Arithmetic Instructions</h5>
 <div class="outline-text-5" id="text-3-7-3-2">
 <p>
 All arithmetic instructions either manipulate the value on top of the stack, or replace
@@ -1694,13 +1744,14 @@ The instructions themselves:
 <span style="color: #a020f0;">case</span> bitnot: UNOP(~); <span style="color: #a020f0;">break</span>;
 <span style="color: #a020f0;">case</span> gt: BINOP(&gt;); <span style="color: #a020f0;">break</span>;
 <span style="color: #a020f0;">case</span> lt: BINOP(&lt;); <span style="color: #a020f0;">break</span>;
+<span style="color: #a020f0;">case</span> eql: BINOP(==); <span style="color: #a020f0;">break</span>;
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgheadline62" class="outline-5">
-<h5 id="orgheadline62"><span class="section-number-5">3.7.3.3</span> Constants</h5>
+<div id="outline-container-orgheadline63" class="outline-5">
+<h5 id="orgheadline63"><span class="section-number-5">3.7.3.3</span> Constants</h5>
 <div class="outline-text-5" id="text-3-7-3-3">
 <p>
 These push constants onto the stack.  These save space compared to pushing a literal onto
@@ -1715,8 +1766,8 @@ the stack, which takes two bytes instead of one.
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline63" class="outline-5">
-<h5 id="orgheadline63"><span class="section-number-5">3.7.3.4</span> Informational Instructions</h5>
+<div id="outline-container-orgheadline64" class="outline-5">
+<h5 id="orgheadline64"><span class="section-number-5">3.7.3.4</span> Access to Internal Constants</h5>
 <div class="outline-text-5" id="text-3-7-3-4">
 <p>
 These provide information about some internals to the application:
@@ -1742,15 +1793,489 @@ dictionary.
 </div>
 </div>
 </div>
+<div id="outline-container-orgheadline65" class="outline-5">
+<h5 id="orgheadline65"><span class="section-number-5">3.7.3.5</span> Access to Internal State</h5>
+<div class="outline-text-5" id="text-3-7-3-5">
+<p>
+These primitives expose internal state to the application.
+</p>
+
+<p>
+Access to the stack pointers is needed for saving and storing state, and is mainly
+provided to be able to implement exception handling, which needs to store the values of
+these pointers(on the retain stack) for later recovery.
+</p>
+
+<p>
+The number of the desired stack pointer is taken from top of stack.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-C"><span style="color: #a020f0;">case</span> get_sp:
+   <span style="color: #a020f0;">switch</span> (ppop()) {
+      <span style="color: #a020f0;">case</span> 0 : ppush((<span style="color: #228b22;">cell</span>)psp); <span style="color: #a020f0;">break</span>;
+      <span style="color: #a020f0;">case</span> 1 : ppush((<span style="color: #228b22;">cell</span>)retainsp); <span style="color: #a020f0;">break</span>;
+      <span style="color: #a020f0;">case</span> 2 : ppush((<span style="color: #228b22;">cell</span>)returnsp); <span style="color: #a020f0;">break</span>;
+      <span style="color: #a020f0;">default</span>: ppush((<span style="color: #228b22;">cell</span>)0); <span style="color: #a020f0;">break</span>;
+   } <span style="color: #a020f0;">break</span>;
+<span style="color: #a020f0;">case</span> set_sp:
+   {
+      <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span> <span style="color: #a0522d;">n</span> = (<span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span>)ppop();
+      <span style="color: #228b22;">cell</span>* <span style="color: #a0522d;">newsp</span> = (<span style="color: #228b22;">cell</span>*)ppop();
+      <span style="color: #a020f0;">switch</span> (n) {
+         <span style="color: #a020f0;">case</span> 0 : psp = newsp; <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">case</span> 1 : retainsp = newsp; <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">case</span> 2 : returnsp = (<span style="color: #228b22;">return_entry</span> *)newsp; <span style="color: #a020f0;">break</span>;
+      }
+   } <span style="color: #a020f0;">break</span>;
+</pre>
+</div>
+
+<p>
+Access to the special variables is provided to control or query several aspects of
+interpreter state, see <a href="#orgheadline34">3.3</a> for details.  Number of special variable is taken
+from top of stack.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-C"><span style="color: #a020f0;">case</span> get_special:
+   {
+      <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span> <span style="color: #a0522d;">i</span> = (<span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span>)ppop();
+      <span style="color: #a020f0;">if</span> (i &lt; NumSpecials)
+         ppush(special_vars[i]);
+      <span style="color: #a020f0;">else</span> {
+         printf(<span style="color: #8b2252;">"illegal specials index: %d\n"</span>, i);
+         handle_error(INTERNAL_ERROR_UNKNOWN_SPECIAL);
+      }
+   } <span style="color: #a020f0;">break</span>;
+<span style="color: #a020f0;">case</span> set_special:
+   {
+      <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span> <span style="color: #a0522d;">i</span> = (<span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span>)ppop();
+      <span style="color: #a020f0;">if</span> (i &lt; NumSpecials)
+         special_vars[i] = ppop();
+      <span style="color: #a020f0;">else</span> {
+         printf(<span style="color: #8b2252;">"illegal specials index: %d\n"</span>, i);
+         handle_error(INTERNAL_ERROR_UNKNOWN_SPECIAL);
+      }
+   } <span style="color: #a020f0;">break</span>;
+</pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgheadline68" class="outline-2">
-<h2 id="orgheadline68"><span class="section-number-2">4</span> Appendix: Complete Sources</h2>
+<div id="outline-container-orgheadline66" class="outline-5">
+<h5 id="orgheadline66"><span class="section-number-5">3.7.3.6</span> Literal Instructions<a id="orgtarget7"></a></h5>
+<div class="outline-text-5" id="text-3-7-3-6">
+<p>
+Literal instructions all push a value that is defined immediately after the instruction in
+the instruction stream, and push it onto the data stack. If the current program counter
+points to this:
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-right" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">litb</td>
+<td class="org-right">0x04</td>
+<td class="org-left">inst<sub>1</sub></td>
+<td class="org-left">inst<sub>2</sub></td>
+<td class="org-left">&#x2026;</td>
+</tr>
+</tbody>
+</table>
+<p>
+it will point to this after execution:
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">inst<sub>1</sub></td>
+<td class="org-left">inst<sub>2</sub></td>
+<td class="org-left">&#x2026;</td>
+</tr>
+</tbody>
+</table>
+<p>
+Because the literal byte is a "argument" to the litb instruction.
+The different literal instructions ahve different width arguments.
+</p>
+<ul class="org-ul">
+<li><code>litb</code> pushes a byte-sized number</li>
+<li><code>liti</code> pushes a cell-sized number</li>
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-C"><span style="color: #a020f0;">case</span> litb:              <span style="color: #b22222;">/* </span><span style="color: #b22222;">byte literal </span><span style="color: #b22222;">*/</span>
+  x=(cell)(*(pc++));
+  ppush(x);
+  <span style="color: #a020f0;">break</span>;
+<span style="color: #a020f0;">case</span> liti:               <span style="color: #b22222;">/* </span><span style="color: #b22222;">cell-wide literal </span><span style="color: #b22222;">*/</span>
+  x=*((<span style="color: #228b22;">cell</span> *)pc);
+  ppush(x);
+  pc+=<span style="color: #a020f0;">sizeof</span>(cell);
+  <span style="color: #a020f0;">break</span>;
+</pre>
+</div>
+
+<p>
+<code>litc</code> is meant for complex (non-scalar) literals like sequences.  It expects its
+argument to be in the format described in <a href="src/seq_headers.h">src/seq_headers.h</a>.  The only really
+important thing about that format here is that the second byte specifies the length.
+After execution of <code>litc</code>, the address of that length-defining byte is left on the stack,
+and the pc is adjustet to correctly skip all the inline data.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-C"><span style="color: #a020f0;">case</span> litc: {              <span style="color: #b22222;">/* </span><span style="color: #b22222;">complex inline literal </span><span style="color: #b22222;">*/</span>
+  <span style="color: #b22222;">/* </span><span style="color: #b22222;">pc is already at the next item -&gt; header byte </span><span style="color: #b22222;">*/</span>
+  <span style="color: #228b22;">seq_header</span> <span style="color: #a0522d;">h</span> = (<span style="color: #228b22;">seq_header</span>)(*pc);
+  ppush((<span style="color: #228b22;">cell</span>)pc+1);    <span style="color: #b22222;">/* </span><span style="color: #b22222;">leave address of count byte on stack </span><span style="color: #b22222;">*/</span>
+  pc += 2 + fe_seq_size(h,pc+1);
+  } <span style="color: #a020f0;">break</span>;
+</pre>
+</div>
+
+<p>
+<code>oplit</code> is like <code>litb</code>, and is intended for pushing an instruction on the stack literally,
+instead of executing it.  It is needed by the interactive bytecode-compiler to put
+instructions onto the stack.  It does however an additional transformation:  since
+primitives on the stack are no different from addresses in regard to being <code>call</code>'ed,
+the way to distinguish between a primitive to execute and an address to jump to is, that
+primitives are represented as addresses that would be invalid otherwise.  That is also the
+reason for different values of <code>INSTBASE</code> (see <a href="#orgtarget2">3.2.2</a>).
+</p>
+
+<p>
+In essence:
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-right" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">oplit</td>
+<td class="org-right">0xa4</td>
+</tr>
+</tbody>
+</table>
+<p>
+pushes <code>0xa4000000</code> onto the stack.  Since this would be an invalid memory address on the
+chosen architecture (checked during <code>scall</code> and <code>stcall</code> in <a href="#orgtarget6">3.7.3.8</a>), it
+is later known to be a primitive, not the location of a quotation when called.
+</p>
+</div>
+</div>
+<div id="outline-container-orgheadline67" class="outline-5">
+<h5 id="orgheadline67"><span class="section-number-5">3.7.3.7</span> IO Primitives</h5>
+<div class="outline-text-5" id="text-3-7-3-7">
+<p>
+Several primitives make calls to libc's stdio functionality.  All output is directed to
+<code>Ostream</code> (see [[output-handling]).
+</p>
+<dl class="org-dl">
+<dt><code>emit</code></dt><dd>output top of stack as <code>char</code></dd>
+<dt><code>receive</code></dt><dd>read(blocking) one character from stdin</dd>
+<dt><code>pwrite</code></dt><dd>"pretty-write", outputs top of stack with printf as decimal</dd>
+<dt><code>pwritex</code></dt><dd>"pretty-write-hex", outputs top of stack with printf as hex and <code>0x</code> prefix</dd>
+<dt><code>writex</code></dt><dd>"write-hex", outputs top of stack with printf as hex</dd>
+</dl>
+
+<p>
+The output functions all check <code>current_fd()</code> (see <a href="#orgtarget3">3.5.2</a>).  If it is NULL, the
+element not to be output at all and simply dropped.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-C"><span style="color: #a020f0;">case</span> emit:
+   <span style="color: #a020f0;">if</span> (current_fd() != <span style="color: #008b8b;">NULL</span>) {
+      fputc(ppop(),current_fd());
+      fflush(stdout);                 <span style="color: #b22222;">/* </span><span style="color: #b22222;">TODO remove when flushing is delegated to</span>
+<span style="color: #b22222;">                                       * higher level calls </span><span style="color: #b22222;">*/</span>
+   } <span style="color: #a020f0;">else</span>
+      (<span style="color: #228b22;">void</span>) ppop();
+   <span style="color: #a020f0;">break</span>;
+<span style="color: #a020f0;">case</span> receive:
+   ppush(read_char()); <span style="color: #a020f0;">break</span>;
+<span style="color: #a020f0;">case</span> _pwrite:
+   <span style="color: #a020f0;">if</span> (current_fd() != <span style="color: #008b8b;">NULL</span>)
+      fprintf(current_fd(), <span style="color: #8b2252;">"%ld"</span>, ppop());
+   <span style="color: #a020f0;">else</span>
+      (<span style="color: #228b22;">void</span>) ppop();
+   <span style="color: #a020f0;">break</span>;
+<span style="color: #a020f0;">case</span> pwritex:
+   <span style="color: #a020f0;">if</span> (current_fd() != <span style="color: #008b8b;">NULL</span>)
+      fprintf(current_fd(), <span style="color: #8b2252;">"%#lx"</span>, ppop());
+   <span style="color: #a020f0;">else</span>
+      (<span style="color: #228b22;">void</span>) ppop();
+   <span style="color: #a020f0;">break</span>;
+<span style="color: #a020f0;">case</span> writex:
+   <span style="color: #a020f0;">if</span> (current_fd() != <span style="color: #008b8b;">NULL</span>)
+      fprintf(current_fd(), <span style="color: #8b2252;">"%lx"</span>, ppop());
+   <span style="color: #a020f0;">else</span>
+      (<span style="color: #228b22;">void</span>) ppop();
+   <span style="color: #a020f0;">break</span>;
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgheadline68" class="outline-5">
+<h5 id="orgheadline68"><span class="section-number-5">3.7.3.8</span> Call/Return Instructions<a id="orgtarget6"></a></h5>
+<div class="outline-text-5" id="text-3-7-3-8">
+<p>
+These instructions implement control flow, and make use of the return stack.  The
+difference between the call instructions is how they get their target address, how wide
+that address is and wether or not they execute a jump (<a href="#orgtarget5">3.7.1.3</a>).
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">primitive</th>
+<th scope="col" class="org-left">where to get address</th>
+<th scope="col" class="org-left">type of address</th>
+<th scope="col" class="org-left">tail-call</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">bcall</td>
+<td class="org-left">instruction stream</td>
+<td class="org-left">short (16 bit) relative</td>
+<td class="org-left">no</td>
+</tr>
+
+<tr>
+<td class="org-left">btcall</td>
+<td class="org-left">instruction stream</td>
+<td class="org-left">short (16 bit) relative</td>
+<td class="org-left">yes</td>
+</tr>
+
+<tr>
+<td class="org-left">acall</td>
+<td class="org-left">instruction stream</td>
+<td class="org-left">full size absolute</td>
+<td class="org-left">no</td>
+</tr>
+
+<tr>
+<td class="org-left">scall</td>
+<td class="org-left">top of stack</td>
+<td class="org-left">full size absolute</td>
+<td class="org-left">no</td>
+</tr>
+
+<tr>
+<td class="org-left">stcall</td>
+<td class="org-left">top of stack</td>
+<td class="org-left">full size absolute</td>
+<td class="org-left">yes</td>
+</tr>
+</tbody>
+</table>
+
+<div class="org-src-container">
+
+<pre class="src src-C"><span style="color: #a020f0;">switch</span>() {
+   <span style="color: #a020f0;">case</span> bcall: {  <span style="color: #b22222;">/* </span><span style="color: #b22222;">base-relative call </span><span style="color: #b22222;">*/</span>
+  <span style="color: #008b8b;">_bcall</span>:
+      x = (cell)(BASE + *((<span style="color: #228b22;">short_jump_target</span> *)pc));  <span style="color: #b22222;">/* </span><span style="color: #b22222;">set the target </span><span style="color: #b22222;">*/</span>
+      pc += <span style="color: #a020f0;">sizeof</span>(short_jump_target);
+      <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">nested_call</span>;
+   } <span style="color: #a020f0;">break</span>;
+   <span style="color: #a020f0;">case</span> btcall:   <span style="color: #b22222;">/* </span><span style="color: #b22222;">base-relative tail-call, effectively a goto </span><span style="color: #b22222;">*/</span>
+      <span style="color: #a020f0;">if</span> (!tailcall) <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">_bcall</span>;
+      x = (cell)(BASE + *((<span style="color: #228b22;">short_jump_target</span> *)pc));  <span style="color: #b22222;">/* </span><span style="color: #b22222;">set the target </span><span style="color: #b22222;">*/</span>
+      <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">tail_call</span>;
+      <span style="color: #a020f0;">break</span>;
+   <span style="color: #a020f0;">case</span> acall: {  <span style="color: #b22222;">/* </span><span style="color: #b22222;">absolute call </span><span style="color: #b22222;">*/</span>
+      x = (cell) *((<span style="color: #228b22;">jump_target</span> *)pc);  <span style="color: #b22222;">/* </span><span style="color: #b22222;">set the target </span><span style="color: #b22222;">*/</span>
+      pc += <span style="color: #a020f0;">sizeof</span>(jump_target);
+      <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">nested_call</span>;
+   } <span style="color: #a020f0;">break</span>;
+   <span style="color: #a020f0;">case</span> scall:
+   <span style="color: #008b8b;">_scall</span>:
+      <span style="color: #b22222;">/* </span><span style="color: #b22222;">check if call target is primitive, if yes, substitute execution (tail call), since call only</span>
+<span style="color: #b22222;">         applies to quotations </span><span style="color: #b22222;">*/</span>
+      x = ppop();  <span style="color: #b22222;">/* </span><span style="color: #b22222;">set the target </span><span style="color: #b22222;">*/</span>
+      <span style="color: #a020f0;">if</span> (x &gt;= INSTBASE_CELL) {
+         i = (x &gt;&gt; (8 * (<span style="color: #a020f0;">sizeof</span>(<span style="color: #228b22;">inst</span> *) - <span style="color: #a020f0;">sizeof</span>(inst))));
+         <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">dispatch</span>;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">calling a primitive "substitutes" the call with the primitive </span><span style="color: #b22222;">*/</span>
+      } <span style="color: #a020f0;">else</span> {
+         <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">nested_call</span>;
+      } <span style="color: #a020f0;">break</span>;
+   <span style="color: #a020f0;">case</span> stcall:
+      <span style="color: #a020f0;">if</span> (!tailcall) <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">_scall</span>;
+      x = ppop();  <span style="color: #b22222;">/* </span><span style="color: #b22222;">set the target </span><span style="color: #b22222;">*/</span>
+      <span style="color: #a020f0;">if</span> (x &gt;= INSTBASE_CELL) {
+         i=( x &gt;&gt; (8 * (<span style="color: #a020f0;">sizeof</span>(<span style="color: #228b22;">inst</span>*) - <span style="color: #a020f0;">sizeof</span>(inst))));
+         <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">dispatch</span>;      <span style="color: #b22222;">/* </span><span style="color: #b22222;">already a tail call </span><span style="color: #b22222;">*/</span>
+      } <span style="color: #a020f0;">else</span> {
+         <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">tail_call</span>;
+      } <span style="color: #a020f0;">break</span>;
+</pre>
+</div>
+
+<p>
+All the above jump outside of the switch statement, either to the <code>tailcall</code> or
+<code>nestedcall</code> label.  These common execution paths are described next.
+</p>
+
+<p>
+For normal nested calls, a stack frame is created that contains the return address and a
+reference to the word being called.  This second item is not needed for execution, but
+helps debugging since it always shows where the currently executed word was started.  If
+debug mode is on, increase the nesting counter <code>debug_nest</code>.
+</p>
+
+<p>
+Execution path <code>nested_call</code>:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-C">{
+   <span style="color: #228b22;">inst</span> *<span style="color: #a0522d;">next_word</span> = (<span style="color: #228b22;">inst</span> *) x;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">was set by the call instructions that jumped here </span><span style="color: #b22222;">*/</span>
+   <span style="color: #228b22;">return_entry</span> <span style="color: #a0522d;">e</span> = {.return_address = pc, .current_call=next_word};
+   returnpush(e);
+   <span style="color: #a020f0;">if</span> (debug_mode) {
+      <span style="color: #228b22;">char</span> * <span style="color: #a0522d;">name</span> = find_by_address(next_word);
+      debug_nest++;
+      printf(<span style="color: #8b2252;">"calling: %s -&gt; %d\n"</span>,name,debug_nest);
+   }
+   pc=next_word;
+}
+<span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">end_inst</span>;
+</pre>
+</div>
+
+<p>
+For tail calls, the current word execution is just substituted (equivalent to a simple <code>jmp</code>)
+</p>
+
+<p>
+Execution path <code>tail_call</code>:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-C">{
+   <span style="color: #228b22;">inst</span> *<span style="color: #a0522d;">next_word</span> = (<span style="color: #228b22;">inst</span> *) x;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">was set by the call instructions that jumped here </span><span style="color: #b22222;">*/</span>
+   <span style="color: #a020f0;">if</span> (debug_mode) {
+      <span style="color: #228b22;">char</span> * <span style="color: #a0522d;">name</span> = find_by_address(next_word);
+      printf(<span style="color: #8b2252;">"tail calling: %s -&gt; %d\n"</span>,name,debug_nest);
+   }
+   pc = next_word;
+}
+<span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">end_inst</span>;
+</pre>
+</div>
+
+<p>
+<code>qend</code>, "quotation end", is the return instruction.  It pops a frame of the return stack
+and sets the program counter to resume execution after the original call site.  Again, in
+case of debug mode being activated, record the nesting level change.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-C"><span style="color: #a020f0;">case</span> qend: {
+   <span style="color: #228b22;">return_entry</span> <span style="color: #a0522d;">e</span> = returnpop();
+   <span style="color: #a020f0;">if</span> (debug_mode) {
+      <span style="color: #a020f0;">if</span> (debug_nest &gt; 0) {
+         printf(<span style="color: #8b2252;">"&lt;- %d\n"</span>,debug_nest);
+         debug_nest--; }
+      <span style="color: #a020f0;">else</span> {
+         debug_mode=<span style="color: #008b8b;">false</span>; }
+   }
+   pc=e.return_address;
+} <span style="color: #a020f0;">break</span>;
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgheadline69" class="outline-5">
+<h5 id="orgheadline69"><span class="section-number-5">3.7.3.9</span> Conditional</h5>
+<div class="outline-text-5" id="text-3-7-3-9">
+<p>
+There is only one instruction for handling conditionals, which implements factor word <code>?</code>
+directly.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-factor"><span style="color: #a020f0;">:</span> <span style="color: #0000ff;">?</span> <span style="color: #b22222;">( ? true false -- true/false )</span>
+</pre>
+</div>
+
+<p>
+If the flag (on third position) is false, leave only the <code>true</code> value, otherwise leave the
+<code>false</code> value.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-C"><span style="color: #a020f0;">case</span> truefalse:
+   {
+      <span style="color: #228b22;">cell</span> <span style="color: #a0522d;">false_cons</span> = ppop();
+      <span style="color: #228b22;">cell</span> <span style="color: #a0522d;">true_cons</span> = ppop();
+      <span style="color: #228b22;">cell</span> <span style="color: #a0522d;">cond</span> = ppop();
+      ppush(cond ? true_cons : false_cons);
+   } <span style="color: #a020f0;">break</span>;
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgheadline70" class="outline-5">
+<h5 id="orgheadline70"><span class="section-number-5">3.7.3.10</span> <span class="todo TODO">TODO</span> search, lookup<sub>name</sub>, stack<sub>show</sub>, mem instructions, quit, error, timer</h5>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-orgheadline75" class="outline-2">
+<h2 id="orgheadline75"><span class="section-number-2">4</span> Appendix: Complete Sources</h2>
 <div class="outline-text-2" id="text-4">
-</div><div id="outline-container-orgheadline66" class="outline-3">
-<h3 id="orgheadline66"><span class="section-number-3">4.1</span> interpreter.h</h3>
+</div><div id="outline-container-orgheadline73" class="outline-3">
+<h3 id="orgheadline73"><span class="section-number-3">4.1</span> interpreter.h</h3>
 <div class="outline-text-3" id="text-4-1">
 <div class="org-src-container">
 
@@ -1818,8 +2343,8 @@ dictionary.
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline67" class="outline-3">
-<h3 id="orgheadline67"><span class="section-number-3">4.2</span> interpreter.c</h3>
+<div id="outline-container-orgheadline74" class="outline-3">
+<h3 id="orgheadline74"><span class="section-number-3">4.2</span> interpreter.c</h3>
 <div class="outline-text-3" id="text-4-2">
 <div class="org-src-container">
 
@@ -1867,14 +2392,27 @@ dictionary.
    BASE = (<span style="color: #228b22;">cell</span>)&amp;image; <span style="color: #b22222;">/* </span><span style="color: #b22222;">start of bytecode segment </span><span style="color: #b22222;">*/</span>
    OUTPUT_STREAM = STDOUT; <span style="color: #b22222;">/* </span><span style="color: #b22222;">output to standard output per default </span><span style="color: #b22222;">*/</span>
 }
-<span style="color: #a020f0;">static</span> <span style="color: #228b22;">FILE</span> * <span style="color: #a0522d;">Ostream</span>; <span style="color: #b22222;">/* </span><span style="color: #b22222;">used by reporting functions, so they can temporarily</span>
-<span style="color: #b22222;">                          print to different file descriptor </span><span style="color: #b22222;">*/</span>
+<span style="color: #b22222;">/* </span><span style="color: #b22222;">main memory to work with </span><span style="color: #b22222;">*/</span>
+<span style="color: #a020f0;">static</span> <span style="color: #228b22;">cell</span> <span style="color: #a0522d;">memory</span>[VM_MEM];
 <span style="color: #b22222;">/* </span><span style="color: #b22222;">check if current value of debug is greater or equal to val </span><span style="color: #b22222;">*/</span>
 <span style="color: #a020f0;">static</span> <span style="color: #228b22;">bool</span> <span style="color: #0000ff;">debug_lvl</span>(<span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">int</span> <span style="color: #a0522d;">val</span>) {
    <span style="color: #a020f0;">return</span> (DEBUG_LEVEL &gt;= val);
 }
-<span style="color: #b22222;">/* </span><span style="color: #b22222;">main memory to work with </span><span style="color: #b22222;">*/</span>
-<span style="color: #a020f0;">static</span> <span style="color: #228b22;">cell</span> <span style="color: #a0522d;">memory</span>[VM_MEM];
+<span style="color: #a020f0;">static</span> <span style="color: #228b22;">FILE</span> * <span style="color: #a0522d;">Ostream</span>; <span style="color: #b22222;">/* </span><span style="color: #b22222;">used by reporting functions, so they can temporarily</span>
+<span style="color: #b22222;">                          print to different file descriptor </span><span style="color: #b22222;">*/</span>
+
+
+<span style="color: #b22222;">/* </span><span style="color: #b22222;">get the current stdio FILE from the special variable, or NULL if unknown or muted by</span>
+<span style="color: #b22222;"> * choosing NULLOUT </span><span style="color: #b22222;">*/</span>
+<span style="color: #a020f0;">static</span> <span style="color: #228b22;">FILE</span> * <span style="color: #0000ff;">current_fd</span>(<span style="color: #228b22;">void</span>)
+{
+        <span style="color: #a020f0;">if</span> (OUTPUT_STREAM == 2)
+                <span style="color: #a020f0;">return</span> stderr;
+        <span style="color: #a020f0;">else</span> <span style="color: #a020f0;">if</span> (OUTPUT_STREAM == 1)
+                <span style="color: #a020f0;">return</span> stdout;
+        <span style="color: #a020f0;">else</span>
+                <span style="color: #a020f0;">return</span> <span style="color: #008b8b;">NULL</span>;
+}
 <span style="color: #a020f0;">typedef</span> <span style="color: #a020f0;">struct</span> <span style="color: #228b22;">return_entry</span> {
    <span style="color: #228b22;">inst</span> * <span style="color: #a0522d;">return_address</span>;
    <span style="color: #228b22;">inst</span> * <span style="color: #a0522d;">current_call</span>;
@@ -2003,6 +2541,15 @@ dictionary.
       <span style="color: #a020f0;">switch</span>(i) {
          <span style="color: #a020f0;">case</span> drop: ppop();
          <span style="color: #a020f0;">case</span> _dup: ppush(peek_n(psp,1));
+         <span style="color: #a020f0;">case</span> swap: {
+            x=ppop();
+            <span style="color: #228b22;">cell</span> <span style="color: #a0522d;">y</span> = ppop();
+            ppush(x);
+            ppush(y);
+         } <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">case</span> to_r: retainpush(ppop()); <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">case</span> r_from: ppush(retainpop()); <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">case</span> clear: psp = &amp;pstack[0]; <span style="color: #a020f0;">break</span>;
 <span style="color: #483d8b;">         #define</span> <span style="color: #0000ff;">UNOP</span>(<span style="color: #a0522d;">op</span>) {                              \
                x=(op ((<span style="color: #228b22;">intptr_t</span>) ppop()));               \
                ppush(x);                                 \
@@ -2026,6 +2573,7 @@ dictionary.
          <span style="color: #a020f0;">case</span> bitnot: UNOP(~); <span style="color: #a020f0;">break</span>;
          <span style="color: #a020f0;">case</span> gt: BINOP(&gt;); <span style="color: #a020f0;">break</span>;
          <span style="color: #a020f0;">case</span> lt: BINOP(&lt;); <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">case</span> eql: BINOP(==); <span style="color: #a020f0;">break</span>;
          <span style="color: #a020f0;">case</span> zero: ppush(0); <span style="color: #a020f0;">break</span>;
          <span style="color: #a020f0;">case</span> one: ppush(1); <span style="color: #a020f0;">break</span>;
          <span style="color: #a020f0;">case</span> two: ppush(2); <span style="color: #a020f0;">break</span>;
@@ -2035,15 +2583,169 @@ dictionary.
          <span style="color: #a020f0;">case</span> dictend: ppush((<span style="color: #228b22;">cell</span>)(dict+VM_DICT)); <span style="color: #a020f0;">break</span>;
          <span style="color: #a020f0;">case</span> cellsize: ppush((<span style="color: #228b22;">cell</span>)<span style="color: #a020f0;">sizeof</span>(cell)); <span style="color: #a020f0;">break</span>;
          <span style="color: #a020f0;">case</span> instbase: ppush((<span style="color: #228b22;">cell</span>)INSTBASE); <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">case</span> get_sp:
+            <span style="color: #a020f0;">switch</span> (ppop()) {
+               <span style="color: #a020f0;">case</span> 0 : ppush((<span style="color: #228b22;">cell</span>)psp); <span style="color: #a020f0;">break</span>;
+               <span style="color: #a020f0;">case</span> 1 : ppush((<span style="color: #228b22;">cell</span>)retainsp); <span style="color: #a020f0;">break</span>;
+               <span style="color: #a020f0;">case</span> 2 : ppush((<span style="color: #228b22;">cell</span>)returnsp); <span style="color: #a020f0;">break</span>;
+               <span style="color: #a020f0;">default</span>: ppush((<span style="color: #228b22;">cell</span>)0); <span style="color: #a020f0;">break</span>;
+            } <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">case</span> set_sp:
+            {
+               <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span> <span style="color: #a0522d;">n</span> = (<span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span>)ppop();
+               <span style="color: #228b22;">cell</span>* <span style="color: #a0522d;">newsp</span> = (<span style="color: #228b22;">cell</span>*)ppop();
+               <span style="color: #a020f0;">switch</span> (n) {
+                  <span style="color: #a020f0;">case</span> 0 : psp = newsp; <span style="color: #a020f0;">break</span>;
+                  <span style="color: #a020f0;">case</span> 1 : retainsp = newsp; <span style="color: #a020f0;">break</span>;
+                  <span style="color: #a020f0;">case</span> 2 : returnsp = (<span style="color: #228b22;">return_entry</span> *)newsp; <span style="color: #a020f0;">break</span>;
+               }
+            } <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">case</span> get_special:
+            {
+               <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span> <span style="color: #a0522d;">i</span> = (<span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span>)ppop();
+               <span style="color: #a020f0;">if</span> (i &lt; NumSpecials)
+                  ppush(special_vars[i]);
+               <span style="color: #a020f0;">else</span> {
+                  printf(<span style="color: #8b2252;">"illegal specials index: %d\n"</span>, i);
+                  handle_error(INTERNAL_ERROR_UNKNOWN_SPECIAL);
+               }
+            } <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">case</span> set_special:
+            {
+               <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span> <span style="color: #a0522d;">i</span> = (<span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">char</span>)ppop();
+               <span style="color: #a020f0;">if</span> (i &lt; NumSpecials)
+                  special_vars[i] = ppop();
+               <span style="color: #a020f0;">else</span> {
+                  printf(<span style="color: #8b2252;">"illegal specials index: %d\n"</span>, i);
+                  handle_error(INTERNAL_ERROR_UNKNOWN_SPECIAL);
+               }
+            } <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">case</span> litb:              <span style="color: #b22222;">/* </span><span style="color: #b22222;">byte literal </span><span style="color: #b22222;">*/</span>
+           x=(<span style="color: #228b22;">cell</span>)(*(pc++));
+           ppush(x);
+           <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">case</span> liti:               <span style="color: #b22222;">/* </span><span style="color: #b22222;">cell-wide literal </span><span style="color: #b22222;">*/</span>
+           x=*((<span style="color: #228b22;">cell</span> *)pc);
+           ppush(x);
+           pc+=<span style="color: #a020f0;">sizeof</span>(cell);
+           <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">case</span> litc: {              <span style="color: #b22222;">/* </span><span style="color: #b22222;">complex inline literal </span><span style="color: #b22222;">*/</span>
+           <span style="color: #b22222;">/* </span><span style="color: #b22222;">pc is already at the next item -&gt; header byte </span><span style="color: #b22222;">*/</span>
+           <span style="color: #228b22;">seq_header</span> <span style="color: #a0522d;">h</span> = (<span style="color: #228b22;">seq_header</span>)(*pc);
+           ppush((<span style="color: #228b22;">cell</span>)pc+1);    <span style="color: #b22222;">/* </span><span style="color: #b22222;">leave address of count byte on stack </span><span style="color: #b22222;">*/</span>
+           pc += 2 + fe_seq_size(h,pc+1);
+           } <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">case</span> emit:
+            <span style="color: #a020f0;">if</span> (current_fd() != <span style="color: #008b8b;">NULL</span>) {
+               fputc(ppop(),current_fd());
+               fflush(stdout);                 <span style="color: #b22222;">/* </span><span style="color: #b22222;">TODO remove when flushing is delegated to</span>
+<span style="color: #b22222;">                                                * higher level calls </span><span style="color: #b22222;">*/</span>
+            } <span style="color: #a020f0;">else</span>
+               (<span style="color: #228b22;">void</span>) ppop();
+            <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">case</span> receive:
+            ppush(read_char()); <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">case</span> _pwrite:
+            <span style="color: #a020f0;">if</span> (current_fd() != <span style="color: #008b8b;">NULL</span>)
+               fprintf(current_fd(), <span style="color: #8b2252;">"%ld"</span>, ppop());
+            <span style="color: #a020f0;">else</span>
+               (<span style="color: #228b22;">void</span>) ppop();
+            <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">case</span> pwritex:
+            <span style="color: #a020f0;">if</span> (current_fd() != <span style="color: #008b8b;">NULL</span>)
+               fprintf(current_fd(), <span style="color: #8b2252;">"%#lx"</span>, ppop());
+            <span style="color: #a020f0;">else</span>
+               (<span style="color: #228b22;">void</span>) ppop();
+            <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">case</span> writex:
+            <span style="color: #a020f0;">if</span> (current_fd() != <span style="color: #008b8b;">NULL</span>)
+               fprintf(current_fd(), <span style="color: #8b2252;">"%lx"</span>, ppop());
+            <span style="color: #a020f0;">else</span>
+               (<span style="color: #228b22;">void</span>) ppop();
+            <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">switch</span>() {
+            <span style="color: #a020f0;">case</span> bcall: {  <span style="color: #b22222;">/* </span><span style="color: #b22222;">base-relative call </span><span style="color: #b22222;">*/</span>
+           <span style="color: #008b8b;">_bcall</span>:
+               x = (<span style="color: #228b22;">cell</span>)(BASE + *((<span style="color: #228b22;">short_jump_target</span> *)pc));  <span style="color: #b22222;">/* </span><span style="color: #b22222;">set the target </span><span style="color: #b22222;">*/</span>
+               pc += <span style="color: #a020f0;">sizeof</span>(short_jump_target);
+               <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">nested_call</span>;
+            } <span style="color: #a020f0;">break</span>;
+            <span style="color: #a020f0;">case</span> btcall:   <span style="color: #b22222;">/* </span><span style="color: #b22222;">base-relative tail-call, effectively a goto </span><span style="color: #b22222;">*/</span>
+               <span style="color: #a020f0;">if</span> (!tailcall) <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">_bcall</span>;
+               x = (<span style="color: #228b22;">cell</span>)(BASE + *((<span style="color: #228b22;">short_jump_target</span> *)pc));  <span style="color: #b22222;">/* </span><span style="color: #b22222;">set the target </span><span style="color: #b22222;">*/</span>
+               <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">tail_call</span>;
+               <span style="color: #a020f0;">break</span>;
+            <span style="color: #a020f0;">case</span> acall: {  <span style="color: #b22222;">/* </span><span style="color: #b22222;">absolute call </span><span style="color: #b22222;">*/</span>
+               x = (<span style="color: #228b22;">cell</span>) *((<span style="color: #228b22;">jump_target</span> *)pc);  <span style="color: #b22222;">/* </span><span style="color: #b22222;">set the target </span><span style="color: #b22222;">*/</span>
+               pc += <span style="color: #a020f0;">sizeof</span>(jump_target);
+               <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">nested_call</span>;
+            } <span style="color: #a020f0;">break</span>;
+            <span style="color: #a020f0;">case</span> scall:
+            <span style="color: #008b8b;">_scall</span>:
+               <span style="color: #b22222;">/* </span><span style="color: #b22222;">check if call target is primitive, if yes, substitute execution (tail call), since call only</span>
+<span style="color: #b22222;">                  applies to quotations </span><span style="color: #b22222;">*/</span>
+               x = ppop();  <span style="color: #b22222;">/* </span><span style="color: #b22222;">set the target </span><span style="color: #b22222;">*/</span>
+               <span style="color: #a020f0;">if</span> (x &gt;= INSTBASE_CELL) {
+                  i = (x &gt;&gt; (8 * (<span style="color: #a020f0;">sizeof</span>(<span style="color: #228b22;">inst</span> *) - <span style="color: #a020f0;">sizeof</span>(inst))));
+                  <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">dispatch</span>;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">calling a primitive "substitutes" the call with the primitive </span><span style="color: #b22222;">*/</span>
+               } <span style="color: #a020f0;">else</span> {
+                  <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">nested_call</span>;
+               } <span style="color: #a020f0;">break</span>;
+            <span style="color: #a020f0;">case</span> stcall:
+               <span style="color: #a020f0;">if</span> (!tailcall) <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">_scall</span>;
+               x = ppop();  <span style="color: #b22222;">/* </span><span style="color: #b22222;">set the target </span><span style="color: #b22222;">*/</span>
+               <span style="color: #a020f0;">if</span> (x &gt;= INSTBASE_CELL) {
+                  i=( x &gt;&gt; (8 * (<span style="color: #a020f0;">sizeof</span>(<span style="color: #228b22;">inst</span>*) - <span style="color: #a020f0;">sizeof</span>(inst))));
+                  <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">dispatch</span>;      <span style="color: #b22222;">/* </span><span style="color: #b22222;">already a tail call </span><span style="color: #b22222;">*/</span>
+               } <span style="color: #a020f0;">else</span> {
+                  <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">tail_call</span>;
+               } <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">case</span> qend: {
+            <span style="color: #228b22;">return_entry</span> <span style="color: #a0522d;">e</span> = returnpop();
+            <span style="color: #a020f0;">if</span> (debug_mode) {
+               <span style="color: #a020f0;">if</span> (debug_nest &gt; 0) {
+                  printf(<span style="color: #8b2252;">"&lt;- %d\n"</span>,debug_nest);
+                  debug_nest--; }
+               <span style="color: #a020f0;">else</span> {
+                  debug_mode=<span style="color: #008b8b;">false</span>; }
+            }
+            pc=e.return_address;
+         } <span style="color: #a020f0;">break</span>;
+         <span style="color: #a020f0;">case</span> truefalse:
+            {
+               <span style="color: #228b22;">cell</span> <span style="color: #a0522d;">false_cons</span> = ppop();
+               <span style="color: #228b22;">cell</span> <span style="color: #a0522d;">true_cons</span> = ppop();
+               <span style="color: #228b22;">cell</span> <span style="color: #a0522d;">cond</span> = ppop();
+               ppush(cond ? true_cons : false_cons);
+            } <span style="color: #a020f0;">break</span>;
          <span style="color: #a020f0;">default</span>:
             printf(<span style="color: #8b2252;">"unimplemented instruction %#x\n"</span>,i);
             handle_error(INTERNAL_ERROR_INVALID_OPCODE);
       }
    <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">end_inst</span>;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">normal instructions skip the call execution paths </span><span style="color: #b22222;">*/</span>
    <span style="color: #008b8b;">nested_call</span>:  <span style="color: #b22222;">/* </span><span style="color: #b22222;">common execution path for non-tail calls </span><span style="color: #b22222;">*/</span>
-
+      {
+         <span style="color: #228b22;">inst</span> *<span style="color: #a0522d;">next_word</span> = (<span style="color: #228b22;">inst</span> *) x;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">was set by the call instructions that jumped here </span><span style="color: #b22222;">*/</span>
+         <span style="color: #228b22;">return_entry</span> <span style="color: #a0522d;">e</span> = {.return_address = pc, .current_call=next_word};
+         returnpush(e);
+         <span style="color: #a020f0;">if</span> (debug_mode) {
+            <span style="color: #228b22;">char</span> * <span style="color: #a0522d;">name</span> = find_by_address(next_word);
+            debug_nest++;
+            printf(<span style="color: #8b2252;">"calling: %s -&gt; %d\n"</span>,name,debug_nest);
+         }
+         pc=next_word;
+      }
+      <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">end_inst</span>;
    <span style="color: #008b8b;">tail_call</span>:    <span style="color: #b22222;">/* </span><span style="color: #b22222;">common execution path for tail calls </span><span style="color: #b22222;">*/</span>
-
+      {
+         <span style="color: #228b22;">inst</span> *<span style="color: #a0522d;">next_word</span> = (<span style="color: #228b22;">inst</span> *) x;  <span style="color: #b22222;">/* </span><span style="color: #b22222;">was set by the call instructions that jumped here </span><span style="color: #b22222;">*/</span>
+         <span style="color: #a020f0;">if</span> (debug_mode) {
+            <span style="color: #228b22;">char</span> * <span style="color: #a0522d;">name</span> = find_by_address(next_word);
+            printf(<span style="color: #8b2252;">"tail calling: %s -&gt; %d\n"</span>,name,debug_nest);
+         }
+         pc = next_word;
+      }
+      <span style="color: #a020f0;">goto</span> <span style="color: #008b8b;">end_inst</span>;
    <span style="color: #008b8b;">end_inst</span>:     <span style="color: #b22222;">/* </span><span style="color: #b22222;">end of instruction processing </span><span style="color: #b22222;">*/</span>
       (<span style="color: #228b22;">void</span>) 0;
    }
