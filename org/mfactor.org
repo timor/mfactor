@@ -1,4 +1,4 @@
-# -*- org-babel-default-header-args:C: ((:noweb . "yes") (:noweb-sep . "\n/*------------------*/\n\n")); -*-
+# -*- org-babel-default-header-args:C: ((:noweb . "yes")); -*-
 #+TITLE:     MFactor Documentation
 #+EMAIL:     timor.dd@googlemail.com
 #+DATE:      2015-03-17 Di
@@ -14,16 +14,19 @@
 #+HTML_HEAD: <script type="text/javascript" src="http://www.pirilampo.org/styles/lib/js/jquery.stickytableheaders.js"></script>
 #+HTML_HEAD: <script type="text/javascript" src="http://www.pirilampo.org/styles/readtheorg/js/readtheorg.js"></script>
 
+#+STARTUP: indent
+
 #+begin_src emacs-lisp :exports none
   (setq org-confirm-babel-evaluate nil)
   (add-hook 'org-src-mode-hook
-            (lambda () (setq indent-tabs-mode nil)))
+            (lambda ()
+              (setq indent-tabs-mode nil)
+              (whitespace-mode)))
   nil
 #+end_src
 
 #+RESULTS:
 
-#+STARTUP: indent
 * Introduction
 MFactor is a (partial) implementation of the [[http://factorcode.org/][factor language]] for embedded systems.
 It consists of two parts:
@@ -37,8 +40,9 @@ It consists of two parts:
 It is intended to be used with a embedded C development environment, where its sources are
 compiled together with the host application.
 
-** General Concept
-The general idea: First compile .mfactor source files to bytecode image, then compile the 
+** Usage Concept
+The general idea: First compile .mfactor source files to bytecode image, then compile the
+provided c source files together with the host application's source files into the final binary.
 #+BEGIN_SRC ditaa :file img/concept.png
   +---------+
   |.mfactor +----+
