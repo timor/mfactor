@@ -142,7 +142,7 @@ entries are in the form of:
   - =lit= -> for variables (returns their address)
   - =s=, =i=, =b=, =bi=, =ib=, =is=, =ii=, =iis=, =iii= where =i= is =int=, =b= is =int8= and =s= is =int16=
 
-** Basic Factor concepts
+** Basic MFactor concepts
 For the complete Factor language, see [[http://docs.factorcode.org/content/article-handbook-language-reference.html][the official documentation]].  The language is
 [[https://en.wikipedia.org/wiki/Concatenative_programming_language][concatenative]], and uses generally postfix syntax, e.g. the arguments are written before
 the "function call".  [[http://concatenative.org/wiki/view/Concatenative%2520language/Name%2520code%2520not%2520values][This]] provides a good introduction to the concepts of concatenative
@@ -169,6 +169,11 @@ Terminology:
      #+END_SRC
 - Primitives :: are the low-level instructions that are executed by the VM.  All words
      are defined in terms of Primitives and other words.
+- Image :: is a (compiled) array of primitives, that constitutes the binary representation
+     of the mfactor source program
+- Dictionary :: generated table that holds information on word definitions, most
+     prominently the address of the words's bytecode in the image
+
 ** Differences to Factor
 Mfactor implements a subset of factor's functionality useful for embedded systems programming.
 Major differences:
@@ -852,7 +857,7 @@ the =START_WORD_OFFSET= macro from =bytecode.h=, that translates the =START_WORD
 variable (see [[Configuring the Rake Task]]) into an address.
 
 **** Tail Call Optimization
-The MFactor implementation relise on (explicit) [[https://en.wikipedia.org/wiki/Tail_call][tail call elimination]].  Because of the
+The MFactor implementation relies on (explicit) [[https://en.wikipedia.org/wiki/Tail_call][tail call elimination]].  Because of the
 nature of the language, the compiler can detect all cases of tail calls easily and
 replaces the =call= instructions with their =tcall= equivalents:
 - =bcall= -> =btcall=
@@ -910,6 +915,80 @@ See [[init-specials-definition]].
 #+END_SRC
 
 *** Primitive Instructions
+:PROPERTIES:
+:noweb-ref: big_fat_switch
+:END:
+All the primitives, that defined words consist of, are described here.
+
+**** Basic stack manipulation
+- =drop= :: remove value on top of parameter stack
+- =dup= :: (internally named _dup to avoid name conflits) duplicate the item on top of
+     stack
+
+#+BEGIN_SRC C
+     case drop: ppop();
+     case _dup: ppush(peek_n(psp,1));
+#+END_SRC
+
+**** Arithmetic instructions
+All arithmetic instructions either manipulate the value on top of the stack, or replace
+the two top values with the results.  For defining unary and binary operations with C
+operators, two helper macros are used:
+
+#+BEGIN_SRC C
+  #define UNOP(op) {                              \
+        x=(op ((intptr_t) ppop()));               \
+        ppush(x);                                 \
+     } break
+  #define BINOP(op) {                                                     \
+        x = ppop();                                                       \
+        cell y = ppop();                                                  \
+        ppush(((intptr_t)y) op ((intptr_t)x));                            \
+     } break
+#+END_SRC
+
+The instructions themselves:
+#+BEGIN_SRC C
+  case add: BINOP(+); break;
+  case mul: BINOP(*); break;
+  case sub: BINOP(-); break;
+  case neg: UNOP(-); break;
+  case asl: BINOP(<<); break;  /* arithmetic shift left */
+  case asr: BINOP(>>); break;  /* arithmetic shift right */
+  case div: BINOP(/); break;
+  case mod: BINOP(%); break;
+  case bitand: BINOP(&); break;
+  case bitor: BINOP(|); break;
+  case bitxor: BINOP(^); break;
+  case bitnot: UNOP(~); break;
+  case gt: BINOP(>); break;
+  case lt: BINOP(<); break;
+#+END_SRC
+
+**** Constants
+These push constants onto the stack.  These save space compared to pushing a literal onto
+the stack, which takes two bytes instead of one.
+#+BEGIN_SRC C
+     case zero: ppush(0); break;
+     case one: ppush(1); break;
+     case two: ppush(2); break;
+#+END_SRC
+**** Informational Instructions
+These provide information about some internals to the application:
+- work memory bounds
+- dictionary bounds
+- size in bytes of stack elements (platform-dependent)
+- starting instruction code
+dictionary.
+#+BEGIN_SRC C
+     case memstart: ppush((cell)memory); break;
+     case memend: ppush((cell)(memory+VM_MEM)); break;
+     case dictstart: ppush((cell)dict); break;
+     case dictend: ppush((cell)(dict+VM_DICT)); break;
+     case cellsize: ppush((cell)sizeof(cell)); break;
+     case instbase: ppush((cell)INSTBASE); break;
+#+END_SRC
+
 * Appendix: Complete Sources
 ** interpreter.h
 #+name: interpreter_h
