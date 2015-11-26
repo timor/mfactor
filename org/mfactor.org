@@ -293,6 +293,9 @@ another combinator.  If that one contains fried quotations, it will obviously fu
 increase the copied code overhead.
 
 * VM Implementation
+:PROPERTIES:
+:noweb-ref: vm_c
+:END:
 The VM is a [[http://en.wikipedia.org/wiki/Stack_machine][stack machine]] with three stacks, a *data stack* (or parameter stack, pstack),
 *return stack* and a *retain stack*.
 
@@ -300,11 +303,16 @@ The data stack is used for argument passing, while the return stack is used to s
 program counter during sub-routines (and store some debug information).  The retain stack is only
 used for putting stack items out of the way temporarily.
 
+A program counter points to successively executed primitive instructions.
+
+The following 3 Sections describe all definitions that end up in the header file
+[[file:src/interpreter.h]], the rest describes the implementation in [[file:src/interpreter.c]]
+
 ** Instruction Set
 The Instruction Set for the VM is defined in [[file:instructionset.yml]].  For a description
 of the instructions see ??? the relevant section later on.
 
-** Definitions
+** Definitions and Datatypes
 :PROPERTIES:
 :noweb-ref: vm_h
 :END:
@@ -349,12 +357,12 @@ mark a word inline, recursive, or a parsing word.
 #+begin_src C
   typedef struct dict_entry
   {
-          inst * address;           /* pointer into memory */
-          unsigned char flags; /* may include other flags later (inline, recursive, etc) */
-          unsigned char name_header;      /* should always be zero */
-          unsigned char name_length;
-          char name[];
-  }       __attribute__((packed)) dict_entry;
+     inst * address;           /* pointer into memory */
+     unsigned char flags; /* may include other flags later (inline, recursive, etc) */
+     unsigned char name_header;      /* should always be zero */
+     unsigned char name_length;
+     char name[];
+  } __attribute__((packed)) dict_entry;
 #+end_src
 
 *** <<vm-preprocessor-macros>>Preprocessor Macros
@@ -439,13 +447,7 @@ executed.  If it is non-zero, an internal error happened.
 int interpreter(short_jump_target);
 #+end_src
 
-** C Implementation (=interpreter()=)
-:PROPERTIES:
-:noweb-ref: vm_c
-:END:
-
-This section describes the actual C implementation of [[file:src/interpreter.c]].
-*** Special Variables Definition
+** Special Variables Definition
 The internal state of the interpreter is exposed to the application by predefining an
 array of special variables.  These are needed for all instructions that depend on state
 that must be influenced by the application.
@@ -474,14 +476,14 @@ The list of currently implemented specials:
 Not all of them are actually in use, the ones that are, are defined as macros so that the
 =special_vars= array needs not be acccessed directly in the following source code:
 
-**** =MP=: The Memory Write Pointer
+*** =MP=: The Memory Write Pointer
 This holds a pointer to the memory location that is accessed by the compilation primitives
 (TOOD: link)
 #+BEGIN_SRC C
   #define MP special_vars[0]
 #+END_SRC
 
-**** =HANDLER=: Current Exception handling frame
+*** =HANDLER=: Current Exception handling frame
 This is used by the application to store information about the current exception handler.
 Note that the application does not currently manipulate or access this state, so it is
 basically a specialized global variable. TODO: reference the exception handling lib
@@ -489,23 +491,23 @@ basically a specialized global variable. TODO: reference the exception handling 
   #define HANDLER special_vars[1]
 #+END_SRC
 
-**** =DEBUG_LEVEL=: VM Debug Verbosity
+*** =DEBUG_LEVEL=: VM Debug Verbosity
 Used to activate debug output for VM internals.  Only used for VM development and debugging.
 #+BEGIN_SRC C
   #define DEBUG_LEVEL special_vars[2]
 #+END_SRC
 
-**** =RESTART=: Restart address (deprecated)
+*** =RESTART=: Restart address (deprecated)
 This used to hold an address that was jumped to in case of internal errors.  This has been
 replaced by returning from =interpreter()= with the internal error code, and the host
 application deciding what to do then
 
-**** =STEP_HANDLER=: Single Stepping Handler (not in use)
+*** =STEP_HANDLER=: Single Stepping Handler (not in use)
 This shall hold an address which is called on every step of the currently executed bytecode
 image.  Meant for implementing single step debugging, where the actual handler would be
 written as mfactor source.
 
-**** =BASE=: Current Segment base address
+*** =BASE=: Current Segment base address
 This hold the address that is added to *all* internal calls (TODO: link to relevant call
 primitives).  Usually it holds the address of the =image=-variable, that is generated in
 =generated/bytecode.c=.  This allows the image to be relocatable, so that the actuall call
@@ -515,7 +517,7 @@ target (16 bit value) is computed by adding it to the value of =BASE=.
   #define BASE special_vars[5]
 #+END_SRC
 
-**** =OUTPUT_STREAM=: Output Stream descriptor
+*** =OUTPUT_STREAM=: Output Stream descriptor
 The value of this variable is used everytime something should be output.  It determines
 which =File= pointer is passed to the standard c output functions in =current_fd()= (TODO
 link)
@@ -531,7 +533,7 @@ The possible values are defined as:
   #define NULLOUT 3
 #+END_SRC
 
-*** <<init-specials-definition>>Special Variables Initialization
+** <<init-specials-definition>>Special Variables Initialization
 #+BEGIN_SRC C
   static void init_specials() {
      HANDLER = 0;
@@ -540,6 +542,7 @@ The possible values are defined as:
      OUTPUT_STREAM = STDOUT; /* output to standard output per default */
   }
 #+END_SRC
+** Helper Funtions
 *** Internal Debugging
 **** Output Handling
 One file-local variable that holds the current Output stream for internal messages:
@@ -645,42 +648,42 @@ For the =st= primitive and in case of errors, the stack contents are sometimes p
   /* display data stack entries */
   static void printstack(cell * sp, cell * stack)
   {
-          fprintf(Ostream, "stack:");
-          for(cell* ptr = stack;ptr < sp;ptr++)
-                  {
-                          fprintf(Ostream, " %#lx",*ptr);
-                  }
-          fprintf(Ostream, "\n");
+     fprintf(Ostream, "stack:");
+     for(cell* ptr = stack;ptr < sp;ptr++)
+     {
+        fprintf(Ostream, " %#lx",*ptr);
+     }
+     fprintf(Ostream, "\n");
   }
 
   /* display return stack entries */
   static void print_return_stack(return_entry * sp, return_entry * stack, inst * base)
   {
-          fprintf(Ostream, "stack:");
-          for(return_entry* ptr = sp-1;ptr >= stack;ptr--)
-                  {
-                          fprintf(Ostream, " {%#lx->%#lx}",((uintptr_t)ptr->current_call-(uintptr_t)base),
-                                           ((uintptr_t)ptr->return_address)-(uintptr_t) base);
-                  }
-          fprintf(Ostream, "\n");
+     fprintf(Ostream, "stack:");
+     for(return_entry* ptr = sp-1;ptr >= stack;ptr--)
+     {
+        fprintf(Ostream, " {%#lx->%#lx}",((uintptr_t)ptr->current_call-(uintptr_t)base),
+                ((uintptr_t)ptr->return_address)-(uintptr_t) base);
+     }
+     fprintf(Ostream, "\n");
   }
 
   /* print a backtrace of the return stack */
   static void backtrace(return_entry * sp, return_entry * stack, inst * base, inst * pc)
   {
-          fprintf(Ostream, "backtrace @ %#lx:\n",(uintptr_t)(pc-base));
-          for(return_entry* ptr = sp-1;ptr >= stack;ptr--)
-                  {
-                          char *current_name = find_by_address(ptr->current_call);
-                          fprintf(Ostream, "%#lx %s\n",(uintptr_t)(ptr->current_call - base),current_name);
-                  }
+     fprintf(Ostream, "backtrace @ %#lx:\n",(uintptr_t)(pc-base));
+     for(return_entry* ptr = sp-1;ptr >= stack;ptr--)
+     {
+        char *current_name = find_by_address(ptr->current_call);
+        fprintf(Ostream, "%#lx %s\n",(uintptr_t)(ptr->current_call - base),current_name);
+     }
   }
 #+END_SRC
-*** Used Subroutines (defined as Macros)
+** Used Subroutines (defined as Macros)
 There are several subroutines that are repeatedly used in =interpreter()=, which operate
 on the static data that is only defined there.  Because of that, they are implemented as
 preprocessor macros.
-**** Backtrace printing
+*** Backtrace printing
 #+BEGIN_SRC C
   #define BACKTRACE() do {                                 \
         FILE * old_out = Ostream;                          \
@@ -691,21 +694,21 @@ preprocessor macros.
         Ostream = old_out;                                 \
      }       while (0)                                     \
 #+END_SRC
-**** Errors during primitive execution
+*** Errors during primitive execution
 Whenever something unrecoverable handles, this is called.  Currently just returns the
 error code from =interpreter()=.
 
 #+BEGIN_SRC C
   #define handle_error(code) do {return code;} while(0)
 #+END_SRC
-**** Stack Operation Assertion
+*** Stack Operation Assertion
 These macros are used when popping and pushing elements on stacks, and check if the stack
 is empty or full.
 #+BEGIN_SRC C
   #define assert_pop(sp,min,name,fail_reason) if (sp <= min) { print_error(name "stack underflow");BACKTRACE();handle_error(fail_reason);}
   #define assert_push(sp,min,size,fail_reason) if (sp > min+size){ print_error("stack overflow");BACKTRACE();handle_error(fail_reason);}
 #+END_SRC
-**** Stack operations
+*** Stack operations
 These macros are the basic internal stack manupulation functions.  All stacks are assumed
 empty ascending.  The following routines are general:
 
@@ -727,22 +730,22 @@ Basic push and pop operations.  The underscores are for avoiding name clashes.
 The rest is meant for the three specific stacks (TODO: link to stack explanation).  The
 push functions push (safely) a value onto the respective stack.  The pop functions pop (safely) a
 value from the respective stack.
-***** Data Stack (Parameter Stack)
+**** Data Stack (Parameter Stack)
 #+BEGIN_SRC C
   #define ppush(val) ({assert_push(psp,pstack,VM_PSTACK,INTERNAL_ERROR_PSTACK_OFLOW);push_(psp,val)})
   #define ppop() ({assert_pop(psp,pstack,"p",INTERNAL_ERROR_PSTACK_UFLOW);pop_(psp)})
 #+END_SRC
-***** Return Stack
+**** Return Stack
 #+BEGIN_SRC C
   #define returnpush(val) ({assert_push(returnsp,returnstack,VM_RETURNSTACK,INTERNAL_ERROR_RSTACK_OFLOW);push_(returnsp,val)})
   #define returnpop() ({assert_pop(returnsp,returnstack,"return",INTERNAL_ERROR_RSTACK_UFLOW);pop_(returnsp)})
 #+END_SRC
-***** Retain Stack
+**** Retain Stack
 #+BEGIN_SRC C
   #define retainpush(val) ({assert_push(retainsp,retainstack,VM_RETAINSTACK,INTERNAL_ERROR_RTSTACK_OFLOW);push_(retainsp,val)})
   #define retainpop() ({assert_pop(retainsp,retainstack,"retain",INTERNAL_ERROR_RTSTACK_OFLOW);pop_(retainsp)})
 #+END_SRC
-*** Main Interpreter function =interpreter()=
+** Main Interpreter function =interpreter()=
 Basic Flowchart
 #+BEGIN_SRC plantuml :file img/interpreter_flow.svg :noweb-ref nil
   start
@@ -786,7 +789,7 @@ The =interpreter()= functions is structured as follows:
      while(1) {
         inst i;
         i = (*pc++);
-    dispatch:
+     dispatch:
         <<debug_statements>>
         switch(i) {
            <<big_fat_switch>>
@@ -794,12 +797,12 @@ The =interpreter()= functions is structured as follows:
               printf("unimplemented instruction %#x\n",i);
               handle_error(INTERNAL_ERROR_INVALID_OPCODE);
         }
-    goto end_inst;  /* normal instructions skip the call execution paths */
-    nested_call:  /* common execution path for non-tail calls */
+     goto end_inst;  /* normal instructions skip the call execution paths */
+     nested_call:  /* common execution path for non-tail calls */
         <<nested_call_common>>
-    tail_call:    /* common execution path for tail calls */
+     tail_call:    /* common execution path for tail calls */
         <<tail_call_common>>
-    end_inst:     /* end of instruction processing */
+     end_inst:     /* end of instruction processing */
         (void) 0;
      }
   }
@@ -807,12 +810,12 @@ The =interpreter()= functions is structured as follows:
 
 The labels after the switch statement are common exit points of several primitives.
 
-**** Internal State Definition
+*** Internal State Definition
 :PROPERTIES:
 :noweb-ref: state_definition
 :END:
 
-***** Stacks
+**** Stacks
 - data stack (or parameter stack) and pointer
 - return stack and pointer
 - retain stack and pointer
@@ -836,7 +839,7 @@ stack holds structs.
 
 The size macros are defined in the header file (see [[vm-preprocessor-macros]]), and control the
 memory usage of the VM.
-***** Program counter
+**** Program counter
 This is the most basic state for any program interpreting machine.  It holds the address
 of the next primitive instruction in the instruction stream (bytecode image).
 #+BEGIN_SRC C
@@ -848,7 +851,7 @@ The initial value is either taken from the =interpreter()= call as parameter, or
 the =START_WORD_OFFSET= macro from =bytecode.h=, that translates the =START_WORD= global
 variable (see [[Configuring the Rake Task]]) into an address.
 
-***** Tail Call Optimization
+**** Tail Call Optimization
 The MFactor implementation relise on (explicit) [[https://en.wikipedia.org/wiki/Tail_call][tail call elimination]].  Because of the
 nature of the language, the compiler can detect all cases of tail calls easily and
 replaces the =call= instructions with their =tcall= equivalents:
@@ -866,14 +869,14 @@ nested calls:
   static bool tailcall;
   tailcall = true;  /* enable tail call jumping by default */
 #+END_SRC
-***** Helper "Register"
+**** Helper "Register"
 To help manage jumping through the code, a variable =x= is defined here and used in
 various primitive instructions.  Normally, the needed variables are defined locally in the
 intruction cases.
 #+BEGIN_SRC C
   cell x; /* temporary value for operations */
 #+END_SRC
-***** Debug Mode
+**** Debug Mode
 To debug internals, this =debug_mode= state can be set (also via an isntruction, TODO:
 link).  If so, it outputs internal state before processing an instruction, and waits for a
 keypress before processing it.  The =debug_nest= counter is used to keep track of return
@@ -888,24 +891,27 @@ information.
   debug_mode=true;
   #endif
 #+END_SRC
-**** State initialization
+*** State initialization
 :PROPERTIES:
 :noweb-ref: state_initializiation
 :END:
-
-***** Output File Descriptor
+The initial of the vm: Program counter points to the starting word, data and retain stack
+empty, return stack contains a default frame.
+**** Output File Descriptor
 The value passed to all libc stdio commands used during primitive instruction execution.
 #+BEGIN_SRC C
   Ostream = stdout;  /* print everything to stdout per default */
 #+END_SRC
 
-***** Special Variable Initalization
+**** Special Variable Initalization
 See [[init-specials-definition]].
 #+BEGIN_SRC C
   init_specials();
 #+END_SRC
-** Complete Source Files
-*** interpreter.h
+
+*** Primitive Instructions
+* Appendix: Complete Sources
+** interpreter.h
 #+name: interpreter_h
 #+begin_src C :tangle ../src/interpreter.h
 #ifndef INTERPRETER_H
@@ -920,7 +926,7 @@ See [[init-specials-definition]].
 #endif
 
 #+end_src
-*** interpreter.c
+** interpreter.c
 #+name: interpreter_c
 #+BEGIN_SRC C :tangle ../src/interpreter.wip.c
   #include "interpreter.h"
