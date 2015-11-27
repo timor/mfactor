@@ -106,7 +106,7 @@ The following are for advanced functionality:
   #+END_SRC
   This can be used to generate preprocessor symbols, which can be passed directly to
   =interpreter()=, for example.
-- =FF_MFACTOR=: path to file containing interface definitions to c code (see [[*Making%20Existing%20C%20Functions%20Available][Making
+- =MFACTOR_FF=: path to file containing interface definitions to c code (see [[*Making%20Existing%20C%20Functions%20Available][Making
   Existing C Functions Available]])
 - =MFACTOR_IMAGE_SECTION=: a string describing the linker section that the bytecode-image
   will pe placed into
@@ -124,7 +124,7 @@ process, where several files are generated:
      extract information about the image.
 
 ** Making Existing C Functions Available
-Special global variable =FF_MFACTOR= can be set to a yaml file for
+Special global variable =MFACTOR_FF= can be set to a yaml file for
 "importing" existing c functions into the interpreter's namespace (Foreign function interface).
 entries are in the form of:
 
