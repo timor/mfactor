@@ -82,6 +82,8 @@ In order to incorporate this into a project, several rake tasks are supplied in 
 - *mfactor*: the main task, which, when called, generates above code
 - *mftest[word name]*: helper task, outputs a graphical representation of a specific word in the =generated= subdir.
 
+** TODO Contents
+Description of files and directories
 ** Configuring the Rake Task<<rake-intro>>
 The rake file is supposed to be included with rake's =import= facility in the host
 application's own Rakefile.
@@ -229,7 +231,12 @@ Support matrix:
 | reduce     | reduce          | ba-reduce               | N/A                        |
 | each-index | each-index      | N/A                     | N/A                        |
 
+* TODO Supplied Libraries
+A number of mfactor source files are supplied together with the VM, to provide the
+(mainly) Factor-compatible functionality.  These are to be documented here.
 
+** TODO Listener
+Add control flow example using the listener.
 * Host Compiler
 
 ** Concept
