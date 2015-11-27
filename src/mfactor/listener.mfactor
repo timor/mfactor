@@ -2,12 +2,22 @@
 USING: kernel parser vocabs prettyprint io memory exceptions.util syntax exceptions ;
 IN: listener
 
-! listener, the interactive frontend
+! Listener, the interactive frontend.  Listens on the console for tokens.  If these tokens
+! represent known words, then the words are executed.  If they are parsing word, they are
+! executed with a fresh accumulator vector on the stack and executed immmediately.
+! Otherwise they are simply called.  This differs a bit from the official Factor listener,
+! which also accumulates normal words in an accumulator before execution.
 
+! If the token is unknown, it will be tried to read as a number.  If so, the value is
+! pushed onto the stack.  If not, an error is shown that the word is unknown ("X_X").
+
+! show concerned face if input is completely unknown
 : _bad-input ( input -- ) drop 'X' dup '_' swap emit emit emit nl ;
 
+! called if unknown token was found, try to parse as numeric literal
 : unknown-token ( tok -- ) parsenum [ nop ] [ _bad-input ] if ;
 
+! print a prompt with the current stack level
 : prompt ( -- ) level pwrite '>' emit ' ' emit ;
 
 ! Repeatedly prompt for a token and try to find it.  If found, see if it is a parsing
@@ -21,11 +31,14 @@ IN: listener
       [ report-errors drop ] when*  ! extra item! drop!
       listener ;
 
+! Defined as "\\" but really is used as "\", because of escaping. Read the next word as
+! literal instead of executing it.  Returns the dictionary entry if found.
 SYNTAX: \\ ( -- quot type ) token dict-find [ 3 suffix ] [ _bad-input ] if ;
 
+! utility: show currently allocated memory
 : showmem ( -- ) memstart _get-MP [ 2dup >= [ f ] [ [ dup getmem8 .x 1 + ] dip t ] if ] loop 2drop ;
 
-! memory usage
+! print memory usage
 : usage ( -- ) memrange _get-MP getmem pick - . swap - . ;
 
 
