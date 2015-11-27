@@ -200,6 +200,35 @@ Major differences:
   objects by the reader are not released automatically.  Any data used in normal code is
   statically compiled into the image, so no runtime allocation is performed unless
   specified explicitely using sequence constructors =<byte-array>= and =<integer-array>=
+- no object system, so the type of stack items can generally not be determined (with
+  exceptions.  If it is known to point to a sequence or other complex data structure,
+  information about the element types can be extracted)
+
+*Practical Consequences:*
+Most of the omissions are due to resource constraints in embedded systems, where runtime
+allocation is generally not desirable.  The missing runtime type support has the following
+main consequences:
+
+When printing an object, it must be known what it is:
+- =.=, =.x=, =.b= shows the raw value(decimal, hex, binary) of an item, if it is a number,
+  that is its value, if it is a sequence, it is the address of it's count byte
+- =ba.x=, =ba.b= prints the elements of a byte-array (hex, binary).  If top of stack is
+  not a byte array, garbage is output.
+- generally (e.g. for integer arrays) normal iteration also works:
+  =some-integer-array [ . ] each=
+
+Not all sequence operations are type-independent (yet).
+Support matrix:
+| factor     | mfactor general | mfactor for byte arrays | mfactor for integer arrays |
+|------------+-----------------+-------------------------+----------------------------|
+| nth        | nth             | ba-nth                  | ia-nth                     |
+| set-nth    | N/A             | ba-set-nth              | ia-set-nth                 |
+| each       | each            | ba-each                 | ia-each                    |
+| change-nth | N/A             | ba-change-nth           | N/A                        |
+| find       | N/A             | ba-find                 | N/A                        |
+| reduce     | reduce          | ba-reduce               | N/A                        |
+| each-index | each-index      | N/A                     | N/A                        |
+
 
 * Host Compiler
 
