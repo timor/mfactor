@@ -178,7 +178,10 @@ module MFactor
           puts "define vocab: #{d.vocab}" if $mf_verbose == true
           current_vocab=get_vocabulary_create(d.vocab)
           current_vocab.used_vocabs = search_vocabs.dup
-          puts "WARNING: current vocab already has a file associated!" if current_vocab.definition_file
+          if current_vocab.definition_file and current_vocab.definition_file != file
+            puts "WARNING: vocab #{current_vocab.name} has file associated: #{current_vocab.definition_file},
+associating with #{file} now!"
+          end
           puts "assigning #{file} to vocab #{current_vocab.name}" if $mf_verbose == true
           current_vocab.definition_file = file
           @dictionary[d.vocab.to_s]=current_vocab
