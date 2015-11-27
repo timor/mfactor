@@ -37,17 +37,17 @@ IN: tests
     B{ 1 2 3 }
     [ [ element-size ] 1 _assert-result ] keep
     [ [ element-type ] 0 _assert-result ] keep
-    [ [ seq-size ] 3 _assert-result ] call
+    [ [ _seq-size ] 3 _assert-result ] call
     "intseq" print
     I{ 1 2 3 }
     [ [ element-size ] 4 _assert-result ] keep
     [ [ element-type ] 0 _assert-result ] keep
-    [ [ seq-size ] 12 _assert-result ] call
+    [ [ _seq-size ] 12 _assert-result ] call
     "anyseq" print
     { 1 2 3 }
     [ [ element-size ] 5 _assert-result ] keep
     [ [ element-type ] 4 _assert-result ] keep
-    [ [ seq-size ] 15 _assert-result ] call ;
+    [ [ _seq-size ] 15 _assert-result ] call ;
 : _run-tests ( -- ) nl [ [ 'b' emit ] 'a' emit call ] call
     _test-emit _lcheck          ! prints the 'c' of "abc"
     _test-int _lcheck           ! prints "0xaffecafe"

@@ -8,7 +8,9 @@ SYMBOLS: unbox-error index-bounds-error element-type-error max-array-size-exceed
 : element-size ( seq -- n ) 1 - getmem8 7 bitand 1 + ;
 : element-type ( seq -- n ) 1 - getmem8 0xf8 bitand 3 asr ;
 : length ( seq -- n ) getmem8 ;
-: seq-size ( seq -- n ) [ element-size ] [ length ] bi * ;
+
+! currently only used for testing
+: _seq-size ( seq -- n ) [ element-size ] [ length ] bi * ;
 
 : _assert-max-array-size ( n -- n )
     [ 255 > [ max-array-size-exceeded-error throw ] when ] keep ;
