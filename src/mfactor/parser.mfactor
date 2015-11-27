@@ -1,5 +1,5 @@
 ! -*- mode: factor -*-
-USING: kernel vocabs io strings ;
+USING: kernel vocabs io sequences ;
 IN: parser
 
 ! "parse accumulator" on the stack

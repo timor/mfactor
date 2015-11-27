@@ -80,5 +80,3 @@ IN: kernel
 : prim? ( address -- ? ) _inst instbase >= ;
 
 : most ( x y quot -- z ) 2keep ? ; inline
-
-! access to some special variables in vm implementation

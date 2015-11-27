@@ -1,5 +1,5 @@
 ! -*- mode: factor -*-
-USING: kernel strings sequences memory ;
+USING: kernel sequences memory ;
 IN: vocabs
 
 
@@ -11,13 +11,13 @@ IN: vocabs
 : parsing-word? ( dictentry -- ? ) cell + getmem 0x01 bitand ;
 : definition ( dictentry -- quot ) getmem ;
 ! find next free dictionary entry (check for first name byte = 0)
-: dict-next ( dict-entry -- dict-entry ) name>> dup strlen + 2 + ;
+: dict-next ( dict-entry -- dict-entry ) name>> dup length + 2 + ;
 
 ! actually call the quotation associated with word
 : execute ( word -- effect ) definition call ; nocompile
 
 ! dictionary entry considered valid if not 0 name length.
-: dict-valid? ( dict-entry -- ? ) name>> strlen 0 = not ;
+: dict-valid? ( dict-entry -- ? ) name>> length 0 = not ;
 
 ! apply q to each dictionary entry
 : dict-each ( q: ( ... dict-entry -- ... ) -- )
@@ -58,7 +58,7 @@ IN: vocabs
 
 ! save quotation in dictionary, non-immediate, name is counted string, add terminating 0 for compatibility
 : rename ( quot dictentry -- ) setmem ;
-: name ( quot name -- ) dict-find [ rename ] [ _free-name [ swap , 0 b, 0 b, dup strlen b, [ b, ] ba-each 0 b, ] with-MP ] if ;
+: name ( quot name -- ) dict-find [ rename ] [ _free-name [ swap , 0 b, 0 b, dup length b, [ b, ] ba-each 0 b, ] with-MP ] if ;
 
 ! dictionary usage
 : dsize ( -- n1 n2 ) dictend dictstart - _free-name dictstart - ;

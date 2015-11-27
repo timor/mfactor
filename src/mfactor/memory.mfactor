@@ -58,3 +58,8 @@ IN: memory
 ! resolve absolute reference, addr1 should already point to the address of the offset
 : resolve-aref ( addr1 -- addr2 )
     getmem ;
+
+! convert a sequence or string to its length and the address of the first element
+! this relies on the internal representation of sequences, with a handle always pointing to
+! the count byte before the data itself
+: uncount ( countedstr -- addr len ) dup getmem8 [ 1 + ] dip ;

@@ -1,5 +1,5 @@
 ! -*- mode: factor -*-
-USING: kernel math headers memory strings io exceptions ;
+USING: kernel math headers memory exceptions io ;
 IN: sequences
 
 SYMBOLS: unbox-error index-bounds-error element-type-error max-array-size-exceeded-error ;
@@ -20,14 +20,14 @@ SYMBOLS: unbox-error index-bounds-error element-type-error max-array-size-exceed
     _assert-max-array-size
     [ _strhead, ] keep _get-MP [ [ 0xa5 b, ] times ] dip 1 - ;
 ! random access into byte-array or string, seq is assumed to point to the count byte of the sequence, and one byte before that the element size
-: _ba-assert-index ( n seq -- n seq ) [ strlen 0 swap in-range not [ "byte-array index out of bound" print error ] when ] 2keep ;
+: _ba-assert-index ( n seq -- n seq ) [ length 0 swap in-range not [ index-bounds-error throw ] when ] 2keep ;
 : ba-nth ( n seq -- elt ) _ba-assert-index + 1 + getmem8 ;
 : ba-set-nth ( elt n seq -- ) _ba-assert-index + 1 + setmem8 ;
 ! specialized version of each for byte arrays and strings
 : _ba-each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+1 quot ) [ [ getmem8 ] dip call ] 2keep [ 1 + ] dip ;
 : ba-each ( ... seq quot: ( ... x -- ... ) -- ... ) [ uncount ] dip swap [ _ba-each-step ] times 2drop ;
 : ba-reduce ( ... seq identity quot: ( ... prev elt -- ... next ) -- ... result ) [ swap ] dip ba-each ;
-: ba-find ( ... seq quot: ( ... elt -- ... ? ) -- ... i elt ? ) over strlen [ pick pick [ swap [ swap ba-nth ] dip call ] 2dip rot ] find-integer [ nip swap over swap ba-nth t ] [ 2nip f f ] if ;
+: ba-find ( ... seq quot: ( ... elt -- ... ? ) -- ... i elt ? ) over length [ pick pick [ swap [ swap ba-nth ] dip call ] 2dip rot ] find-integer [ nip swap over swap ba-nth t ] [ 2nip f f ] if ;
 : ba-change-nth ( ..a i seq quot: ( ..a elt -- ..b newelt ) -- ..b )
     [ [ ba-nth ] dip call ] 3keep drop ba-set-nth ; inline
 
@@ -36,8 +36,8 @@ SYMBOLS: unbox-error index-bounds-error element-type-error max-array-size-exceed
 : <integer-array> ( n -- integer-array )
     _assert-max-array-size
     [ 3 0 _seqhead, ] keep _get-MP [ [ 0xdeadcafe , ] times ] dip 1 - ;
-: ia-length ( ia -- n ) strlen ;
-: _ia-assert-index ( n seq -- n seq ) [ ia-length 0 swap in-range not [ "int-array index out of bound" print error ] when ] 2keep ;
+: ia-length ( ia -- n ) length ;
+: _ia-assert-index ( n seq -- n seq ) [ ia-length 0 swap in-range not [ index-bounds-error throw ] when ] 2keep ;
 : ia-nth ( n seq -- elt ) _ia-assert-index 1 + swap 4 * + getmem ;
 : ia-set-nth ( elt n seq -- ) _ia-assert-index 1 + swap 4 * + setmem ;
 : _ia-each-step ( ... addr quot: ( ... x -- ... ) -- ... addr+4 quot ) 2dup [ [ getmem ] dip call ] 2dip [ 4 + ] dip ;
@@ -117,6 +117,13 @@ SYMBOLS: unbox-error index-bounds-error element-type-error max-array-size-exceed
 
 : reduce-reverse ( ... seq identity quot: ( ... prev elt -- ... next ) -- ... result )
     [ swap ] dip each-reverse ;
+
+
+! string handling, which builds on byte-arrays, but counted
+! strings are represented by the memory address pointing to the count byte
+
+! compare to strings
+: str= ( str1 str2 -- ? ) dup length 1 + mem= ;
 
 
 ! low-level pretty-printing
