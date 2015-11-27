@@ -55,9 +55,9 @@ litb: :private
 oplit: :private
 # literal base-relative quotation (short), for use with runtime-generated data
 blitq: :private
-# long reference to other data (same effect as lit)
+# long reference to other data (same effect as lit), currently unused
 ref: :private
-# base-relative reference to other data 
+# base-relative reference to other data
 bref: :private
 # data-segment-based reference
 dref: :private
@@ -70,9 +70,9 @@ astart: :private
 # inline byte arrays
 bastart: :private
 # end of inline array (TBR)
-aend: :private
-# inline strings [ char.. strend ] ( -- str len )
-strstart: :private
+_dep_aend: :private
+# inline strings [ char.. strend ] ( -- str len ) DEPRECATED, uses litc
+_dep_strstart: :private
 strend: :private
 # decision primitive, only keep one value based on condition
 # ( cond true false -- true/false )
@@ -87,8 +87,8 @@ swap:
 # ( -- countedstring )
 token:
 # find a token by name in the dictionary
-# ( countedstring -- dictentry/name found? )
-search:
+# ( countedstring -- dictentry/name found? ) DEPRECATED, only lookup_name is used
+_dep_search:
 # ( length name -- dict-addr )
 lookup_name: "lookup-name"
 # memory bounds

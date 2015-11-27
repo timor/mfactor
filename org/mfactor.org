@@ -1,4 +1,4 @@
-# -*- org-babel-default-header-args:C: ((:noweb . "yes")); -*-
+# -*- org-babel-default-header-args:C: ((:noweb . "yes")(:noweb-sep . "\n")); -*-
 #+TITLE:     MFactor Documentation
 #+EMAIL:     timor.dd@googlemail.com
 #+DATE:      2015-03-17 Di
@@ -82,7 +82,7 @@ In order to incorporate this into a project, several rake tasks are supplied in 
 - *mfactor*: the main task, which, when called, generates above code
 - *mftest[word name]*: helper task, outputs a graphical representation of a specific word in the =generated= subdir.
 
-** Configuring the Rake Task
+** Configuring the Rake Task<<rake-intro>>
 The rake file is supposed to be included with rake's =import= facility in the host
 application's own Rakefile.
 
@@ -123,7 +123,7 @@ process, where several files are generated:
      can be reloaded later in the build process with =ByteCodeImage.deserialize= to
      extract information about the image.
 
-** Making Existing C Functions Available
+** Making Existing C Functions Available<<ffi-intro>>
 Special global variable =MFACTOR_FF= can be set to a yaml file for
 "importing" existing c functions into the interpreter's namespace (Foreign function interface).
 entries are in the form of:
@@ -343,12 +343,12 @@ used for putting stack items out of the way temporarily.
 
 A program counter points to successively executed primitive instructions.
 
-The following 3 Sections describe all definitions that end up in the header file
-[[file:src/interpreter.h]], the rest describes the implementation in [[file:src/interpreter.c]]
-
-** Instruction Set
+*Instruction Set*
 The Instruction Set for the VM is defined in [[file:instructionset.yml]].  For a description
-of the instructions see ??? the relevant section later on.
+of the instructions skip to [[instruction-implementation]].
+
+The following Section describes all definitions that end up in the header file
+[[file:src/interpreter.h]], the rest describes the implementation in [[file:src/interpreter.c]]
 
 ** Definitions and Datatypes
 :PROPERTIES:
@@ -475,6 +475,24 @@ extern cell FF_Table[];
 creates a hash table for fast lookup of words (see ???). =dict= is declared with size
 because in the lookup function the =sizeof()= operator is used for bounds-checking.
 
+*** Internal Error Codes
+These are returned from interpreter() in case of a unrecoverable internal error
+(e.g. stack underflow).
+#+BEGIN_SRC C
+  /* these values can be returned from interpreter() */
+  #define INTERNAL_ERROR_PSTACK_UFLOW -1
+  #define INTERNAL_ERROR_PSTACK_OFLOW -2
+  #define INTERNAL_ERROR_RSTACK_UFLOW -3
+  #define INTERNAL_ERROR_RSTACK_OFLOW -4
+  #define INTERNAL_ERROR_RTSTACK_UFLOW -5
+  #define INTERNAL_ERROR_RTSTACK_OFLOW -6
+  #define INTERNAL_ERROR_INVALID_OPCODE -7
+  #define INTERNAL_ERROR_MEM_FAULT -8
+  #define INTERNAL_ERROR_UNKNOWN_FF -9
+  #define INTERNAL_ERROR_TOKEN_READ -10
+  #define INTERNAL_ERROR_GENERAL -11
+  #define INTERNAL_ERROR_UNKNOWN_SPECIAL -12
+#+END_SRC
 *** Main VM Function Prototype
 This is the prototype for the function that is supposed to be executed from the
 application program.  The only argument is the offset of the first in the bytecode image
@@ -484,6 +502,15 @@ executed.  If it is non-zero, an internal error happened.
 #+begin_src C
 int interpreter(short_jump_target);
 #+end_src
+** Work Memory
+For allocation of interactively-generated input sequences, such as strings, byte arrays and
+quotations, internal memory is reserved.  This is the default target area for the
+compilation primitives (TODO: link).
+
+#+BEGIN_SRC C
+  /* main memory to work with */
+  static cell memory[VM_MEM];
+#+END_SRC
 
 ** Special Variables
 *** Special Variables Definition
@@ -584,27 +611,7 @@ variables to values then known.
      OUTPUT_STREAM = STDOUT; /* output to standard output per default */
   }
 #+END_SRC
-** Work Memory
-For allocation of interactively-generated input sequences, such as strings, byte arrays and
-quotations, internal memory is reserved.  This is the default target area for the
-compilation primitives (TODO: link).
-
-#+BEGIN_SRC C
-  /* main memory to work with */
-  static cell memory[VM_MEM];
-#+END_SRC
 ** Helper Funtions
-*** Internal Debugging
-**** Debug Level
-One helper for checking if the current debug level is high enough for subsequent actions:
-
-#+BEGIN_SRC C
-  /* check if current value of debug is greater or equal to val */
-  static bool debug_lvl(unsigned int val) {
-     return (DEBUG_LEVEL >= val);
-  }
-#+END_SRC
-
 *** Output Handling<<output-handling>>
 One file-local variable that holds the current Output stream for io operations:
 #+BEGIN_SRC C
@@ -734,6 +741,16 @@ For the =st= primitive and in case of errors, the stack contents are sometimes p
      }
   }
 #+END_SRC
+
+Helper for printing errors:
+#+BEGIN_SRC C
+  static void print_error(char * str)
+  {
+     fprintf(stderr, "error: ");
+     fprintf(stderr, str);
+     fprintf(stderr, "\n");
+  }
+#+END_SRC
 ** Used Subroutines (defined as Macros)
 There are several subroutines that are repeatedly used in =interpreter()=, which operate
 on the static data that is only defined there.  Because of that, they are implemented as
@@ -747,7 +764,7 @@ preprocessor macros.
         printstack(retainsp,retainstack);                  \
         backtrace(returnsp,returnstack,(inst *)BASE,pc);   \
         Ostream = old_out;                                 \
-     }       while (0)                                     \
+     }       while (0)
 #+END_SRC
 *** Errors during primitive execution
 Whenever something unrecoverable handles, this is called.  Currently just returns the
@@ -948,7 +965,7 @@ information.
 #+END_SRC
 *** State initialization
 :PROPERTIES:
-:noweb-ref: state_initializiation
+:noweb-ref: state_initialization
 :END:
 The initial of the vm: Program counter points to the starting word, data and retain stack
 empty, return stack contains a default frame.
@@ -964,7 +981,7 @@ See [[init-specials-definition]].
   init_specials();
 #+END_SRC
 
-*** Primitive Instructions
+*** Primitive Instructions<<instruction-implementation>>
 :PROPERTIES:
 :noweb-ref: big_fat_switch
 :END:
@@ -1044,14 +1061,19 @@ These provide information about some internals to the application:
 - dictionary bounds
 - size in bytes of stack elements (platform-dependent)
 - starting instruction code
-dictionary.
+
+Note that the memrange and memstart/memend instructions are redundant (TODO: remove memrange)
 #+BEGIN_SRC C
-     case memstart: ppush((cell)memory); break;
-     case memend: ppush((cell)(memory+VM_MEM)); break;
-     case dictstart: ppush((cell)dict); break;
-     case dictend: ppush((cell)(dict+VM_DICT)); break;
-     case cellsize: ppush((cell)sizeof(cell)); break;
-     case instbase: ppush((cell)INSTBASE); break;
+  case memstart: ppush((cell)memory); break;
+  case memend: ppush((cell)(memory+VM_MEM)); break;
+  case memrange:
+     ppush((cell) memory);
+     ppush((cell) memory+VM_MEM*sizeof(cell));
+     break;
+  case dictstart: ppush((cell)dict); break;
+  case dictend: ppush((cell)(dict+VM_DICT)); break;
+  case cellsize: ppush((cell)sizeof(cell)); break;
+  case instbase: ppush((cell)INSTBASE); break;
 #+END_SRC
 **** Access to Internal State
 These primitives expose internal state to the application.
@@ -1109,6 +1131,11 @@ from top of stack.
      } break;
 #+END_SRC
 
+Push the current stack level on tos
+#+BEGIN_SRC C
+  case stack_level: ppush(psp-pstack); break;
+#+END_SRC
+
 **** Literal Instructions<<literal_instructions>>
 Literal instructions all push a value that is defined immediately after the instruction in
 the instruction stream, and push it onto the data stack. If the current program counter
@@ -1126,6 +1153,7 @@ The different literal instructions ahve different width arguments.
     x=(cell)(*(pc++));
     ppush(x);
     break;
+  case ref:
   case liti:               /* cell-wide literal */
     x=*((cell *)pc);
     ppush(x);
@@ -1161,6 +1189,27 @@ In essence:
 pushes =0xa4000000= onto the stack.  Since this would be an invalid memory address on the
 chosen architecture (checked during =scall= and =stcall= in [[call-return-instructions]]), it
 is later known to be a primitive, not the location of a quotation when called.
+#+BEGIN_SRC C
+  case oplit:             /* literal primitive operation */
+     x=(cell)*(pc++);
+     ppush(x<<(8*(sizeof(cell)-sizeof(inst))));
+     break;
+#+END_SRC
+
+=qstart= is pushing a literal quotation on the stack.  Since all quotations are static
+code, they are uniquely idenfified by that address.  This address can then later be used
+by a call instruction, namely =scall= or =stcall=.  The implementation is not much
+different from =litc=, but quotations don't have a sequence header, only a count byte as
+first element.
+
+#+BEGIN_SRC C
+  case qstart: {
+     uint8_t l = *((uint8_t *)pc) + 1;
+     ppush((cell)(pc + 1));
+     /* skip over quotation length and count byte, leaving pc after qend */
+     pc = pc + l + 1;
+  } break;
+#+END_SRC
 **** IO Primitives
 Several primitives make calls to libc's stdio functionality.  All output is directed to
 =Ostream= (see [[output-handling]).
@@ -1217,43 +1266,42 @@ that address is and wether or not they execute a jump ([[tail-call-optimization]
 | stcall                   | top of stack         | full size absolute      | yes       |
 
 #+BEGIN_SRC C
-  switch() {
-     case bcall: {  /* base-relative call */
-    _bcall:
-        x = (cell)(BASE + *((short_jump_target *)pc));  /* set the target */
-        pc += sizeof(short_jump_target);
+  case bcall: {  /* base-relative call */
+  _bcall:
+     x = (cell)(BASE + *((short_jump_target *)pc));  /* set the target */
+     pc += sizeof(short_jump_target);
+     goto nested_call;
+  } break;
+  case btcall:   /* base-relative tail-call, effectively a goto */
+     if (!tailcall) goto _bcall;
+     x = (cell)(BASE + *((short_jump_target *)pc));  /* set the target */
+     goto tail_call;
+     break;
+  case acall: {  /* absolute call */
+     x = (cell) *((jump_target *)pc);  /* set the target */
+     pc += sizeof(jump_target);
+     goto nested_call;
+  } break;
+  case scall:
+  _scall:
+     /* check if call target is primitive, if yes, substitute execution (tail call), since call only
+        applies to quotations */
+     x = ppop();  /* set the target */
+     if (x >= INSTBASE_CELL) {
+        i = (x >> (8 * (sizeof(inst *) - sizeof(inst))));
+        goto dispatch;  /* calling a primitive "substitutes" the call with the primitive */
+     } else {
         goto nested_call;
      } break;
-     case btcall:   /* base-relative tail-call, effectively a goto */
-        if (!tailcall) goto _bcall;
-        x = (cell)(BASE + *((short_jump_target *)pc));  /* set the target */
+  case stcall:
+     if (!tailcall) goto _scall;
+     x = ppop();  /* set the target */
+     if (x >= INSTBASE_CELL) {
+        i=( x >> (8 * (sizeof(inst*) - sizeof(inst))));
+        goto dispatch;      /* already a tail call */
+     } else {
         goto tail_call;
-        break;
-     case acall: {  /* absolute call */
-        x = (cell) *((jump_target *)pc);  /* set the target */
-        pc += sizeof(jump_target);
-        goto nested_call;
      } break;
-     case scall:
-     _scall:
-        /* check if call target is primitive, if yes, substitute execution (tail call), since call only
-           applies to quotations */
-        x = ppop();  /* set the target */
-        if (x >= INSTBASE_CELL) {
-           i = (x >> (8 * (sizeof(inst *) - sizeof(inst))));
-           goto dispatch;  /* calling a primitive "substitutes" the call with the primitive */
-        } else {
-           goto nested_call;
-        } break;
-     case stcall:
-        if (!tailcall) goto _scall;
-        x = ppop();  /* set the target */
-        if (x >= INSTBASE_CELL) {
-           i=( x >> (8 * (sizeof(inst*) - sizeof(inst))));
-           goto dispatch;      /* already a tail call */
-        } else {
-           goto tail_call;
-        } break;
 #+END_SRC
 
 All the above jump outside of the switch statement, either to the =tailcall= or
@@ -1331,7 +1379,222 @@ If the flag (on third position) is false, leave only the =true= value, otherwise
         ppush(cond ? true_cons : false_cons);
      } break;
 #+END_SRC
-**** TODO search, lookup_name, stack_show, mem instructions, quit, error, timer
+**** Memory Access
+These primitives write/read single values to/from memory.  Two are for byte-sized writes,
+and the other two for cell-sized writes.
+#+BEGIN_SRC C
+  case setmem:
+          x = ppop();
+          *((cell*)x) = (ppop());
+          break;
+  case setmem8:
+          x=ppop();
+          *((char*)x) = ((ppop() & 0xff));
+          break;
+  case getmem: {
+          cell *addr = (cell *)ppop();
+          x = *addr;
+          ppush(x);
+  } break;
+  case getmem8: {
+          char *addr = (char *)ppop();
+          x = (cell)(*(addr));
+          ppush(x);
+  } break;
+#+END_SRC
+**** Foreign Function Execution
+For using foreign functions(see [[ffi-intro]]), these instructions are provided.
+
+=ff= takes an index from the stack that points in to the =FF_Table=, which is generated in
+=bytecode.c= along the image and the dictionary from the =ff.yml= specification.  This
+table holds all the function addresses that have been made available.  =ff= returns this
+address.
+
+The mfactor code that actually makes use of these primitives is generated in
+=generated/ff.mfactor=.
+
+#+BEGIN_SRC C
+  case ff: {
+     #ifndef FF_LENGTH
+        #define FF_LENGTH 0
+     #endif
+     unsigned int i = ppop();
+     if (i >= FF_LENGTH)
+     {
+        printf("no ff entry with index %i\n",i);
+        BACKTRACE();
+        handle_error(INTERNAL_ERROR_UNKNOWN_FF);
+     }
+     ppush((cell)FF_Table[i]);
+  } break;
+#+END_SRC
+
+The =ccall*= primitives are then used to actually call the function pointed to by
+above-obtained address.  Instead of providing support for each architcture's full calling
+convention, the c compiler is used to generate correct call frames by casting the function
+address to one more common function prototypes.  The name of the =ccall_*= indicates which
+calling convention should be used.
+
+All these primitives return a value, even if the underlying c function is declared with a
+=void= return type.  It is up to the generated code in =generated/ff.mfactor= to correctly
+drop these junk values.
+
+This is a speed/space tradeoff, since all these instructions do similar things, but
+computing a call frame for the underlying call convention would be more expensive, in
+addition to somehow providing the information about the argument number and types.
+
+#+BEGIN_SRC C
+  case ccall_i:
+     {
+        int(*fun)(int) = (int (*)(int))ppop();
+        int i1 = (int)ppop();
+        int res = fun(i1);
+        ppush((cell)res);
+     } break;
+  case ccall_s:
+     {
+        int(*fun)(short) = (int (*)(short))ppop();
+        short s1 = (short)ppop();
+        int res = fun(s1);
+        ppush((cell)res);
+     } break;
+  case ccall_b:
+     {
+        int(*fun)(char) = (int (*)(char))ppop();
+        int b1 = (char)ppop();
+        int res = fun(b1);
+        ppush((cell)res);
+     } break;
+  case ccall_bi:
+     {
+        int(*fun)(char, int) = (int (*)(char,int))ppop();
+        int i2 = (int)ppop();
+        char b1 = (char)ppop();
+        int res = fun(b1,i2);
+        ppush((cell)res);
+     } break;
+  case ccall_ib:
+     {
+        int(*fun)(int, char) = (int (*)(int, char))ppop();
+        char b2 = (char)ppop();
+        int i1 = (int)ppop();
+        int res = fun(i1,b2);
+        ppush((cell)res);
+     } break;
+  case ccall_is:
+     {
+        int(*fun)(int,short) = (int (*)(int,short))ppop();
+        short s2 = (short)ppop();
+        int i1 = (int)ppop();
+        int res = fun(i1,s2);
+        ppush((cell)res);
+     } break;
+  case ccall_iis:
+     {
+        int(*fun)(int,int,short) = (int (*)(int,int,short))ppop();
+        short s3 = (short)ppop();
+        int i2 = (int)ppop();
+        int i1 = (int)ppop();
+        int res = fun(i1,i2,s3);
+        ppush((cell)res);
+     } break;
+  case ccall_iii:
+     {
+        int(*fun)(int,int,int) = (int (*)(int,int,int))ppop();
+        int i3 = (int)ppop();
+        int i2 = (int)ppop();
+        int i1 = (int)ppop();
+        int res = fun(i1,i2,i3);
+        ppush((cell)res);
+     } break;
+  case ccall_ii:
+     {
+        int(*fun)(int,int) = (int (*)(int,int))ppop();
+        int i2 = (int)ppop();
+        int i1 = (int)ppop();
+        int res = fun(i1,i2);
+        ppush((cell)res);
+     } break;
+  case ccall_v:
+     {
+        int(*fun)(void) = (int (*)(void))ppop();
+        int res = fun();
+        ppush((cell)res);
+     } break;
+  case ccall_lit: break;  /* address is literal, nothing happens */
+#+END_SRC
+
+**** (As of Yet) Undocumented instructions
+#+BEGIN_SRC C
+  case nop: break;
+  case dref:
+     x=(cell)(*((short_jump_target*) pc));
+     ppush((cell)memory+x);
+     pc += sizeof(short_jump_target);
+     break;
+  case bref:              /* reference to short-length in-memory data (type can be seen on-site)*/
+  case blitq:             /* deprecated */
+     x=(cell)(*((short_jump_target*) pc));
+     ppush((cell) (BASE + ((short_jump_target) x)));
+     pc += sizeof(short_jump_target);
+     break;
+  case quit:  /* quit the interpreter, returning 0 */
+     printf("quitting interpreter!\n");
+     return 0;
+  case token: {  /* get one token from standard input */
+     char *tok = read_token();
+     if (tok) {
+        ppush((cell)tok);
+     } else {
+        print_error("token reader error");
+        handle_error(INTERNAL_ERROR_TOKEN_READ);
+     }} break;
+  case lookup_name: {  /* provide a search start for the name (addr length) by using
+                        ,* the hash table lookup */
+     cell length = ppop();
+     cell name = ppop();
+     ppush(lookup_ht_entry((uint8_t) length,(char *) name)); }
+     break;
+  case error:  /* trigger internal error (bypasses any exception handling) */
+     printf("error!\n");
+     printf("\np");
+     printstack(psp,pstack);
+     printf("retain");
+     printstack(retainsp,retainstack);
+     printf("return");
+     print_return_stack(returnsp,returnstack,(inst *)BASE);
+     BACKTRACE();
+     handle_error(INTERNAL_ERROR_GENERAL);
+     break;
+  case tstart:  /* start the timer */
+     start_timer();
+     break;
+  case tend:  /* end the timer, return measurement results ( -- usecs secs ) */
+     {
+        unsigned int sec,usec;
+        end_timer(&sec,&usec);
+        ppush(usec);
+        ppush(sec);
+     } break;
+  case parsenum: {  /* parse the (c)string at the address on top of stack as number */
+     char *str = (char *)ppop();
+     cell num = 0xa5a5a5a5;
+     bool success=parse_number(str+1,&num);
+     ppush(success ? num : (cell) str);
+     ppush((cell)success);
+  } break;
+  case tail:  /* activate tail call elimination */
+     tailcall=true; break;
+  case notail:  /* deactivate tail call elimination */
+     tailcall=false; break;
+  case reset:  /* call externally refined system-reset */
+     reset_system();
+     break;
+  case debug:  /* activate debug mode */
+     if (!debug_mode) {
+        debug_mode=true;
+     } break;
+#+END_SRC
 * Appendix: Complete Sources
 ** interpreter.h
 #+name: interpreter_h
@@ -1350,7 +1613,7 @@ If the flag (on third position) is false, leave only the =true= value, otherwise
 #+end_src
 ** interpreter.c
 #+name: interpreter_c
-#+BEGIN_SRC C :tangle ../src/interpreter.wip.c
+#+BEGIN_SRC C :tangle ../src/interpreter.c
   #include "interpreter.h"
   #include "reader.h"
   #include <string.h>
