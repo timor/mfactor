@@ -379,7 +379,7 @@ int interpreter(short_jump_target start_address) {
 		case receive:
 			ppush(read_char()); break;
 		case quit:
-			printf("bye!\n");
+			printf("quitting interpreter!\n");
 			return 0;
 		case qend: {
 			return_entry e = returnpop();
