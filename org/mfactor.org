@@ -1005,8 +1005,8 @@ prepended with underscores to avoid name clashes with existing c functionality.
 - =clear= :: clear contents of data stack
 
 #+BEGIN_SRC C
-  case drop: ppop();
-  case _dup: ppush(peek_n(psp,1));
+  case drop: ppop(); break;
+  case _dup: ppush(peek_n(psp,1)); break;
   case swap: {
      x=ppop();
      cell y = ppop();

@@ -192,8 +192,8 @@ int interpreter(short_jump_target start_address) {
    dispatch:
       
       switch(i) {
-         case drop: ppop();
-         case _dup: ppush(peek_n(psp,1));
+         case drop: ppop(); break;
+         case _dup: ppush(peek_n(psp,1)); break;
          case swap: {
             x=ppop();
             cell y = ppop();
