@@ -118,7 +118,6 @@ def build_image
     mf.write_hash_table f
   end
   File.open("generated/mfactor_words.h","w") do |f|
-    f.puts "extern char image[];"
     mf.write_word_positions(MFACTOR_C_WORDS,f)
   end
   mf

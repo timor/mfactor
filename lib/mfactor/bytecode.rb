@@ -302,8 +302,8 @@ module MFactor
     # output select locations directly as defines
     def write_word_positions(wordhash,io="")
       wordhash.each do |factorname, cname|
-        io << "#define " << cname << " (&(image[" << get_word_address(factorname) << "]))\n"
-#        io << "#define " << cname << " " << get_word_address(factorname) << "\n"
+        # io << "#define " << cname << " (&(image[" << get_word_address(factorname) << "]))\n"
+        io << "#define " << cname << " " << get_word_address(factorname) << "\n"
       end
     end
     def bytecode_size
