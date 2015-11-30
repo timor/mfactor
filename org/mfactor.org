@@ -410,6 +410,10 @@ mark a word inline, recursive, or a parsing word.
   } __attribute__((packed)) dict_entry;
 #+end_src
 
+Later, the dictionary entries are collected into the dictionary generated in
+=bytecode.c=.  Note that is not really possible to access entries in that array by index,
+since the entries are have the last field as variable-length data on initialization.
+
 *** <<vm-preprocessor-macros>>Preprocessor Macros
 
 The following all indicate the size of the different components, in =cell= units.
