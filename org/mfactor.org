@@ -82,8 +82,44 @@ In order to incorporate this into a project, several rake tasks are supplied in 
 - *mfactor*: the main task, which, when called, generates above code
 - *mftest[word name]*: helper task, outputs a graphical representation of a specific word in the =generated= subdir.
 
-** TODO Contents
-Description of files and directories
+** Contents
+Description of files and directories.
+- =Gemfile[.lock]= :: Ruby packages version, see ruby gems documentation
+- =Rakefile= :: for mfactor development only
+- =instructionset.yml= :: this file defines the primitive instructions for the [[VM Implementation][VM
+     Implementation]].  Note that the host compiler gets its list of supported instructions
+     from =src/mfactor/primitives.mfactor=.
+
+*** =html=
+contains generated documentation
+
+*** =lib=
+Ruby source code for the [[Host Compiler][Host Compiler]].
+
+*** =org=
+Source of this file
+
+*** =src=
+Contains the target-independend C source, some linker files and the supplied MFActor
+libraries (see [[Supplied Libraries]])
+
+- =interpreter.[ch]= :: source of the [[VM Implementation][VM Implementation]]
+- =reader.c= :: simple tokenizer implementation
+- =seq_headers.h= :: definitions for inline data headers(e.g. used by =litc= in [[literal-instructions]]
+
+The following headers have target-dependent implementations in =target/=
+- =reset_system.h= :: toggle system/interpreter reset
+- =runtime.h= :: platform-specifics for measuring run times
+
+**** =mfactor=
+Supplied MFactor libraries (see [[Supplied Libraries]]).
+
+*** =tasks=
+=mfactor.rake=: The file that defines the =mfactor= rake task that is used to integrate
+the VM into the host application (see [[rake-intro]])
+
+*** =test=
+Ruby unit tests
 ** Configuring the Rake Task<<rake-intro>>
 The rake file is supposed to be included with rake's =import= facility in the host
 application's own Rakefile.
@@ -108,8 +144,7 @@ The following are for advanced functionality:
   #+END_SRC
   This can be used to generate preprocessor symbols, which can be passed directly to
   =interpreter()=, for example.
-- =MFACTOR_FF=: path to file containing interface definitions to c code (see [[*Making%20Existing%20C%20Functions%20Available][Making
-  Existing C Functions Available]])
+- =MFACTOR_FF=: path to file containing interface definitions to c code (see [[ffi-intro]])
 - =MFACTOR_IMAGE_SECTION=: a string describing the linker section that the bytecode-image
   will pe placed into
 - =MFACTOR_DICT_SECTION=: same thing for the generated dictionary
@@ -932,7 +967,7 @@ of the next primitive instruction in the instruction stream (bytecode image).
 
 The initial value is either taken from the =interpreter()= call as parameter, or by using
 the =START_WORD_OFFSET= macro from =bytecode.h=, that translates the =START_WORD= global
-variable (see [[Configuring the Rake Task]]) into an address.
+variable (see [[rake-intro]]) into an address.
 
 **** Tail Call Optimization<<tail-call-optimization>>
 The MFactor implementation relies on (explicit) [[https://en.wikipedia.org/wiki/Tail_call][tail call elimination]].  Because of the
@@ -1147,7 +1182,7 @@ Push the current stack level on tos
   case stack_level: ppush(psp-pstack); break;
 #+END_SRC
 
-**** Literal Instructions<<literal_instructions>>
+**** Literal Instructions<<literal-instructions>>
 Literal instructions all push a value that is defined immediately after the instruction in
 the instruction stream, and push it onto the data stack. If the current program counter
 points to this:
